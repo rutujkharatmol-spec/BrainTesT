@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+}
+
+model Session {
+  id                  String   @id @default(uuid())
+  participantName     String?
+  participantIdNumber String?
+  createdAt           DateTime @default(now())
+  consentGiven Boolean  @default(false)
+  completed    Boolean  @default(false)
+
+  // Submissions
+  cfsSubmission   CFSSubmission?
+  gaeneSubmission GAENESubmission?
+  mateSubmission  MATESubmission?
+  sbsSubmission   SBSSubmission?
+  skepSubmission  SKEPSubmission?
+  tsisSubmission  TSISSubmission?
+  ncs6Submission  NCS6Submission?
+  cfqSubmission   CFQSubmission?
+
+  // Normalized Answers
+  answers         Answer[]
+
+  // Cognitive Tests
+  cognitiveTests  CognitiveTestResult[]
+}
+
+model CognitiveTestResult {
+  id              String   @id @default(uuid())
+  sessionId       String
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  testCategory    String
+  specificTest    String
+  
+  param1Name      String?
+  param1Value     Float?
+  param2Name      String?
+  param2Value     Float?
+  param3Name      String?
+  param3Value     Float?
+  
+  rawTrialData    Json?    
+
+  createdAt       DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+model Answer {
+  id        String   @id @default(uuid())
+  sessionId String
+  testName  String
+  itemIndex Int
+  rawScore  Int
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([testName, itemIndex])
+}
+
+model CFSSubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model GAENESubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model MATESubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model SBSSubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model SKEPSubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model TSISSubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  scoreSp   Float
+  scoreSk   Float
+  scoreSa   Float
+  createdAt DateTime @default(now())
+}
+
+model NCS6Submission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model CFQSubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}

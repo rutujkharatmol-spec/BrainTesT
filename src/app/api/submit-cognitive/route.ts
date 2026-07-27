@@ -1,0 +1,85 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { 
+      sessionId, 
+      testCategory, 
+      specificTest, 
+      param1Name, param1Value,
+      param2Name, param2Value,
+      param3Name, param3Value,
+      rawTrialData 
+    } = body;
+
+    if (!sessionId || !testCategory || !specificTest) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Verify session exists
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId }
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "Invalid session" }, { status: 404 });
+    }
+
+    const result = await prisma.cognitiveTestResult.create({
+      data: {
+        sessionId,
+        testCategory,
+        specificTest,
+        param1Name,
+        param1Value,
+        param2Name,
+        param2Value,
+        param3Name,
+        param3Value,
+        rawTrialData
+      }
+    });
+
+    // ==========================================
+    // DESTINATION B: LIVE GOOGLE SHEETS PIPELINE
+    // ==========================================
+    const GOOGLE_SHEET_WEBHOOK_URL = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+
+    if (GOOGLE_SHEET_WEBHOOK_URL) {
+      try {
+        const payload = {
+          idNumber: session.participantIdNumber || "N/A",
+          name: session.participantName || "N/A",
+          testCategory: testCategory,
+          specificTest: specificTest,
+          param1: param1Value !== null ? param1Value : "",
+          param2: param2Value !== null ? param2Value : "",
+          param3: param3Value !== null ? param3Value : ""
+        };
+
+        const response = await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          console.error("Google Sheets Webhook Failed:", response.statusText);
+        } else {
+          console.log("Successfully pushed to Google Sheets Webhook!");
+        }
+      } catch (sheetsError) {
+        console.error("Google Sheets Sync Failed, but saved locally:", sheetsError);
+      }
+    }
+
+    return NextResponse.json({ success: true, id: result.id });
+  } catch (error: any) {
+    console.error("Cognitive Submission Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
