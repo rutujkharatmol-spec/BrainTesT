@@ -99,17 +99,14 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
     }, FIXATION_DURATION);
   };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback((responseKey: "KeyF" | "KeyJ") => {
     if (phase !== "stimulus" || hasRespondedRef.current) return;
-    
-    const key = e.code;
-    if (key !== "KeyF" && key !== "KeyJ") return;
     
     hasRespondedRef.current = true;
     const rt = performance.now() - startTimeRef.current;
     
     const trial = trials[currentTrialIndex];
-    const userCategory: Category = key === "KeyF" ? "LIVING" : "NON_LIVING";
+    const userCategory: Category = responseKey === "KeyF" ? "LIVING" : "NON_LIVING";
     const correct = userCategory === trial.target.category;
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
@@ -117,8 +114,14 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
     setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
-
   }, [phase, currentTrialIndex, trials]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const key = e.code;
+    if (key === "KeyF" || key === "KeyJ") {
+      handleResponse(key);
+    }
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -186,8 +189,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
         <p>You will see two overlapping words. One will be <strong>RED</strong> and one will be <strong style={{color:"#00aaff"}}>BLUE</strong>.</p>
         <p>Your goal is to categorize the <strong>RED WORD</strong> and completely ignore the blue word.</p>
         <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: 16, borderRadius: 8 }}>
-          <p>Press <strong>'F'</strong> if the red word is a <strong>LIVING THING</strong> (e.g. DOG, CAT).</p>
-          <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> if the red word is a <strong>NON-LIVING THING</strong> (e.g. CAR, SHOE).</p>
+          <p>Press <strong>'F'</strong> or tap <strong>LIVING</strong> if the red word is a <strong>LIVING THING</strong> (e.g. DOG, CAT).</p>
+          <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> or tap <strong>NON-LIVING</strong> if the red word is a <strong>NON-LIVING THING</strong> (e.g. CAR, SHOE).</p>
         </div>
         <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
       </div>
@@ -206,35 +209,46 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px", position: "relative" }}>
-      {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
-      
-      {phase === "stimulus" && trial && (
-        <div style={{ position: "relative" }}>
-          {/* Distractor word in Blue */}
-          <h1 style={{ 
-            fontSize: "6rem", 
-            fontWeight: "bold", 
-            color: "#00aaff",
-            position: "absolute",
-            top: 20, // slightly offset so they don't perfectly overlap
-            left: 10,
-            opacity: 0.8,
-            pointerEvents: "none"
-          }}>
-            {trial.distractor.text}
-          </h1>
-          
-          {/* Target word in Red */}
-          <h1 style={{ 
-            fontSize: "6rem", 
-            fontWeight: "bold", 
-            color: "#ff4444",
-            position: "relative",
-            zIndex: 10
-          }}>
-            {trial.target.text}
-          </h1>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+        
+        {phase === "stimulus" && trial && (
+          <div style={{ position: "relative" }}>
+            {/* Distractor word in Blue */}
+            <h1 style={{ 
+              fontSize: "6rem", 
+              fontWeight: "bold", 
+              color: "#00aaff",
+              position: "absolute",
+              top: 20, // slightly offset so they don't perfectly overlap
+              left: 10,
+              opacity: 0.8,
+              pointerEvents: "none"
+            }}>
+              {trial.distractor.text}
+            </h1>
+            
+            {/* Target word in Red */}
+            <h1 style={{ 
+              fontSize: "6rem", 
+              fontWeight: "bold", 
+              color: "#ff4444",
+              position: "relative",
+              zIndex: 10
+            }}>
+              {trial.target.text}
+            </h1>
+          </div>
+        )}
+      </div>
+
+      {phase === "stimulus" && (
+        <div className="mobile-controls-container">
+          <div className="mobile-controls">
+            <button className="mobile-btn" onClick={() => handleResponse("KeyF")}>LIVING</button>
+            <button className="mobile-btn" onClick={() => handleResponse("KeyJ")}>NON-LIVING</button>
+          </div>
         </div>
       )}
     </div>

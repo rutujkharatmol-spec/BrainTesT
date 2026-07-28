@@ -110,16 +110,20 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
     }, STIMULUS_DURATION);
   };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback(() => {
     if (phase !== "running" || currentResponseRef.current.pressed) return;
     
+    const rt = performance.now() - startTimeRef.current;
+    currentResponseRef.current = { pressed: true, rt };
+    setHasPressed(true); // visual indicator
+  }, [phase]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.code === "Space") {
       e.preventDefault();
-      const rt = performance.now() - startTimeRef.current;
-      currentResponseRef.current = { pressed: true, rt };
-      setHasPressed(true); // visual indicator
+      handleResponse();
     }
-  }, [phase]);
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -184,7 +188,7 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
         <h2>SART (Sustained Attention to Response Task)</h2>
         <p>You will see single digits (1 through 9) flash rapidly on the screen.</p>
         <p style={{ marginTop: 16 }}>
-          <strong>Press the SPACEBAR</strong> as quickly as possible for every digit...
+          <strong>Press the SPACEBAR or tap PRESS</strong> as quickly as possible for every digit...
         </p>
         <p style={{ margin: "16px 0", fontSize: "1.2rem", color: "var(--danger-color)", fontWeight: "bold" }}>
           EXCEPT for the number 3!
@@ -198,22 +202,37 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
   if (phase === "running") {
     const trial = trials[currentTrialIndex];
     return (
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "400px", position: "relative" }}>
-        {showStimulus ? (
-          <h1 style={{ fontSize: "8rem", fontWeight: "bold" }}>{trial?.digit}</h1>
-        ) : (
-          <div style={{ fontSize: "6rem", opacity: 0.2 }}>⊗</div> // Mask symbol commonly used in SART
-        )}
-        
-        <div style={{
-          position: "absolute",
-          bottom: "20px",
-          opacity: hasPressed ? 1 : 0,
-          transition: "opacity 0.1s",
-          color: "var(--success-color)",
-          fontWeight: "bold"
-        }}>
-          Registered
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", position: "relative" }}>
+          {showStimulus ? (
+            <h1 style={{ fontSize: "8rem", fontWeight: "bold" }}>{trial?.digit}</h1>
+          ) : (
+            <div style={{ fontSize: "6rem", opacity: 0.2 }}>⊗</div> // Mask symbol commonly used in SART
+          )}
+          
+          <div style={{
+            position: "absolute",
+            bottom: "20px",
+            opacity: hasPressed ? 1 : 0,
+            transition: "opacity 0.1s",
+            color: "var(--success-color)",
+            fontWeight: "bold"
+          }}>
+            Registered
+          </div>
+        </div>
+
+        <div className="mobile-controls-container">
+          <div className="mobile-controls">
+            <button 
+              className="mobile-btn" 
+              onClick={handleResponse} 
+              disabled={hasPressed}
+              style={{ opacity: hasPressed ? 0.5 : 1 }}
+            >
+              PRESS (GO)
+            </button>
+          </div>
         </div>
       </div>
     );

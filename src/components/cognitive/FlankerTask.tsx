@@ -69,26 +69,26 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
     }, FIXATION_DURATION);
   };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback((responseDir: "left" | "right") => {
     if (phase !== "stimulus" || hasRespondedRef.current) return;
-    
-    const key = e.code;
-    if (key !== "ArrowLeft" && key !== "ArrowRight") return;
     
     hasRespondedRef.current = true;
     const rt = performance.now() - startTimeRef.current;
-    const responseDir = key === "ArrowLeft" ? "left" : "right";
     const trial = trials[currentTrialIndex];
     const correct = responseDir === trial.direction;
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
 
-    // Small gap before next trial
     setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
-
   }, [phase, currentTrialIndex, trials]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const key = e.code;
+    if (key === "ArrowLeft") handleResponse("left");
+    if (key === "ArrowRight") handleResponse("right");
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -157,8 +157,8 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
         <p>You will see a row of five arrows on the screen.</p>
         <p>Your goal is to indicate the direction of the <strong>CENTER arrow</strong> while ignoring the surrounding arrows.</p>
         <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "8px" }}>
-          <p>If the center arrow points <strong>LEFT</strong>, press the <strong>LEFT ARROW KEY</strong>.</p>
-          <p style={{ marginTop: 8 }}>If the center arrow points <strong>RIGHT</strong>, press the <strong>RIGHT ARROW KEY</strong>.</p>
+          <p>If the center arrow points <strong>LEFT</strong>, press the <strong>LEFT ARROW KEY</strong> or tap <strong>LEFT</strong>.</p>
+          <p style={{ marginTop: 8 }}>If the center arrow points <strong>RIGHT</strong>, press the <strong>RIGHT ARROW KEY</strong> or tap <strong>RIGHT</strong>.</p>
         </div>
         <p>Please respond as quickly and accurately as possible.</p>
         <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
@@ -178,13 +178,24 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
-      {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
-      
-      {phase === "stimulus" && trial && (
-        <h1 style={{ fontSize: "6rem", letterSpacing: "10px", fontWeight: "bold" }}>
-          {trial.stimulusString}
-        </h1>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+        
+        {phase === "stimulus" && trial && (
+          <h1 style={{ fontSize: "6rem", letterSpacing: "10px", fontWeight: "bold" }}>
+            {trial.stimulusString}
+          </h1>
+        )}
+      </div>
+
+      {phase === "stimulus" && (
+        <div className="mobile-controls-container">
+          <div className="mobile-controls">
+            <button className="mobile-btn" onClick={() => handleResponse("left")}>LEFT</button>
+            <button className="mobile-btn" onClick={() => handleResponse("right")}>RIGHT</button>
+          </div>
+        </div>
       )}
     </div>
   );

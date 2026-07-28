@@ -85,26 +85,26 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
     }, FIXATION_DURATION);
   };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback((responsePos: "left" | "right") => {
     if (phase !== "dot" || hasRespondedRef.current) return;
-    
-    const key = e.code;
-    if (key !== "KeyE" && key !== "KeyI") return;
     
     hasRespondedRef.current = true;
     const rt = performance.now() - startTimeRef.current;
-    const responsePos = key === "KeyE" ? "left" : "right";
     const trial = trials[currentTrialIndex];
     const correct = responsePos === trial.dotPosition;
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
 
-    // Small gap before next trial
     setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
-
   }, [phase, currentTrialIndex, trials]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const key = e.code;
+    if (key === "KeyE") handleResponse("left");
+    if (key === "KeyI") handleResponse("right");
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -173,8 +173,8 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
         <p>You will see a cross in the center, followed by two words flashing quickly.</p>
         <p>After the words disappear, a dot ( <strong>*</strong> ) will appear where one of the words was.</p>
         <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block" }}>
-          <p>If the dot appears on the <strong>LEFT</strong>, press the <strong>'E'</strong> key.</p>
-          <p>If the dot appears on the <strong>RIGHT</strong>, press the <strong>'I'</strong> key.</p>
+          <p>If the dot appears on the <strong>LEFT</strong>, press the <strong>'E'</strong> key or tap <strong>LEFT</strong>.</p>
+          <p>If the dot appears on the <strong>RIGHT</strong>, press the <strong>'I'</strong> key or tap <strong>RIGHT</strong>.</p>
         </div>
         <p>Please respond as quickly and accurately as possible.</p>
         <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
@@ -194,25 +194,36 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px", position: "relative" }}>
-      {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
-      
-      {phase === "words" && trial && (
-        <>
-          <h1 style={{ position: "absolute", left: "20%", fontSize: "3rem" }}>{trial.leftWord}</h1>
-          <h1 style={{ position: "absolute", right: "20%", fontSize: "3rem" }}>{trial.rightWord}</h1>
-        </>
-      )}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+        
+        {phase === "words" && trial && (
+          <>
+            <h1 style={{ position: "absolute", left: "10%", fontSize: "3rem", margin: 0, textAlign: "center" }}>{trial.leftWord}</h1>
+            <h1 style={{ position: "absolute", right: "10%", fontSize: "3rem", margin: 0, textAlign: "center" }}>{trial.rightWord}</h1>
+          </>
+        )}
 
-      {phase === "dot" && trial && (
-        <h1 style={{ 
-          position: "absolute", 
-          left: trial.dotPosition === "left" ? "20%" : "auto", 
-          right: trial.dotPosition === "right" ? "20%" : "auto", 
-          fontSize: "4rem" 
-        }}>
-          *
-        </h1>
+        {phase === "dot" && trial && (
+          <h1 style={{ 
+            position: "absolute", 
+            left: trial.dotPosition === "left" ? "20%" : "auto", 
+            right: trial.dotPosition === "right" ? "20%" : "auto", 
+            fontSize: "4rem" 
+          }}>
+            *
+          </h1>
+        )}
+      </div>
+
+      {phase === "dot" && (
+        <div className="mobile-controls-container">
+          <div className="mobile-controls">
+            <button className="mobile-btn" onClick={() => handleResponse("left")}>LEFT</button>
+            <button className="mobile-btn" onClick={() => handleResponse("right")}>RIGHT</button>
+          </div>
+        </div>
       )}
     </div>
   );

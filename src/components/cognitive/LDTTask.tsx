@@ -66,17 +66,14 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
     }, FIXATION_DURATION);
   };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback((responseKey: "KeyF" | "KeyJ") => {
     if (phase !== "stimulus" || hasRespondedRef.current) return;
-    
-    const key = e.code;
-    if (key !== "KeyF" && key !== "KeyJ") return;
     
     hasRespondedRef.current = true;
     const rt = performance.now() - startTimeRef.current;
     
     const trial = trials[currentTrialIndex];
-    const userSaidWord = key === "KeyF";
+    const userSaidWord = responseKey === "KeyF";
     const correct = userSaidWord === trial.isWord;
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
@@ -84,8 +81,14 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
     setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
-
   }, [phase, currentTrialIndex, trials]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const key = e.code;
+    if (key === "KeyF" || key === "KeyJ") {
+      handleResponse(key);
+    }
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -153,8 +156,8 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
         <p>You will see a string of letters appear on the screen.</p>
         <p>Your goal is to decide if the string is a real English word or a made-up non-word.</p>
         <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: 16, borderRadius: 8 }}>
-          <p>Press <strong>'F'</strong> if it is a <strong>REAL WORD</strong> (e.g. HOUSE).</p>
-          <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> if it is a <strong>NON-WORD</strong> (e.g. BLAP).</p>
+          <p>Press <strong>'F'</strong> or tap <strong>WORD</strong> if it is a <strong>REAL WORD</strong> (e.g. HOUSE).</p>
+          <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> or tap <strong>NON-WORD</strong> if it is a <strong>NON-WORD</strong> (e.g. BLAP).</p>
         </div>
         <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
       </div>
@@ -173,9 +176,20 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
-      {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
-      {phase === "stimulus" && trial && <h1 style={{ fontSize: "6rem", fontWeight: "bold", textTransform: "uppercase" }}>{trial.string}</h1>}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+        {phase === "stimulus" && trial && <h1 style={{ fontSize: "6rem", fontWeight: "bold", textTransform: "uppercase" }}>{trial.string}</h1>}
+      </div>
+
+      {phase === "stimulus" && (
+        <div className="mobile-controls-container">
+          <div className="mobile-controls">
+            <button className="mobile-btn" onClick={() => handleResponse("KeyF")}>WORD</button>
+            <button className="mobile-btn" onClick={() => handleResponse("KeyJ")}>NON-WORD</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

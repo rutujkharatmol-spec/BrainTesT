@@ -70,6 +70,15 @@ export default function CognitiveHub() {
           })}
         </div>
       )}
+
+      <div style={{ marginTop: 48, textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24 }}>
+        <p style={{ marginBottom: 16, color: "var(--accent-color)" }}>Need to complete the standard questionnaires?</p>
+        <Link href="/questionnaires" style={{ textDecoration: "none" }}>
+          <button className="btn" style={{ padding: "8px 24px", fontSize: "0.9rem" }}>
+            Go to Questionnaires
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

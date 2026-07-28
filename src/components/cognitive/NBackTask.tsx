@@ -123,17 +123,20 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
     }, STIMULUS_DURATION);
   };
 
-  // Keyboard listener
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback(() => {
     if (phase !== "running" || currentResponseRef.current.pressed) return;
     
+    const rt = performance.now() - startTimeRef.current;
+    currentResponseRef.current = { pressed: true, rt };
+    setHasPressed(true); // Trigger re-render for visual feedback
+  }, [phase]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.code === "Space") {
       e.preventDefault();
-      const rt = performance.now() - startTimeRef.current;
-      currentResponseRef.current = { pressed: true, rt };
-      setHasPressed(true); // Trigger re-render for visual feedback
+      handleResponse();
     }
-  }, [phase]);
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -205,7 +208,7 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
         <h2>N-Back Task (2-Back)</h2>
         <p>You will see a sequence of letters presented one by one.</p>
         <p style={{ marginTop: 16 }}>
-          <strong>Press the SPACEBAR</strong> if the current letter is the 
+          <strong>Press the SPACEBAR or tap MATCH</strong> if the current letter is the 
           <strong> exact same as the letter seen 2 steps ago.</strong>
         </p>
         <div style={{ margin: "24px auto", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: 16, borderRadius: 8 }}>
@@ -226,23 +229,38 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   if (phase === "running") {
     const trial = trials[currentTrialIndex];
     return (
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "400px", position: "relative" }}>
-        {showStimulus ? (
-          <h1 style={{ fontSize: "6rem", fontWeight: "bold" }}>{trial?.letter}</h1>
-        ) : (
-          <div style={{ width: 10, height: 10, background: "transparent" }} /> // blank ISI
-        )}
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", position: "relative" }}>
+          {showStimulus ? (
+            <h1 style={{ fontSize: "6rem", fontWeight: "bold" }}>{trial?.letter}</h1>
+          ) : (
+            <div style={{ width: 10, height: 10, background: "transparent" }} /> // blank ISI
+          )}
+          
+          {/* Visual feedback indicator */}
+          <div style={{
+            position: "absolute",
+            bottom: "20px",
+            opacity: hasPressed ? 1 : 0,
+            transition: "opacity 0.1s",
+            color: "var(--success-color)",
+            fontWeight: "bold"
+          }}>
+            Response Registered
+          </div>
+        </div>
         
-        {/* Visual feedback indicator */}
-        <div style={{
-          position: "absolute",
-          bottom: "20px",
-          opacity: hasPressed ? 1 : 0,
-          transition: "opacity 0.1s",
-          color: "var(--success-color)",
-          fontWeight: "bold"
-        }}>
-          Response Registered
+        <div className="mobile-controls-container">
+          <div className="mobile-controls">
+            <button 
+              className="mobile-btn" 
+              onClick={handleResponse} 
+              disabled={hasPressed}
+              style={{ opacity: hasPressed ? 0.5 : 1 }}
+            >
+              MATCH
+            </button>
+          </div>
         </div>
       </div>
     );

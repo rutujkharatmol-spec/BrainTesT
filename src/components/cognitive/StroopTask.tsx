@@ -61,16 +61,12 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     }
   }, [phase]);
 
-  // Keypress handler for high-precision capture
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleResponse = useCallback((colorName: string) => {
     if (phase !== "stimulus") return;
-    
-    const key = e.key.toLowerCase();
-    if (!KEYS[key]) return; // ignore other keys
 
     const rt = performance.now() - startTimeRef.current;
     const currentTrial = trials[currentTrialIndex];
-    const correct = KEYS[key] === currentTrial.color;
+    const correct = colorName === currentTrial.color;
 
     const newResult: TrialResult = { ...currentTrial, rt, correct };
     
@@ -83,6 +79,13 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
       setPhase("completed");
     }
   }, [phase, currentTrialIndex, trials]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const key = e.key.toLowerCase();
+    if (KEYS[key]) {
+      handleResponse(KEYS[key]);
+    }
+  }, [handleResponse]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -145,7 +148,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
       <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Stroop Task</h2>
         <p>You will see words appear in different colors.</p>
-        <p><strong>Press the key corresponding to the FONT COLOR of the word, ignoring what the word says.</strong></p>
+        <p><strong>Press the key or tap the button corresponding to the FONT COLOR of the word, ignoring what the word says.</strong></p>
         <ul style={{ textAlign: "left", display: "inline-block", margin: "20px 0" }}>
           <li>Press <strong>R</strong> for Red</li>
           <li>Press <strong>B</strong> for Blue</li>
@@ -168,16 +171,26 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   if (phase === "stimulus") {
     const trial = trials[currentTrialIndex];
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
-        <h1 style={{ 
-          color: trial.color.toLowerCase(), 
-          fontSize: "5rem", 
-          textTransform: "uppercase",
-          fontWeight: "bold",
-          textShadow: "2px 2px 4px rgba(0,0,0,0.5)" // to ensure readability on backgrounds
-        }}>
-          {trial.word}
-        </h1>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <h1 style={{ 
+            color: trial.color.toLowerCase(), 
+            fontSize: "5rem", 
+            textTransform: "uppercase",
+            fontWeight: "bold",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.5)" // to ensure readability on backgrounds
+          }}>
+            {trial.word}
+          </h1>
+        </div>
+        <div className="mobile-controls-container">
+          <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            <button className="mobile-btn" onClick={() => handleResponse("RED")} style={{ background: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)" }}>RED</button>
+            <button className="mobile-btn" onClick={() => handleResponse("BLUE")} style={{ background: "rgba(59, 130, 246, 0.4)", borderColor: "rgba(59, 130, 246, 0.6)" }}>BLUE</button>
+            <button className="mobile-btn" onClick={() => handleResponse("GREEN")} style={{ background: "rgba(16, 185, 129, 0.4)", borderColor: "rgba(16, 185, 129, 0.6)" }}>GREEN</button>
+            <button className="mobile-btn" onClick={() => handleResponse("YELLOW")} style={{ background: "rgba(234, 179, 8, 0.4)", borderColor: "rgba(234, 179, 8, 0.6)" }}>YELLOW</button>
+          </div>
+        </div>
       </div>
     );
   }
