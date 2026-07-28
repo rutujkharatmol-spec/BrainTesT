@@ -62,23 +62,23 @@ export default function QuestionnairesPage() {
               return (
                 <div 
                   key={q.id} 
-                  onClick={() => { if (!isCompleted) setSelectedId(q.id); }}
+                  onClick={() => setSelectedId(q.id)}
                   style={{ 
                     background: isCompleted ? "#F9FAFB" : "#FFFFFF", 
                     padding: 16, 
                     borderRadius: 8, 
                     border: "1px solid var(--card-border)",
                     transition: "transform 150ms, box-shadow 150ms",
-                    cursor: isCompleted ? "default" : "pointer",
+                    cursor: "pointer",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    opacity: isCompleted ? 0.5 : 1,
-                    boxShadow: isCompleted ? "none" : "0 2px 4px rgba(0,0,0,0.02)"
+                    opacity: 1,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
                   }}
-                  onMouseOver={(e) => { if (!isCompleted) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; } }}
-                  onMouseOut={(e) => { if (!isCompleted) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)"; } }}
+                  onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)"; }}
                 >
                   <h3 style={{ fontSize: "1.1rem", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                     {q.title}

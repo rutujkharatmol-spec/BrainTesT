@@ -77,6 +77,16 @@ export async function POST(req: Request) {
       }
     }
 
+    // DESTINATION C: MASTER GOOGLE SHEETS PIPELINE
+    // Trigger the consolidated sync script to update the master record for this session
+    try {
+      const { syncCognitiveToGoogleSheets } = await import('@/lib/googleSheetsSync');
+      await syncCognitiveToGoogleSheets();
+      console.log("Successfully pushed to Master Google Sheets via Apps Script!");
+    } catch (syncErr) {
+      console.error("Master Google Sheets Sync Failed:", syncErr);
+    }
+
     return NextResponse.json({ success: true, id: result.id });
   } catch (error: any) {
     console.error("Cognitive Submission Error:", error);

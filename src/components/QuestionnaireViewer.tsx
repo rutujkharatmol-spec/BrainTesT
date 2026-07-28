@@ -8,29 +8,82 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
   const { state } = useAppContext();
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [phase, setPhase] = useState<"filling" | "completed">("filling");
 
   const isComplete = questionnaire.items.every(q => answers[q.id] !== undefined);
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setPhase("completed");
     try {
-      await fetch("/api/submit", {
+      // Calculate score based on questionnaire.scoringType
+      let score: number | undefined;
+      let scoreSp: number | undefined;
+      let scoreSk: number | undefined;
+      let scoreSa: number | undefined;
+
+      // Convert answers considering reverse scoring
+      const processedScores: Record<string, number> = {};
+      questionnaire.items.forEach(q => {
+        let val = answers[q.id];
+        if (q.isReverse) {
+           val = (questionnaire.scaleMax + questionnaire.scaleMin) - val;
+        }
+        processedScores[q.id] = val;
+      });
+
+      const vals = Object.values(processedScores);
+
+      if (questionnaire.scoringType === "sum") {
+        score = vals.reduce((acc, v) => acc + v, 0);
+      } else if (questionnaire.scoringType === "mean") {
+        score = vals.reduce((acc, v) => acc + v, 0) / vals.length;
+      } else if (questionnaire.scoringType === "tsis_subscales") {
+        const spIds = ["q1", "q3", "q6", "q9", "q14", "q17", "q19"];
+        const skIds = ["q4", "q7", "q10", "q12", "q15", "q18", "q20"];
+        const saIds = ["q2", "q5", "q8", "q11", "q13", "q16", "q21"];
+        scoreSp = spIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
+        scoreSk = skIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
+        scoreSa = saIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
+      }
+
+      const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: state.sessionId,
-          questionnaireId: questionnaire.id,
-          answers
+          testId: questionnaire.id,
+          rawScores: answers,
+          score,
+          scoreSp,
+          scoreSk,
+          scoreSa
         })
       });
+
+      if (!res.ok) {
+        throw new Error("Failed to submit");
+      }
+      
       onComplete();
     } catch (e) {
       console.error(e);
       alert("Failed to submit");
+      setPhase("filling");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (phase === "completed") {
+    return (
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+        <h2>Questionnaire Completed!</h2>
+        <p>Saving your responses...</p>
+        {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+      </div>
+    );
+  }
 
   return (
     <div className="card" style={{ maxWidth: 800, margin: "auto" }}>

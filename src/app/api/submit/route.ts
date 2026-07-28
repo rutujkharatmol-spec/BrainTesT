@@ -19,6 +19,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid session" }, { status: 404 });
     }
 
+    // Delete old answers for this test and session to allow retakes
+    await prisma.answer.deleteMany({
+      where: {
+        sessionId,
+        testName: testId
+      }
+    });
+
     // First save normalized answers
     const answersData = Object.entries(rawScores).map(([itemId, rawVal]) => {
       // Extract numeric index from id like "q1", "q12"
@@ -37,7 +45,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // Now save to the specific model
+    // Now save to the specific model using upsert to allow retakes
     const commonData = {
       session: { connect: { id: sessionId } },
       rawScores: rawScores,
@@ -45,31 +53,68 @@ export async function POST(req: Request) {
 
     switch (testId) {
       case "cfs":
-        await prisma.cFSSubmission.create({ data: { ...commonData, score } });
+        await prisma.cFSSubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       case "gaene":
-        await prisma.gAENESubmission.create({ data: { ...commonData, score } });
+        await prisma.gAENESubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       case "mate":
-        await prisma.mATESubmission.create({ data: { ...commonData, score } });
+        await prisma.mATESubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       case "sbs":
-        await prisma.sBSSubmission.create({ data: { ...commonData, score } });
+        await prisma.sBSSubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       case "skep":
-        await prisma.sKEPSubmission.create({ data: { ...commonData, score } });
+        await prisma.sKEPSubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       case "tsis":
-        await prisma.tSISSubmission.create({ data: { ...commonData, scoreSp, scoreSk, scoreSa } });
+        await prisma.tSISSubmission.upsert({ where: { sessionId }, update: { rawScores, scoreSp, scoreSk, scoreSa }, create: { ...commonData, scoreSp, scoreSk, scoreSa } });
         break;
       case "ncs6":
-        await prisma.nCS6Submission.create({ data: { ...commonData, score } });
+        await prisma.nCS6Submission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       case "cfq":
-        await prisma.cFQSubmission.create({ data: { ...commonData, score } });
+        await prisma.cFQSubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       default:
         return NextResponse.json({ error: "Unknown test ID" }, { status: 400 });
+    }
+
+    // ==========================================
+    // DESTINATION B: LIVE GOOGLE SHEETS PIPELINE
+    // ==========================================
+    const QUESTIONNAIRE_SHEET_WEBHOOK_URL = process.env.QUESTIONNAIRE_SHEET_WEBHOOK_URL;
+
+    if (QUESTIONNAIRE_SHEET_WEBHOOK_URL) {
+      try {
+        const payload = {
+          idNumber: session.participantIdNumber || "N/A",
+          name: session.participantName || "N/A",
+          testId: testId,
+          score: score !== undefined ? score : "",
+          scoreSp: scoreSp !== undefined ? scoreSp : "",
+          scoreSk: scoreSk !== undefined ? scoreSk : "",
+          scoreSa: scoreSa !== undefined ? scoreSa : "",
+          rawScores: JSON.stringify(rawScores || {})
+        };
+
+        const response = await fetch(QUESTIONNAIRE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain", // Use text/plain to avoid CORS / preflight issues on Google
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("Questionnaire Sheets Webhook Failed:", response.status, response.statusText, text);
+        } else {
+          console.log("Successfully pushed to Questionnaires Google Sheets Webhook!");
+        }
+      } catch (sheetsError) {
+        console.error("Google Sheets Sync Failed, but saved locally:", sheetsError);
+      }
     }
 
     return NextResponse.json({ success: true });
