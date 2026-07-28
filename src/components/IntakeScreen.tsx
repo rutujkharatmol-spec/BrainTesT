@@ -51,7 +51,7 @@ export default function IntakeScreen() {
             onChange={(e) => setName(e.target.value)}
             required
             style={{ width: "100%", padding: 12, borderRadius: 8, border: "none" }}
-            placeholder="e.g. John Doe"
+            placeholder="e.g. Nihal Sarin"
           />
         </div>
         
