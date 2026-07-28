@@ -51,7 +51,7 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
         rightWord: targetPosition === "right" ? targetWord : neutralWord,
         targetPosition,
         dotPosition,
-        congruent: targetPosition === "dotPosition"
+        congruent: targetPosition === dotPosition
       });
     }
     setTrials(sequence);
