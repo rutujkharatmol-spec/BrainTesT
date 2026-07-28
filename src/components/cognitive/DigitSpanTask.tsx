@@ -130,63 +130,71 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Digit Span Test</h2>
         <p>A sequence of numbers will appear on the screen, one at a time.</p>
         <p>When the sequence finishes, type the numbers in the <strong>exact order</strong> they appeared using your keyboard or the on-screen buttons.</p>
         <p>The sequence will get longer as you get them right.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "presentation") {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
-        {activeDigit !== null ? (
-          <h1 style={{ fontSize: "8rem", fontWeight: "bold" }}>{activeDigit}</h1>
-        ) : (
-          <div style={{ width: 10, height: 10 }} />
-        )}
+      <div className="task-view-container">
+        <div className="task-stimulus">
+          {activeDigit !== null ? (
+            <h1 style={{ fontSize: "8rem", fontWeight: "bold", color: "var(--text-primary)" }}>{activeDigit}</h1>
+          ) : (
+            <div style={{ width: 10, height: 10 }} />
+          )}
+        </div>
       </div>
     );
   }
 
   if (phase === "recall") {
     return (
-      <div style={{ maxWidth: 400, margin: "auto", textAlign: "center" }}>
-        <h3>What was the sequence?</h3>
-        
-        <div style={{ 
-          height: 60, 
-          fontSize: "2rem", 
-          margin: "20px 0", 
-          borderBottom: "2px solid var(--text-color)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          letterSpacing: "8px"
-        }}>
-          {userSequence.join("")}
-        </div>
+      <div className="task-view-container">
+        <div className="task-stimulus" style={{ flexDirection: "column" }}>
+          <div style={{ maxWidth: 400, width: "100%", textAlign: "center" }}>
+            <h3 style={{ color: "var(--text-primary)" }}>What was the sequence?</h3>
+            
+            <div style={{ 
+              height: 60, 
+              fontSize: "2rem", 
+              margin: "20px 0", 
+              borderBottom: "2px solid var(--text-primary)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              letterSpacing: "8px",
+              color: "var(--accent-color)",
+              fontWeight: "bold"
+            }}>
+              {userSequence.join("")}
+            </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-            <button key={num} onClick={() => handleDigitClick(num)} style={{ padding: "20px", fontSize: "1.5rem", borderRadius: "8px" }}>
-              {num}
-            </button>
-          ))}
-          <div />
-          <button onClick={() => handleDigitClick(0)} style={{ padding: "20px", fontSize: "1.5rem", borderRadius: "8px" }}>
-            0
-          </button>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                <button key={num} onClick={() => handleDigitClick(num)} style={{ padding: "20px", fontSize: "1.5rem", borderRadius: "8px", background: "#FFFFFF", border: "1px solid #D1D5DB", color: "var(--text-primary)", cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                  {num}
+                </button>
+              ))}
+              <div />
+              <button onClick={() => handleDigitClick(0)} style={{ padding: "20px", fontSize: "1.5rem", borderRadius: "8px", background: "#FFFFFF", border: "1px solid #D1D5DB", color: "var(--text-primary)", cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                0
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+    <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
       <h2>Task Completed!</h2>
       {submitting ? <p>Uploading data...</p> : (
         <>

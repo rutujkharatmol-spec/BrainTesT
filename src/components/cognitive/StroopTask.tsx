@@ -145,7 +145,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Stroop Task</h2>
         <p>You will see words appear in different colors.</p>
         <p><strong>Press the key or tap the button corresponding to the FONT COLOR of the word, ignoring what the word says.</strong></p>
@@ -155,15 +155,17 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
           <li>Press <strong>G</strong> for Green</li>
           <li>Press <strong>Y</strong> for Yellow</li>
         </ul>
-        <button className="btn" onClick={startTask}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "fixation") {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px", fontSize: "4rem" }}>
-        +
+      <div className="task-view-container">
+        <div className="task-stimulus" style={{ fontSize: "4rem", color: "var(--text-primary)" }}>
+          +
+        </div>
       </div>
     );
   }
@@ -171,24 +173,23 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   if (phase === "stimulus") {
     const trial = trials[currentTrialIndex];
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div className="task-view-container">
+        <div className="task-stimulus">
           <h1 style={{ 
             color: trial.color.toLowerCase(), 
             fontSize: "5rem", 
             textTransform: "uppercase",
-            fontWeight: "bold",
-            textShadow: "2px 2px 4px rgba(0,0,0,0.5)" // to ensure readability on backgrounds
+            fontWeight: "bold"
           }}>
             {trial.word}
           </h1>
         </div>
         <div className="mobile-controls-container">
           <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-            <button className="mobile-btn" onClick={() => handleResponse("RED")} style={{ background: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)" }}>RED</button>
-            <button className="mobile-btn" onClick={() => handleResponse("BLUE")} style={{ background: "rgba(59, 130, 246, 0.4)", borderColor: "rgba(59, 130, 246, 0.6)" }}>BLUE</button>
-            <button className="mobile-btn" onClick={() => handleResponse("GREEN")} style={{ background: "rgba(16, 185, 129, 0.4)", borderColor: "rgba(16, 185, 129, 0.6)" }}>GREEN</button>
-            <button className="mobile-btn" onClick={() => handleResponse("YELLOW")} style={{ background: "rgba(234, 179, 8, 0.4)", borderColor: "rgba(234, 179, 8, 0.6)" }}>YELLOW</button>
+            <button className="mobile-btn" onClick={() => handleResponse("RED")}>RED</button>
+            <button className="mobile-btn" onClick={() => handleResponse("BLUE")}>BLUE</button>
+            <button className="mobile-btn" onClick={() => handleResponse("GREEN")}>GREEN</button>
+            <button className="mobile-btn" onClick={() => handleResponse("YELLOW")}>YELLOW</button>
           </div>
         </div>
       </div>
@@ -196,7 +197,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   }
 
   return (
-    <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+    <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
       <h2>Task Completed!</h2>
       <p>Saving your reaction times...</p>
       {submitting ? <p>Uploading data...</p> : <p>Done!</p>}

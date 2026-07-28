@@ -141,20 +141,20 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Corsi Block Test</h2>
         <p>You will see a set of squares on the screen.</p>
         <p>The squares will light up one by one in a specific sequence.</p>
         <p>When the sequence finishes, <strong>click the squares in the exact same order</strong> they lit up.</p>
         <p>The sequence will get longer as you get them right.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "completed") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Task Completed!</h2>
         {submitting ? <p>Uploading data...</p> : (
           <>
@@ -168,39 +168,43 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      {phase === "recall" ? (
-        <h3 style={{ marginBottom: 16 }}>Your turn! Click the blocks in order.</h3>
-      ) : (
-        <h3 style={{ marginBottom: 16, opacity: 0 }}>Placeholder</h3>
-      )}
-      
-      <div style={{ 
-        position: "relative", 
-        width: "100%", 
-        maxWidth: 500, 
-        aspectRatio: "1/1",
-        background: "rgba(0,0,0,0.1)",
-        borderRadius: 16
-      }}>
-        {BLOCK_POSITIONS.map((pos) => (
-          <div
-            key={pos.id}
-            onClick={() => handleBlockClick(pos.id)}
-            style={{
-              position: "absolute",
-              left: pos.left,
-              top: pos.top,
-              width: "15%",
-              height: "15%",
-              background: activeBlock === pos.id ? "var(--primary-color)" : "rgba(255,255,255,0.2)",
-              boxShadow: activeBlock === pos.id ? "0 0 15px var(--primary-color)" : "none",
-              borderRadius: 8,
-              cursor: phase === "recall" ? "pointer" : "default",
-              transition: "background 0.1s, box-shadow 0.1s"
-            }}
-          />
-        ))}
+    <div className="task-view-container">
+      <div className="task-stimulus" style={{ flexDirection: "column" }}>
+        {phase === "recall" ? (
+          <h3 style={{ marginBottom: 16, color: "var(--text-primary)" }}>Your turn! Click the blocks in order.</h3>
+        ) : (
+          <h3 style={{ marginBottom: 16, opacity: 0 }}>Placeholder</h3>
+        )}
+        
+        <div style={{ 
+          position: "relative", 
+          width: "100%",
+          minWidth: 320,
+          maxWidth: 500, 
+          aspectRatio: "1/1",
+          background: "#F9FAFB",
+          border: "1px solid var(--card-border)",
+          borderRadius: 16
+        }}>
+          {BLOCK_POSITIONS.map((pos) => (
+            <div
+              key={pos.id}
+              onClick={() => handleBlockClick(pos.id)}
+              style={{
+                position: "absolute",
+                left: pos.left,
+                top: pos.top,
+                width: "15%",
+                height: "15%",
+                background: activeBlock === pos.id ? "var(--accent-color)" : "#D1D5DB",
+                boxShadow: activeBlock === pos.id ? "0 0 15px var(--accent-color)" : "0 1px 2px rgba(0,0,0,0.1)",
+                borderRadius: 8,
+                cursor: phase === "recall" ? "pointer" : "default",
+                transition: "background 0.1s, box-shadow 0.1s"
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -168,23 +168,23 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Dot Probe Task</h2>
         <p>You will see a cross in the center, followed by two words flashing quickly.</p>
         <p>After the words disappear, a dot ( <strong>*</strong> ) will appear where one of the words was.</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block" }}>
+        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
           <p>If the dot appears on the <strong>LEFT</strong>, press the <strong>'E'</strong> key or tap <strong>LEFT</strong>.</p>
           <p>If the dot appears on the <strong>RIGHT</strong>, press the <strong>'I'</strong> key or tap <strong>RIGHT</strong>.</p>
         </div>
         <p>Please respond as quickly and accurately as possible.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "completed") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Task Completed!</h2>
         {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
       </div>
@@ -194,23 +194,24 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+    <div className="task-view-container">
+      <div className="task-stimulus" style={{ position: "relative" }}>
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
         
         {phase === "words" && trial && (
           <>
-            <h1 style={{ position: "absolute", left: "10%", fontSize: "3rem", margin: 0, textAlign: "center" }}>{trial.leftWord}</h1>
-            <h1 style={{ position: "absolute", right: "10%", fontSize: "3rem", margin: 0, textAlign: "center" }}>{trial.rightWord}</h1>
+            <h1 style={{ position: "absolute", left: "-250px", fontSize: "3rem", margin: 0, textAlign: "center", width: "200px", color: "var(--text-primary)" }}>{trial.leftWord}</h1>
+            <h1 style={{ position: "absolute", right: "-250px", fontSize: "3rem", margin: 0, textAlign: "center", width: "200px", color: "var(--text-primary)" }}>{trial.rightWord}</h1>
           </>
         )}
 
         {phase === "dot" && trial && (
           <h1 style={{ 
             position: "absolute", 
-            left: trial.dotPosition === "left" ? "20%" : "auto", 
-            right: trial.dotPosition === "right" ? "20%" : "auto", 
-            fontSize: "4rem" 
+            left: trial.dotPosition === "left" ? "-150px" : "auto", 
+            right: trial.dotPosition === "right" ? "-150px" : "auto", 
+            fontSize: "4rem",
+            color: "var(--text-primary)"
           }}>
             *
           </h1>

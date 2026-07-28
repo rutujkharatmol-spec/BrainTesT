@@ -1,16 +1,25 @@
 :root {
-  --bg-gradient-start: #0f172a;
-  --bg-gradient-end: #1e293b;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
-  --success-color: #10b981;
-  --error-color: #ef4444;
-  --border-radius: 16px;
+  --bg-gradient-start: #FAFAFA;
+  --bg-gradient-end: #F5F6F8;
+  --card-bg: #FFFFFF;
+  --card-border: #E5E7EB;
+  --text-primary: #1A1D23;
+  --text-secondary: #4B5563;
+  --accent-color: #2D6E7E;
+  --accent-hover: #225663;
+  --success-color: #059669; /* Desaturated for status */
+  --error-color: #DC2626;   /* Desaturated for status */
+  --warning-color: #D97706; /* Desaturated for status */
+  --border-radius: 8px;     /* Changed from 16 to 8 */
   --transition-speed: 0.2s;
+  
+  /* Type Scale */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 36px;
 }
 
 * {
@@ -20,6 +29,7 @@
 }
 
 body {
+  /* Font family is handled by Next.js Inter, fallback below */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
   color: var(--text-primary);
@@ -32,36 +42,66 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  max-width: 800px;
+  padding: 24px;
+  max-width: 900px;
   margin: 0 auto;
   width: 100%;
 }
 
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+/* Administrative Card - Replacing .glass-panel */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: var(--border-radius);
-  padding: 24px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Soft single-layer shadow */
 }
 
+/* Base Headings */
+h1 {
+  font-size: var(--text-2xl);
+  margin-bottom: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--text-xl);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: var(--text-lg);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  font-size: var(--text-base);
+}
+
+/* Buttons */
 .btn {
   background: var(--accent-color);
   color: white;
   border: none;
-  padding: 16px 24px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: var(--text-base);
+  font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-speed), transform var(--transition-speed);
-  width: 100%;
-  display: flex;
+  transition: background var(--transition-speed), transform 150ms ease;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
+}
+
+.btn:hover {
+  background: var(--accent-hover);
 }
 
 .btn:active {
@@ -69,117 +109,43 @@ main {
 }
 
 .btn:disabled {
-  background: var(--glass-border);
-  color: var(--text-secondary);
+  background: #E5E7EB;
+  color: #9CA3AF;
   cursor: not-allowed;
 }
 
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 16px;
-  line-height: 1.3;
+.btn-outline {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
 }
 
-h2 {
-  font-size: 1.4rem;
-  margin-bottom: 12px;
+.btn-outline:hover {
+  background: rgba(45, 110, 126, 0.05);
 }
 
-p {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 16px;
-  font-size: 1.05rem;
-}
-
-/* Mobile-first adjustments for scale items */
-.scale-options {
+/* Minimal Task View */
+.task-view-container {
+  /* Strip away everything - pure neutral background */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #F5F6F8; /* Neutral background, no gradient */
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  z-index: 1000;
 }
 
-.scale-option {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all var(--transition-speed);
-}
-
-.scale-option:active {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.scale-option.selected {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: var(--accent-color);
-}
-
-.scale-option input[type="radio"] {
-  width: 24px;
-  height: 24px;
-  margin-right: 16px;
-  accent-color: var(--accent-color);
-  cursor: pointer;
-}
-
-.scale-option label {
+.task-stimulus {
   flex: 1;
-  font-size: 1.1rem;
-  cursor: pointer;
-  line-height: 1.4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.question-card {
-  margin-bottom: 32px;
-  animation: fadeIn 0.4s ease-out;
-}
-
-.question-text {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin-bottom: 16px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--accent-color);
-  transition: width 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Error validation styling */
-.error-text {
-  color: var(--error-color);
-  font-size: 0.9rem;
-  margin-top: 8px;
-  display: block;
-}
-
-.question-card.invalid {
-  border-left: 4px solid var(--error-color);
-  padding-left: 20px;
-}
-
-/* Premium Mobile Controls for Cognitive Tasks */
+/* Minimal Mobile Controls for Cognitive Tasks */
 .mobile-controls-container {
   width: 100%;
   padding: 24px;
@@ -187,6 +153,8 @@ p {
   justify-content: center;
   align-items: center;
   margin-top: auto;
+  background: #FFFFFF;
+  border-top: 1px solid #E5E7EB;
 }
 
 .mobile-controls {
@@ -200,47 +168,52 @@ p {
 .mobile-btn {
   flex: 1;
   padding: 20px 10px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: background 150ms, transform 150ms, box-shadow 150ms;
 }
 
-.mobile-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
+/* Exclude animations at the moment of stimulus presentation if possible. Here, we just keep button states fast */
 .mobile-btn:active {
-  transform: translateY(2px) scale(0.96);
-  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(2px);
+  box-shadow: none;
+  background: #F3F4F6;
 }
 
 .mobile-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-/* Hide mobile controls on desktop (screens wider than 768px) */
 @media (min-width: 768px) {
   .mobile-controls-container {
     display: none !important;
   }
 }
 
+/* Error validation styling */
+.error-text {
+  color: var(--error-color);
+  font-size: var(--text-sm);
+  margin-top: 8px;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

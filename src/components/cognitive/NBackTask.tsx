@@ -204,14 +204,14 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>N-Back Task (2-Back)</h2>
         <p>You will see a sequence of letters presented one by one.</p>
         <p style={{ marginTop: 16 }}>
           <strong>Press the SPACEBAR or tap MATCH</strong> if the current letter is the 
           <strong> exact same as the letter seen 2 steps ago.</strong>
         </p>
-        <div style={{ margin: "24px auto", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: 16, borderRadius: 8 }}>
+        <div style={{ margin: "24px auto", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
           <p>Example Sequence:</p>
           <ul style={{ paddingLeft: 24, margin: "8px 0" }}>
             <li>A (do nothing)</li>
@@ -221,7 +221,7 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
             <li><strong>A (PRESS SPACEBAR - matches 2 steps ago)</strong></li>
           </ul>
         </div>
-        <button className="btn" onClick={startTask}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
@@ -229,10 +229,10 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   if (phase === "running") {
     const trial = trials[currentTrialIndex];
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", position: "relative" }}>
+      <div className="task-view-container">
+        <div className="task-stimulus" style={{ position: "relative" }}>
           {showStimulus ? (
-            <h1 style={{ fontSize: "6rem", fontWeight: "bold" }}>{trial?.letter}</h1>
+            <h1 style={{ fontSize: "6rem", fontWeight: "bold", color: "var(--text-primary)" }}>{trial?.letter}</h1>
           ) : (
             <div style={{ width: 10, height: 10, background: "transparent" }} /> // blank ISI
           )}
@@ -240,11 +240,14 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
           {/* Visual feedback indicator */}
           <div style={{
             position: "absolute",
-            bottom: "20px",
+            bottom: "-40px",
+            left: "50%",
+            transform: "translateX(-50%)",
             opacity: hasPressed ? 1 : 0,
             transition: "opacity 0.1s",
             color: "var(--success-color)",
-            fontWeight: "bold"
+            fontWeight: "bold",
+            whiteSpace: "nowrap"
           }}>
             Response Registered
           </div>
@@ -256,7 +259,6 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
               className="mobile-btn" 
               onClick={handleResponse} 
               disabled={hasPressed}
-              style={{ opacity: hasPressed ? 0.5 : 1 }}
             >
               MATCH
             </button>
@@ -267,7 +269,7 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   }
 
   return (
-    <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+    <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
       <h2>Task Completed!</h2>
       {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
     </div>

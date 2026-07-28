@@ -151,22 +151,22 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Lexical Decision Task (LDT)</h2>
         <p>You will see a string of letters appear on the screen.</p>
         <p>Your goal is to decide if the string is a real English word or a made-up non-word.</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: 16, borderRadius: 8 }}>
+        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
           <p>Press <strong>'F'</strong> or tap <strong>WORD</strong> if it is a <strong>REAL WORD</strong> (e.g. HOUSE).</p>
           <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> or tap <strong>NON-WORD</strong> if it is a <strong>NON-WORD</strong> (e.g. BLAP).</p>
         </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "completed") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Task Completed!</h2>
         {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
       </div>
@@ -176,10 +176,10 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
-        {phase === "stimulus" && trial && <h1 style={{ fontSize: "6rem", fontWeight: "bold", textTransform: "uppercase" }}>{trial.string}</h1>}
+    <div className="task-view-container">
+      <div className="task-stimulus">
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
+        {phase === "stimulus" && trial && <h1 style={{ fontSize: "6rem", fontWeight: "bold", textTransform: "uppercase", color: "var(--text-primary)" }}>{trial.string}</h1>}
       </div>
 
       {phase === "stimulus" && (

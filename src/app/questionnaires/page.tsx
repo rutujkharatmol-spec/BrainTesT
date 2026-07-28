@@ -40,14 +40,14 @@ export default function QuestionnairesPage() {
 
   return (
     <div style={{ paddingTop: "50px" }}>
-      <div className="glass-panel" style={{ maxWidth: 800, margin: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
+      <div className="card" style={{ maxWidth: 800, margin: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "1px solid var(--card-border)" }}>
           <div>
             <h2>Questionnaires Hub</h2>
-            <p>Participant: {state.participantName} ({state.participantIdNumber})</p>
+            <p style={{ margin: 0 }}>Participant: {state.participantName} ({state.participantIdNumber})</p>
           </div>
           <Link href="/" style={{ textDecoration: "none" }}>
-            <button className="btn" style={{ padding: "8px 16px", background: "transparent", border: "1px solid var(--accent-color)", color: "var(--accent-color)", borderRadius: 8, cursor: "pointer", width: "auto" }}>
+            <button className="btn btn-outline">
               Back to Cognitive Hub
             </button>
           </Link>
@@ -64,20 +64,21 @@ export default function QuestionnairesPage() {
                   key={q.id} 
                   onClick={() => { if (!isCompleted) setSelectedId(q.id); }}
                   style={{ 
-                    background: isCompleted ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)", 
+                    background: isCompleted ? "#F9FAFB" : "#FFFFFF", 
                     padding: 16, 
                     borderRadius: 8, 
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    transition: "transform 0.1s, background 0.1s",
+                    border: "1px solid var(--card-border)",
+                    transition: "transform 150ms, box-shadow 150ms",
                     cursor: isCompleted ? "default" : "pointer",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    opacity: isCompleted ? 0.5 : 1
+                    opacity: isCompleted ? 0.5 : 1,
+                    boxShadow: isCompleted ? "none" : "0 2px 4px rgba(0,0,0,0.02)"
                   }}
-                  onMouseOver={(e) => { if (!isCompleted) e.currentTarget.style.background = "rgba(255,255,255,0.1)" }}
-                  onMouseOut={(e) => { if (!isCompleted) e.currentTarget.style.background = "rgba(255,255,255,0.05)" }}
+                  onMouseOver={(e) => { if (!isCompleted) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; } }}
+                  onMouseOut={(e) => { if (!isCompleted) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)"; } }}
                 >
                   <h3 style={{ fontSize: "1.1rem", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                     {q.title}

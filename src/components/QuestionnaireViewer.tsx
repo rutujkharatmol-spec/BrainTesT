@@ -33,31 +33,36 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
   };
 
   return (
-    <div className="glass-panel" style={{ maxWidth: 800, margin: "auto" }}>
+    <div className="card" style={{ maxWidth: 800, margin: "auto" }}>
       <h2>{questionnaire.title}</h2>
-      <p style={{ color: "var(--accent-color)", marginTop: 8, fontSize: "0.9rem" }}>{questionnaire.description}</p>
+      <p style={{ color: "var(--text-secondary)", marginTop: 8, fontSize: "0.9rem" }}>{questionnaire.description}</p>
       
       <div style={{ marginTop: 24 }}>
         {questionnaire.items.map((item, index) => (
-          <div key={item.id} style={{ marginBottom: 24, padding: 16, background: "rgba(255,255,255,0.05)", borderRadius: 8 }}>
-            <p style={{ marginBottom: 12 }}><strong>{index + 1}.</strong> {item.text}</p>
+          <div key={item.id} style={{ marginBottom: 24, padding: 20, background: "#F9FAFB", borderRadius: 8, border: "1px solid var(--card-border)" }}>
+            <p style={{ marginBottom: 16, color: "var(--text-primary)", fontWeight: 500 }}><strong>{index + 1}.</strong> {item.text}</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {questionnaire.scale.map(s => (
-                <button
-                  key={s.value}
-                  onClick={() => setAnswers({ ...answers, [item.id]: s.value })}
-                  style={{
-                    padding: "8px 16px",
-                    background: answers[item.id] === s.value ? "var(--accent-color)" : "rgba(255,255,255,0.1)",
-                    border: "none",
-                    borderRadius: 4,
-                    color: "white",
-                    cursor: "pointer"
-                  }}
-                >
-                  {s.label}
-                </button>
-              ))}
+              {questionnaire.scale.map(s => {
+                const isSelected = answers[item.id] === s.value;
+                return (
+                  <button
+                    key={s.value}
+                    onClick={() => setAnswers({ ...answers, [item.id]: s.value })}
+                    style={{
+                      padding: "8px 16px",
+                      background: isSelected ? "var(--accent-color)" : "#FFFFFF",
+                      border: isSelected ? "1px solid var(--accent-color)" : "1px solid var(--card-border)",
+                      borderRadius: 6,
+                      color: isSelected ? "white" : "var(--text-primary)",
+                      cursor: "pointer",
+                      transition: "background 150ms, color 150ms",
+                      boxShadow: isSelected ? "none" : "0 1px 2px rgba(0,0,0,0.05)"
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}

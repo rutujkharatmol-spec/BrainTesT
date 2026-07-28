@@ -152,23 +152,23 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Eriksen Flanker Task</h2>
         <p>You will see a row of five arrows on the screen.</p>
         <p>Your goal is to indicate the direction of the <strong>CENTER arrow</strong> while ignoring the surrounding arrows.</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "8px" }}>
+        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: "16px", borderRadius: "8px", border: "1px solid var(--card-border)" }}>
           <p>If the center arrow points <strong>LEFT</strong>, press the <strong>LEFT ARROW KEY</strong> or tap <strong>LEFT</strong>.</p>
           <p style={{ marginTop: 8 }}>If the center arrow points <strong>RIGHT</strong>, press the <strong>RIGHT ARROW KEY</strong> or tap <strong>RIGHT</strong>.</p>
         </div>
         <p>Please respond as quickly and accurately as possible.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "completed") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Task Completed!</h2>
         {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
       </div>
@@ -178,12 +178,12 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+    <div className="task-view-container">
+      <div className="task-stimulus">
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
         
         {phase === "stimulus" && trial && (
-          <h1 style={{ fontSize: "6rem", letterSpacing: "10px", fontWeight: "bold" }}>
+          <h1 style={{ fontSize: "6rem", letterSpacing: "10px", fontWeight: "bold", color: "var(--text-primary)" }}>
             {trial.stimulusString}
           </h1>
         )}

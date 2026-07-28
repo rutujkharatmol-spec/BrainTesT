@@ -38,7 +38,7 @@ export default function IntakeScreen() {
   };
 
   return (
-    <div className="glass-panel" style={{ maxWidth: 500, margin: "auto", textAlign: "center" }}>
+    <div className="card" style={{ maxWidth: 500, margin: "auto", textAlign: "center" }}>
       <h2>Participant Intake</h2>
       <p style={{ marginBottom: 24 }}>Please enter your details to begin the cognitive battery.</p>
       

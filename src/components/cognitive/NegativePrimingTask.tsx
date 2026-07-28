@@ -184,22 +184,22 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Negative Priming Task</h2>
         <p>You will see two overlapping words. One will be <strong>RED</strong> and one will be <strong style={{color:"#00aaff"}}>BLUE</strong>.</p>
         <p>Your goal is to categorize the <strong>RED WORD</strong> and completely ignore the blue word.</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "rgba(0,0,0,0.2)", padding: 16, borderRadius: 8 }}>
+        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
           <p>Press <strong>'F'</strong> or tap <strong>LIVING</strong> if the red word is a <strong>LIVING THING</strong> (e.g. DOG, CAT).</p>
           <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> or tap <strong>NON-LIVING</strong> if the red word is a <strong>NON-LIVING THING</strong> (e.g. CAR, SHOE).</p>
         </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
 
   if (phase === "completed") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>Task Completed!</h2>
         {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
       </div>
@@ -209,9 +209,9 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   const trial = trials[currentTrialIndex];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem" }}>+</h1>}
+    <div className="task-view-container">
+      <div className="task-stimulus" style={{ position: "relative" }}>
+        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
         
         {phase === "stimulus" && trial && (
           <div style={{ position: "relative" }}>
@@ -221,7 +221,7 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
               fontWeight: "bold", 
               color: "#00aaff",
               position: "absolute",
-              top: 20, // slightly offset so they don't perfectly overlap
+              top: 20,
               left: 10,
               opacity: 0.8,
               pointerEvents: "none"

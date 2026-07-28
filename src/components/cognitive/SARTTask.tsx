@@ -184,17 +184,17 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
 
   if (phase === "instructions") {
     return (
-      <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>SART (Sustained Attention to Response Task)</h2>
         <p>You will see single digits (1 through 9) flash rapidly on the screen.</p>
         <p style={{ marginTop: 16 }}>
           <strong>Press the SPACEBAR or tap PRESS</strong> as quickly as possible for every digit...
         </p>
-        <p style={{ margin: "16px 0", fontSize: "1.2rem", color: "var(--danger-color)", fontWeight: "bold" }}>
+        <p style={{ margin: "16px 0", fontSize: "1.2rem", color: "var(--error-color)", fontWeight: "bold" }}>
           EXCEPT for the number 3!
         </p>
         <p>If you see a 3, <strong>DO NOT PRESS ANYTHING</strong>.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 24 }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
       </div>
     );
   }
@@ -202,17 +202,19 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
   if (phase === "running") {
     const trial = trials[currentTrialIndex];
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", position: "relative" }}>
+      <div className="task-view-container">
+        <div className="task-stimulus" style={{ position: "relative" }}>
           {showStimulus ? (
-            <h1 style={{ fontSize: "8rem", fontWeight: "bold" }}>{trial?.digit}</h1>
+            <h1 style={{ fontSize: "8rem", fontWeight: "bold", color: "var(--text-primary)" }}>{trial?.digit}</h1>
           ) : (
-            <div style={{ fontSize: "6rem", opacity: 0.2 }}>⊗</div> // Mask symbol commonly used in SART
+            <div style={{ fontSize: "6rem", opacity: 0.1, color: "var(--text-primary)" }}>⊗</div> // Mask symbol commonly used in SART
           )}
           
           <div style={{
             position: "absolute",
-            bottom: "20px",
+            bottom: "-40px",
+            left: "50%",
+            transform: "translateX(-50%)",
             opacity: hasPressed ? 1 : 0,
             transition: "opacity 0.1s",
             color: "var(--success-color)",
@@ -228,7 +230,6 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
               className="mobile-btn" 
               onClick={handleResponse} 
               disabled={hasPressed}
-              style={{ opacity: hasPressed ? 0.5 : 1 }}
             >
               PRESS (GO)
             </button>
@@ -239,7 +240,7 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
   }
 
   return (
-    <div className="glass-panel" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+    <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
       <h2>Task Completed!</h2>
       {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
     </div>
