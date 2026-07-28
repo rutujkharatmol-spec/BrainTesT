@@ -1,14 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useAppContext } from "@/components/AppContext";
 import IntakeScreen from "@/components/IntakeScreen";
 import { QUESTIONNAIRES } from "@/config/questionnaires";
 import QuestionnaireViewer from "@/components/QuestionnaireViewer";
 import FinalScreen from "@/components/FinalScreen";
+import Link from "next/link";
 
 export default function QuestionnairesPage() {
   const { state, markTestCompleted } = useAppContext();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (!state.sessionId) {
     return (
@@ -18,22 +20,78 @@ export default function QuestionnairesPage() {
     );
   }
 
-  const pendingQuestionnaire = QUESTIONNAIRES.find(q => !state.completedTests.includes(q.id));
+  const selectedQuestionnaire = QUESTIONNAIRES.find(q => q.id === selectedId);
 
-  if (pendingQuestionnaire) {
+  if (selectedQuestionnaire) {
     return (
       <div style={{ paddingTop: "50px" }}>
         <QuestionnaireViewer 
-          questionnaire={pendingQuestionnaire} 
-          onComplete={() => markTestCompleted(pendingQuestionnaire.id)} 
+          questionnaire={selectedQuestionnaire} 
+          onComplete={() => {
+            markTestCompleted(selectedQuestionnaire.id);
+            setSelectedId(null); // Return to hub after completion
+          }} 
         />
       </div>
     );
   }
 
+  const allCompleted = QUESTIONNAIRES.every(q => state.completedTests.includes(q.id));
+
   return (
     <div style={{ paddingTop: "50px" }}>
-      <FinalScreen />
+      <div className="glass-panel" style={{ maxWidth: 800, margin: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
+          <div>
+            <h2>Questionnaires Hub</h2>
+            <p>Participant: {state.participantName} ({state.participantIdNumber})</p>
+          </div>
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <button className="btn" style={{ padding: "8px 16px", background: "transparent", border: "1px solid var(--accent-color)", color: "var(--accent-color)", borderRadius: 8, cursor: "pointer", width: "auto" }}>
+              Back to Cognitive Hub
+            </button>
+          </Link>
+        </div>
+
+        {allCompleted ? (
+          <FinalScreen />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+            {QUESTIONNAIRES.map((q) => {
+              const isCompleted = state.completedTests.includes(q.id);
+              return (
+                <div 
+                  key={q.id} 
+                  onClick={() => { if (!isCompleted) setSelectedId(q.id); }}
+                  style={{ 
+                    background: isCompleted ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)", 
+                    padding: 16, 
+                    borderRadius: 8, 
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    transition: "transform 0.1s, background 0.1s",
+                    cursor: isCompleted ? "default" : "pointer",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    opacity: isCompleted ? 0.5 : 1
+                  }}
+                  onMouseOver={(e) => { if (!isCompleted) e.currentTarget.style.background = "rgba(255,255,255,0.1)" }}
+                  onMouseOut={(e) => { if (!isCompleted) e.currentTarget.style.background = "rgba(255,255,255,0.05)" }}
+                >
+                  <h3 style={{ fontSize: "1.1rem", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                    {q.title}
+                    {isCompleted && <span style={{ color: "var(--success-color)", fontSize: "1.2rem", flexShrink: 0 }}>✓</span>}
+                  </h3>
+                  <span style={{ fontSize: "0.8rem", color: "var(--accent-color)", opacity: 0.8 }}>
+                    {q.items.length} questions
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
