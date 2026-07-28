@@ -35,49 +35,51 @@ export default function CognitiveHub() {
         </button>
       </div>
 
-      {allCompleted ? (
-        <FinalScreen />
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
-          {TESTS.map((test) => {
-            const isCompleted = state.completedTests.includes(test.path);
-            return (
-              <Link href={test.path} key={test.path} style={{ textDecoration: "none", pointerEvents: isCompleted ? "none" : "auto" }}>
-                <div style={{ 
-                  background: isCompleted ? "#F9FAFB" : "#FFFFFF", 
-                  padding: 16, 
-                  borderRadius: 8, 
-                  border: "1px solid var(--card-border)",
-                  transition: "transform 150ms, box-shadow 150ms",
-                  cursor: isCompleted ? "default" : "pointer",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  opacity: isCompleted ? 0.5 : 1,
-                  boxShadow: isCompleted ? "none" : "0 2px 4px rgba(0,0,0,0.02)"
-                }}
-                onMouseOver={(e) => { if (!isCompleted) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; } }}
-                onMouseOut={(e) => { if (!isCompleted) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)"; } }}
-                >
-                  <div>
-                    <h3 style={{ fontSize: "1.1rem", marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
-                      {test.name}
-                      {isCompleted && <span style={{ color: "var(--success-color)", fontSize: "1.2rem" }}>✓</span>}
-                    </h3>
-                    <div style={{ fontSize: "0.8rem", color: "var(--accent-color)", marginBottom: 12 }}>{test.category}</div>
-                  </div>
-                  
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "var(--text-secondary)", opacity: 0.8, borderTop: "1px solid var(--card-border)", paddingTop: 8 }}>
-                    <span>{test.trials}</span>
-                    <span>⏱ {test.time}</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+      {allCompleted && (
+        <div style={{ marginBottom: 32 }}>
+          <FinalScreen />
         </div>
       )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+        {TESTS.map((test) => {
+          const isCompleted = state.completedTests.includes(test.path);
+          return (
+            <Link href={test.path} key={test.path} style={{ textDecoration: "none" }}>
+              <div style={{ 
+                background: isCompleted ? "#F9FAFB" : "#FFFFFF", 
+                padding: 16, 
+                borderRadius: 8, 
+                border: "1px solid var(--card-border)",
+                transition: "transform 150ms, box-shadow 150ms",
+                cursor: "pointer",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                opacity: 1,
+                boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.02)"; }}
+              >
+                <div>
+                  <h3 style={{ fontSize: "1.1rem", marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
+                    {test.name}
+                    {isCompleted && <span style={{ color: "var(--success-color)", fontSize: "1.2rem" }}>✓</span>}
+                  </h3>
+                  <div style={{ fontSize: "0.8rem", color: "var(--accent-color)", marginBottom: 12 }}>{test.category}</div>
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "var(--text-secondary)", opacity: 0.8, borderTop: "1px solid var(--card-border)", paddingTop: 8 }}>
+                  <span>{test.trials}</span>
+                  <span>⏱ {test.time}</span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
 
       <div style={{ marginTop: 48, textAlign: "center", borderTop: "1px solid var(--card-border)", paddingTop: 24 }}>
         <p style={{ marginBottom: 16, color: "var(--accent-color)", fontWeight: 500 }}>Need to complete the standard questionnaires?</p>
