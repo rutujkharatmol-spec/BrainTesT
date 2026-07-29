@@ -163,7 +163,7 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
             <h3 style={{ color: "var(--text-primary)" }}>What was the sequence?</h3>
             
             <div style={{ 
-              height: 60, 
+              minHeight: 60, 
               fontSize: "2rem", 
               margin: "20px 0", 
               borderBottom: "2px solid var(--text-primary)",
@@ -172,7 +172,10 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
               alignItems: "center",
               letterSpacing: "8px",
               color: "var(--accent-color)",
-              fontWeight: "bold"
+              fontWeight: "bold",
+              wordBreak: "break-all",
+              flexWrap: "wrap",
+              padding: "10px"
             }}>
               {userSequence.join("")}
             </div>

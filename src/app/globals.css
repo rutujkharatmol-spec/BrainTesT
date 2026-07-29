@@ -149,6 +149,23 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  overflow: hidden;
+  padding: 0 16px;
+}
+
+/* Force all inline fonts inside stimulus to be responsive */
+.task-stimulus h1,
+.task-stimulus h2,
+.task-stimulus div {
+  max-width: 100%;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Adjust specifically known large text nodes to use clamp */
+.task-stimulus h1 {
+  font-size: clamp(3rem, 10vw, 8rem) !important;
 }
 
 /* Minimal Mobile Controls for Cognitive Tasks */

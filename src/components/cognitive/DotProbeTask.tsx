@@ -196,26 +196,26 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
 
   return (
     <div className="task-view-container">
-      <div className="task-stimulus" style={{ position: "relative" }}>
+      <div className="task-stimulus" style={{ flexDirection: "column" }}>
         {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
         
         {phase === "words" && trial && (
-          <>
-            <h1 style={{ position: "absolute", left: "-250px", fontSize: "3rem", margin: 0, textAlign: "center", width: "200px", color: "var(--text-primary)" }}>{trial.leftWord}</h1>
-            <h1 style={{ position: "absolute", right: "-250px", fontSize: "3rem", margin: 0, textAlign: "center", width: "200px", color: "var(--text-primary)" }}>{trial.rightWord}</h1>
-          </>
+          <div style={{ display: "flex", width: "100%", maxWidth: "600px", justifyContent: "space-between", padding: "0 20px" }}>
+            <h1 style={{ fontSize: "clamp(2rem, 8vw, 4rem)", margin: 0, textAlign: "left", width: "45%", color: "var(--text-primary)" }}>{trial.leftWord}</h1>
+            <h1 style={{ fontSize: "clamp(2rem, 8vw, 4rem)", margin: 0, textAlign: "right", width: "45%", color: "var(--text-primary)" }}>{trial.rightWord}</h1>
+          </div>
         )}
 
         {phase === "dot" && trial && (
-          <h1 style={{ 
-            position: "absolute", 
-            left: trial.dotPosition === "left" ? "-150px" : "auto", 
-            right: trial.dotPosition === "right" ? "-150px" : "auto", 
-            fontSize: "4rem",
-            color: "var(--text-primary)"
-          }}>
-            *
-          </h1>
+          <div style={{ display: "flex", width: "100%", maxWidth: "600px", justifyContent: trial.dotPosition === "left" ? "flex-start" : "flex-end", padding: "0 40px" }}>
+            <h1 style={{ 
+              fontSize: "clamp(3rem, 10vw, 5rem)",
+              color: "var(--text-primary)",
+              margin: 0
+            }}>
+              *
+            </h1>
+          </div>
         )}
       </div>
 
