@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   description: "A series of cognitive assessments and questionnaires.",
   manifest: "/manifest.json",
   icons: {
-    apple: "/Cognitive_Lab.png",
+    apple: "/favicon_io/apple-touch-icon.png",
+    icon: "/favicon_io/favicon.ico",
+    shortcut: "/favicon_io/favicon-32x32.png",
   },
   appleWebApp: {
     capable: true,
