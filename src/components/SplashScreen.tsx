@@ -35,14 +35,6 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
     >
       <div
         className="splash-icon-container"
-        style={{
-          width: "160px",
-          height: "160px",
-          borderRadius: "28%", // Crops the edges nicely
-          overflow: "hidden",
-          boxShadow: "0 12px 35px rgba(0, 0, 0, 0.15)",
-          animation: "splash-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite",
-        }}
       >
         <img 
           src="/favicon_io/android-chrome-512x512.png" 
@@ -52,6 +44,22 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
       </div>
       
       <style dangerouslySetInnerHTML={{__html: `
+        .splash-icon-container {
+          width: 160px;
+          height: 160px;
+          border-radius: 28%;
+          overflow: hidden;
+          box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+          animation: splash-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        
+        @media (min-width: 768px) {
+          .splash-icon-container {
+            width: 280px;
+            height: 280px;
+          }
+        }
+
         @keyframes splash-pulse {
           0% { 
             transform: scale(0.9); 
