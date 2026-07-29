@@ -1,10 +1,19 @@
 "use client";
 
-import { AppProvider } from "@/components/AppContext";
+import { useState } from "react";
 import MainAppFlow from "@/components/MainAppFlow";
+import SplashScreen from "@/components/SplashScreen";
 
 export default function Home() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
-    <MainAppFlow />
+    <>
+      {showSplash ? (
+        <SplashScreen onComplete={() => setShowSplash(false)} />
+      ) : (
+        <MainAppFlow />
+      )}
+    </>
   );
 }
