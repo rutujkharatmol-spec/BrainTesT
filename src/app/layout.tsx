@@ -16,9 +16,12 @@ export const metadata: Metadata = {
   title: "AIIMS Kalyani Physiology Cognitive lab",
   description: "A series of cognitive assessments and questionnaires.",
   manifest: "/manifest.json",
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "AIIMS Kalyani Physiology Cognitive lab",
   },
 };

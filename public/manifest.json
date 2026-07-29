@@ -3,6 +3,7 @@
   "short_name": "AIIMS Kalyani Physiology Cognitive lab",
   "description": "A series of cognitive assessments and questionnaires.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
