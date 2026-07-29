@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useAppContext } from "./AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 export default function IntakeScreen() {
   const { setSessionId, setConsentGiven } = useAppContext();
@@ -16,7 +17,7 @@ export default function IntakeScreen() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/session/start", {
+      const res = await fetchWithOfflineSync("/api/session/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ participantName: name, participantIdNumber: idNum })
@@ -25,6 +26,11 @@ export default function IntakeScreen() {
       const data = await res.json();
       if (data.sessionId) {
         setSessionId(data.sessionId, name, idNum);
+        setConsentGiven(true);
+      } else if (data.offline) {
+        // Offline mode: generate a temporary local session ID
+        const offlineSessionId = `offline-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        setSessionId(offlineSessionId, name, idNum);
         setConsentGiven(true);
       } else {
         alert("Failed to start session. Please try again.");

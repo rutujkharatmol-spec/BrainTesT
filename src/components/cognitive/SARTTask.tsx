@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAppContext } from "../AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 type Trial = {
   digit: number;
@@ -154,7 +155,7 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
     const omissionErrors = results.filter(r => r.errorType === "omission").length;
 
     try {
-      await fetch("/api/submit-cognitive", {
+      await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

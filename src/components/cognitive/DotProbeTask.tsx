@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAppContext } from "../AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 type Trial = {
   leftWord: string;
@@ -138,7 +139,7 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
     const biasScore = meanRTIncongruent - meanRTCongruent; // Positive means attention was captured by target word
 
     try {
-      await fetch("/api/submit-cognitive", {
+      await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

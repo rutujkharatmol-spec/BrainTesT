@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAppContext } from "../AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 type Trial = {
   direction: "left" | "right"; // direction of the center arrow
@@ -122,7 +123,7 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
     const flankerEffect = meanRTIncongruent - meanRTCongruent; 
 
     try {
-      await fetch("/api/submit-cognitive", {
+      await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

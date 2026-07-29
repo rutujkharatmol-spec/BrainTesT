@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { QuestionnaireDef } from "@/config/questionnaires";
 import { useAppContext } from "./AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 export default function QuestionnaireViewer({ questionnaire, onComplete }: { questionnaire: QuestionnaireDef, onComplete: () => void }) {
   const { state } = useAppContext();
@@ -47,7 +48,7 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         scoreSa = saIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
       }
 
-      const res = await fetch("/api/submit", {
+      const res = await fetchWithOfflineSync("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

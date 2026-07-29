@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAppContext } from "../AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 type Trial = {
   letter: string;
@@ -174,7 +175,7 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
     const meanRTHits = validRTs.length ? validRTs.reduce((a, b) => a + b, 0) / validRTs.length : 0;
 
     try {
-      await fetch("/api/submit-cognitive", {
+      await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

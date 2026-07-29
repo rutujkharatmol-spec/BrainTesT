@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAppContext } from "../AppContext";
+import { fetchWithOfflineSync } from "@/utils/offlineSync";
 
 type Trial = {
   word: string;
@@ -115,7 +116,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     const stroopEffect = meanRTIncongruent - meanRTCongruent;
 
     try {
-      await fetch("/api/submit-cognitive", {
+      await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
