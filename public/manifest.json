@@ -1,6 +1,6 @@
 {
-  "name": "BrainTesT",
-  "short_name": "BrainTesT",
+  "name": "AIIMS Kalyani Physiology Cognitive lab",
+  "short_name": "AIIMS Kalyani Physiology Cognitive lab",
   "description": "A series of cognitive assessments and questionnaires.",
   "start_url": "/",
   "display": "standalone",

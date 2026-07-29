@@ -13,13 +13,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "BrainTesT",
+  title: "AIIMS Kalyani Physiology Cognitive lab",
   description: "A series of cognitive assessments and questionnaires.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BrainTesT",
+    title: "AIIMS Kalyani Physiology Cognitive lab",
   },
 };
 
