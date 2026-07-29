@@ -36,6 +36,12 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+
+  /* PWA Native App Tweaks */
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior-y: none;
+  -webkit-touch-callout: none;
 }
 
 main {
@@ -216,4 +222,19 @@ p {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Hide scrollbars but keep scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Allow text selection in specific inputs */
+input, textarea {
+  user-select: auto;
+  -webkit-user-select: auto;
 }
