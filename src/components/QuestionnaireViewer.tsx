@@ -22,7 +22,9 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
       let scoreSp: number | undefined;
       let scoreSk: number | undefined;
       let scoreSa: number | undefined;
-
+      let scoreDepression: number | undefined;
+      let scoreAnxiety: number | undefined;
+      let scoreStress: number | undefined;
       // Convert answers considering reverse scoring
       const processedScores: Record<string, number> = {};
       questionnaire.items.forEach(q => {
@@ -46,6 +48,14 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         scoreSp = spIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
         scoreSk = skIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
         scoreSa = saIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0);
+      } else if (questionnaire.scoringType === "dass21_subscales") {
+        const depIds = ["q3", "q5", "q10", "q13", "q16", "q17", "q21"];
+        const anxIds = ["q2", "q4", "q7", "q9", "q15", "q19", "q20"];
+        const stressIds = ["q1", "q6", "q8", "q11", "q12", "q14", "q18"];
+        // DASS-21 subscores are typically multiplied by 2 to map to full DASS-42
+        scoreDepression = depIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0) * 2;
+        scoreAnxiety = anxIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0) * 2;
+        scoreStress = stressIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0) * 2;
       }
 
       const res = await fetchWithOfflineSync("/api/submit", {
@@ -58,7 +68,10 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
           score,
           scoreSp,
           scoreSk,
-          scoreSa
+          scoreSa,
+          scoreDepression,
+          scoreAnxiety,
+          scoreStress
         })
       });
 

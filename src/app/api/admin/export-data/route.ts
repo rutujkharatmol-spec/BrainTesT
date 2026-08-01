@@ -14,7 +14,7 @@ export async function GET() {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Cognitive Self-Assessment App";
 
-    const testNames = ["cfs", "gaene", "mate", "sbs", "skep", "tsis", "ncs6", "cfq"];
+    const testNames = ["cfs", "gaene", "mate", "sbs", "skep", "tsis", "ncs6", "cfq", "dass21", "phq9", "gad7", "who5"];
 
     for (const testName of testNames) {
       const sheet = workbook.addWorksheet(testName.toUpperCase());
@@ -48,6 +48,12 @@ export async function GET() {
           { header: "Score SK", key: "scoreSk", width: 15 },
           { header: "Score SA", key: "scoreSa", width: 15 }
         );
+      } else if (testName === 'dass21') {
+        columns.push(
+          { header: "Score Depression", key: "scoreDepression", width: 15 },
+          { header: "Score Anxiety", key: "scoreAnxiety", width: 15 },
+          { header: "Score Stress", key: "scoreStress", width: 15 }
+        );
       } else {
         columns.push({ header: "Final Score", key: "score", width: 15 });
       }
@@ -77,6 +83,10 @@ export async function GET() {
         case "tsis": specificData = await prisma.tSISSubmission.findMany(); break;
         case "ncs6": specificData = await prisma.nCS6Submission.findMany(); break;
         case "cfq": specificData = await prisma.cFQSubmission.findMany(); break;
+        case "dass21": specificData = await prisma.dASS21Submission.findMany(); break;
+        case "phq9": specificData = await prisma.pHQ9Submission.findMany(); break;
+        case "gad7": specificData = await prisma.gAD7Submission.findMany(); break;
+        case "who5": specificData = await prisma.wHO5Submission.findMany(); break;
       }
 
       const specificDataMap = new Map(specificData.map(d => [d.sessionId, d]));
@@ -89,6 +99,10 @@ export async function GET() {
             rowData.scoreSp = submission.scoreSp;
             rowData.scoreSk = submission.scoreSk;
             rowData.scoreSa = submission.scoreSa;
+          } else if (testName === 'dass21') {
+            rowData.scoreDepression = submission.scoreDepression;
+            rowData.scoreAnxiety = submission.scoreAnxiety;
+            rowData.scoreStress = submission.scoreStress;
           } else {
             rowData.score = submission.score;
           }

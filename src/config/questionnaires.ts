@@ -9,7 +9,7 @@ export type QuestionnaireItem = {
   isReverse: boolean;
 };
 
-export type ScoringType = "sum" | "mean" | "tsis_subscales" | "none";
+export type ScoringType = "sum" | "mean" | "tsis_subscales" | "dass21_subscales" | "none";
 export type OrderType = "random" | "buildup" | "normal";
 
 export type QuestionnaireDef = {
@@ -284,6 +284,122 @@ export const QUESTIONNAIRES: QuestionnaireDef[] = [
       { id: "q8", text: "Do you say something and realize afterwards that it might be taken as insulting?", isReverse: false },
       { id: "q9", text: "Do you fail to hear people speaking to you when you are doing something else?", isReverse: false },
       { id: "q10", text: "Do you lose your temper?", isReverse: false },
+    ]
+  },
+  {
+    id: "dass21",
+    title: "Depression, Anxiety, and Stress Scales (DASS-21)",
+    description: "Please read each statement and select a number which indicates how much the statement applied to you over the past week. There are no right or wrong answers. Do not spend too much time on any statement.",
+    scaleMin: 0,
+    scaleMax: 3,
+    scale: [
+      { label: "Did not apply to me at all", value: 0 },
+      { label: "Applied to me to some degree, or some of the time", value: 1 },
+      { label: "Applied to me to a considerable degree, or a good part of time", value: 2 },
+      { label: "Applied to me very much, or most of the time", value: 3 },
+    ],
+    orderType: "normal",
+    scoringType: "dass21_subscales",
+    feedbackTemplate: "Your scores:\n- Depression: {scoreDepression}\n- Anxiety: {scoreAnxiety}\n- Stress: {scoreStress}",
+    items: [
+      { id: "q1", text: "I found it hard to wind down", isReverse: false },
+      { id: "q2", text: "I was aware of dryness of my mouth", isReverse: false },
+      { id: "q3", text: "I couldn't seem to experience any positive feeling at all", isReverse: false },
+      { id: "q4", text: "I experienced breathing difficulty (e.g. excessively rapid breathing, breathlessness in the absence of physical exertion)", isReverse: false },
+      { id: "q5", text: "I found it difficult to work up the initiative to do things", isReverse: false },
+      { id: "q6", text: "I tended to over-react to situations", isReverse: false },
+      { id: "q7", text: "I experienced trembling (e.g. in the hands)", isReverse: false },
+      { id: "q8", text: "I felt that I was using a lot of nervous energy", isReverse: false },
+      { id: "q9", text: "I was worried about situations in which I might panic and make a fool of myself", isReverse: false },
+      { id: "q10", text: "I felt that I had nothing to look forward to", isReverse: false },
+      { id: "q11", text: "I found myself getting agitated", isReverse: false },
+      { id: "q12", text: "I found it difficult to relax", isReverse: false },
+      { id: "q13", text: "I felt down-hearted and blue", isReverse: false },
+      { id: "q14", text: "I was intolerant of anything that kept me from getting on with what I was doing", isReverse: false },
+      { id: "q15", text: "I felt I was close to panic", isReverse: false },
+      { id: "q16", text: "I was unable to become enthusiastic about anything", isReverse: false },
+      { id: "q17", text: "I felt I wasn't worth much as a person", isReverse: false },
+      { id: "q18", text: "I felt that I was rather touchy", isReverse: false },
+      { id: "q19", text: "I was aware of the action of my heart in the absence of physical exertion (e.g. sense of heart rate increase, heart missing a beat)", isReverse: false },
+      { id: "q20", text: "I felt scared without any good reason", isReverse: false },
+      { id: "q21", text: "I felt that life was meaningless", isReverse: false }
+    ]
+  },
+  {
+    id: "phq9",
+    title: "Patient Health Questionnaire (PHQ-9)",
+    description: "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
+    scaleMin: 0,
+    scaleMax: 3,
+    scale: [
+      { label: "Not at all", value: 0 },
+      { label: "Several days", value: 1 },
+      { label: "More than half the days", value: 2 },
+      { label: "Nearly every day", value: 3 },
+    ],
+    orderType: "normal",
+    scoringType: "sum",
+    feedbackTemplate: "Your PHQ-9 score is {score}.",
+    items: [
+      { id: "q1", text: "Little interest or pleasure in doing things", isReverse: false },
+      { id: "q2", text: "Feeling down, depressed, or hopeless", isReverse: false },
+      { id: "q3", text: "Trouble falling or staying asleep, or sleeping too much", isReverse: false },
+      { id: "q4", text: "Feeling tired or having little energy", isReverse: false },
+      { id: "q5", text: "Poor appetite or overeating", isReverse: false },
+      { id: "q6", text: "Feeling bad about yourself - or that you are a failure or have let yourself or your family down", isReverse: false },
+      { id: "q7", text: "Trouble concentrating on things, such as reading the newspaper or watching television", isReverse: false },
+      { id: "q8", text: "Moving or speaking so slowly that other people could have noticed. Or the opposite - being so fidgety or restless that you have been moving around a lot more than usual", isReverse: false },
+      { id: "q9", text: "Thoughts that you would be better off dead, or of hurting yourself", isReverse: false }
+    ]
+  },
+  {
+    id: "gad7",
+    title: "Generalized Anxiety Disorder Scale (GAD-7)",
+    description: "Over the last 2 weeks, how often have you been bothered by the following problems?",
+    scaleMin: 0,
+    scaleMax: 3,
+    scale: [
+      { label: "Not at all", value: 0 },
+      { label: "Several days", value: 1 },
+      { label: "More than half the days", value: 2 },
+      { label: "Nearly every day", value: 3 },
+    ],
+    orderType: "normal",
+    scoringType: "sum",
+    feedbackTemplate: "Your GAD-7 score is {score}.",
+    items: [
+      { id: "q1", text: "Feeling nervous, anxious, or on edge", isReverse: false },
+      { id: "q2", text: "Not being able to stop or control worrying", isReverse: false },
+      { id: "q3", text: "Worrying too much about different things", isReverse: false },
+      { id: "q4", text: "Trouble relaxing", isReverse: false },
+      { id: "q5", text: "Being so restless that it is hard to sit still", isReverse: false },
+      { id: "q6", text: "Becoming easily annoyed or irritable", isReverse: false },
+      { id: "q7", text: "Feeling afraid, as if something awful might happen", isReverse: false }
+    ]
+  },
+  {
+    id: "who5",
+    title: "WHO-5 Well-Being Index",
+    description: "Please indicate for each of the five statements which is closest to how you have been feeling over the last two weeks.",
+    scaleMin: 0,
+    scaleMax: 5,
+    scale: [
+      { label: "At no time", value: 0 },
+      { label: "Some of the time", value: 1 },
+      { label: "Less than half of the time", value: 2 },
+      { label: "More than half of the time", value: 3 },
+      { label: "Most of the time", value: 4 },
+      { label: "All of the time", value: 5 },
+    ],
+    orderType: "normal",
+    scoringType: "sum",
+    feedbackTemplate: "Your WHO-5 raw score is {score}. (Multiply by 4 to get a percentage 0-100).",
+    items: [
+      { id: "q1", text: "I have felt cheerful and in good spirits", isReverse: false },
+      { id: "q2", text: "I have felt calm and relaxed", isReverse: false },
+      { id: "q3", text: "I have felt active and vigorous", isReverse: false },
+      { id: "q4", text: "I woke up feeling fresh and rested", isReverse: false },
+      { id: "q5", text: "My daily life has been filled with things that interest me", isReverse: false }
     ]
   }
 ];

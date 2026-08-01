@@ -30,6 +30,10 @@ model Session {
   tsisSubmission  TSISSubmission?
   ncs6Submission  NCS6Submission?
   cfqSubmission   CFQSubmission?
+  dass21Submission DASS21Submission?
+  phq9Submission   PHQ9Submission?
+  gad7Submission   GAD7Submission?
+  who5Submission   WHO5Submission?
 
   // Normalized Answers
   answers         Answer[]
@@ -137,6 +141,44 @@ model NCS6Submission {
 }
 
 model CFQSubmission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model DASS21Submission {
+  id              String   @id @default(uuid())
+  sessionId       String   @unique
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores       Json
+  scoreDepression Float
+  scoreAnxiety    Float
+  scoreStress     Float
+  createdAt       DateTime @default(now())
+}
+
+model PHQ9Submission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model GAD7Submission {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rawScores Json
+  score     Float
+  createdAt DateTime @default(now())
+}
+
+model WHO5Submission {
   id        String   @id @default(uuid())
   sessionId String   @unique
   session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)

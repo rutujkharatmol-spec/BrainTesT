@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { sessionId, testId, rawScores, score, scoreSp, scoreSk, scoreSa } = body;
+    const { sessionId, testId, rawScores, score, scoreSp, scoreSk, scoreSa, scoreDepression, scoreAnxiety, scoreStress } = body;
 
     if (!sessionId || !testId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -76,6 +76,18 @@ export async function POST(req: Request) {
       case "cfq":
         await prisma.cFQSubmission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
+      case "dass21":
+        await prisma.dASS21Submission.upsert({ where: { sessionId }, update: { rawScores, scoreDepression, scoreAnxiety, scoreStress }, create: { ...commonData, scoreDepression, scoreAnxiety, scoreStress } });
+        break;
+      case "phq9":
+        await prisma.pHQ9Submission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
+        break;
+      case "gad7":
+        await prisma.gAD7Submission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
+        break;
+      case "who5":
+        await prisma.wHO5Submission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
+        break;
       default:
         return NextResponse.json({ error: "Unknown test ID" }, { status: 400 });
     }
@@ -95,6 +107,9 @@ export async function POST(req: Request) {
           scoreSp: scoreSp !== undefined ? scoreSp : "",
           scoreSk: scoreSk !== undefined ? scoreSk : "",
           scoreSa: scoreSa !== undefined ? scoreSa : "",
+          scoreDepression: scoreDepression !== undefined ? scoreDepression : "",
+          scoreAnxiety: scoreAnxiety !== undefined ? scoreAnxiety : "",
+          scoreStress: scoreStress !== undefined ? scoreStress : "",
           rawScores: JSON.stringify(rawScores || {})
         };
 

@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         const response = await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
           body: JSON.stringify(payload)
         });
