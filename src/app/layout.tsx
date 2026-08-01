@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 };
 
 import { AppProvider } from "@/components/AppContext";
+import Navbar from "@/components/Navbar";
 
 export default function RootLayout({
   children,
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html lang="en" className={inter.className}>
       <body>
         <AppProvider>
+          <Navbar />
           <main>{children}</main>
         </AppProvider>
       </body>
