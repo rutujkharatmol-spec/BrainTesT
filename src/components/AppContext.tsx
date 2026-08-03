@@ -115,15 +115,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     completedTests: Array.from(new Set([...s.completedTests, testId]))
   }));
   const resetSession = () => {
-    const newState: AppState = { 
+    const newState: Partial<AppState> = { 
       sessionId: null, 
       consentGiven: false, 
       participantName: null, 
       participantIdNumber: null, 
-      completedTests: [],
-      language: s => s.language // Keep the same language setting across sessions
+      completedTests: []
     };
-    setState(s => ({...newState, language: s.language}));
+    setState(s => ({...s, ...newState}));
     localStorage.removeItem('brainTestState');
   };
 
