@@ -35,10 +35,11 @@ export async function fetchWithOfflineSync(
   if (navigator.onLine) {
     try {
       const res = await fetch(url, options);
-      if (res.ok) return res;
-      // If server error, fall through to queue
+      // Return the actual response (whether ok or error) so the UI
+      // can display server-side errors properly instead of masking them.
+      return res;
     } catch {
-      // Network error — fall through to queue
+      // Network error (e.g. DNS failure, connection refused) — fall through to queue
     }
   }
 

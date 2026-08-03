@@ -21,8 +21,14 @@ const TOTAL_TRIALS = 40;
 const FIXATION_DURATION = 500;
 const STIMULUS_DURATION = 500;
 
-const NEUTRAL_WORDS = ["CHAIR", "TABLE", "WATER", "HOUSE", "PAPER", "PLANT", "CLOCK", "GLASS", "TRAIN", "APPLE"];
-const TARGET_WORDS = ["ANGER", "DEATH", "FEAR", "PANIC", "GRIEF", "HATE", "ENEMY", "SNAKE", "SPIDER", "PAIN"];
+const NEUTRAL_WORDS = {
+  en: ["CHAIR", "TABLE", "WATER", "HOUSE", "PAPER", "PLANT", "CLOCK", "GLASS", "TRAIN", "APPLE"],
+  bn: ["চেয়ার", "টেবিল", "জল", "বাড়ি", "কাগজ", "গাছ", "ঘড়ি", "গ্লাস", "ট্রেন", "আপেল"]
+};
+const TARGET_WORDS = {
+  en: ["ANGER", "DEATH", "FEAR", "PANIC", "GRIEF", "HATE", "ENEMY", "SNAKE", "SPIDER", "PAIN"],
+  bn: ["রাগ", "মৃত্যু", "ভয়", "আতঙ্ক", "শোক", "ঘৃণা", "শত্রু", "সাপ", "মাকড়সা", "ব্যথা"]
+};
 
 export default function DotProbeTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
@@ -40,9 +46,12 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   // Generate sequence
   useEffect(() => {
     const sequence: Trial[] = [];
+    const neutralDict = state.language === 'bn' ? NEUTRAL_WORDS.bn : NEUTRAL_WORDS.en;
+    const targetDict = state.language === 'bn' ? TARGET_WORDS.bn : TARGET_WORDS.en;
+
     for (let i = 0; i < TOTAL_TRIALS; i++) {
-      const neutralWord = NEUTRAL_WORDS[Math.floor(Math.random() * NEUTRAL_WORDS.length)];
-      const targetWord = TARGET_WORDS[Math.floor(Math.random() * TARGET_WORDS.length)];
+      const neutralWord = neutralDict[Math.floor(Math.random() * neutralDict.length)];
+      const targetWord = targetDict[Math.floor(Math.random() * targetDict.length)];
       
       const targetPosition = Math.random() < 0.5 ? "left" : "right";
       const dotPosition = Math.random() < 0.5 ? "left" : "right";
@@ -52,11 +61,11 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
         rightWord: targetPosition === "right" ? targetWord : neutralWord,
         targetPosition,
         dotPosition,
-        congruent: targetPosition === dotPosition // fix: removed quotes
+        congruent: targetPosition === dotPosition
       });
     }
     setTrials(sequence);
-  }, []);
+  }, [state.language]);
 
   const startTask = () => {
     runNextTrial(0);
@@ -170,15 +179,15 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Dot Probe Task</h2>
-        <p>You will see a cross in the center, followed by two words flashing quickly.</p>
-        <p>After the words disappear, a dot ( <strong>*</strong> ) will appear where one of the words was.</p>
+        <h2>{state.language === 'bn' ? "ডট প্রোব টাস্ক" : "Dot Probe Task"}</h2>
+        <p>{state.language === 'bn' ? "আপনি মাঝখানে একটি ক্রস দেখতে পাবেন, তারপরে দুটি শব্দ দ্রুত ফ্ল্যাশ করবে।" : "You will see a cross in the center, followed by two words flashing quickly."}</p>
+        <p>{state.language === 'bn' ? "শব্দগুলি অদৃশ্য হয়ে যাওয়ার পরে, যেখানে শব্দগুলির একটি ছিল সেখানে একটি ডট ( * ) উপস্থিত হবে।" : "After the words disappear, a dot ( * ) will appear where one of the words was."}</p>
         <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>If the dot appears on the <strong>LEFT</strong>, press the <strong>'E'</strong> key or tap <strong>LEFT</strong>.</p>
-          <p>If the dot appears on the <strong>RIGHT</strong>, press the <strong>'I'</strong> key or tap <strong>RIGHT</strong>.</p>
+          <p>{state.language === 'bn' ? "যদি ডটটি বাম দিকে (LEFT) উপস্থিত হয়, তবে 'E' কী চাপুন বা বাম (LEFT) এ ট্যাপ করুন।" : "If the dot appears on the LEFT, press the 'E' key or tap LEFT."}</p>
+          <p>{state.language === 'bn' ? "যদি ডটটি ডান দিকে (RIGHT) উপস্থিত হয়, তবে 'I' কী চাপুন বা ডান (RIGHT) এ ট্যাপ করুন।" : "If the dot appears on the RIGHT, press the 'I' key or tap RIGHT."}</p>
         </div>
-        <p>Please respond as quickly and accurately as possible.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <p>{state.language === 'bn' ? "যত দ্রুত এবং সঠিকভাবে সম্ভব উত্তর দিন।" : "Please respond as quickly and accurately as possible."}</p>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -186,8 +195,8 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   if (phase === "completed") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Task Completed!</h2>
-        {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
       </div>
     );
   }
@@ -222,8 +231,8 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
       {phase === "dot" && (
         <div className="mobile-controls-container">
           <div className="mobile-controls">
-            <button className="mobile-btn" onClick={() => handleResponse("left")}>LEFT</button>
-            <button className="mobile-btn" onClick={() => handleResponse("right")}>RIGHT</button>
+            <button className="mobile-btn" onClick={() => handleResponse("left")}>{state.language === 'bn' ? "বাম (LEFT)" : "LEFT"}</button>
+            <button className="mobile-btn" onClick={() => handleResponse("right")}>{state.language === 'bn' ? "ডান (RIGHT)" : "RIGHT"}</button>
           </div>
         </div>
       )}

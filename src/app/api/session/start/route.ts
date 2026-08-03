@@ -4,13 +4,28 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { participantName, participantIdNumber } = body;
+    const {
+      participantName,
+      participantIdNumber,
+      age,
+      gender,
+      studentClass,
+      schoolName,
+      address,
+      phoneNo,
+    } = body;
 
     const newSession = await prisma.session.create({
       data: {
         participantName,
         participantIdNumber,
-        consentGiven: true, // We can assume consent is given via the intake screen
+        age: age ? parseInt(age) : null,
+        gender: gender || null,
+        studentClass: studentClass || null,
+        schoolName: schoolName || null,
+        address: address || null,
+        phoneNo: phoneNo || null,
+        consentGiven: true,
       }
     });
 

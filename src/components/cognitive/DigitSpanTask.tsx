@@ -132,11 +132,11 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Digit Span Test</h2>
-        <p>A sequence of numbers will appear on the screen, one at a time.</p>
-        <p>When the sequence finishes, type the numbers in the <strong>exact order</strong> they appeared using your keyboard or the on-screen buttons.</p>
-        <p>The sequence will get longer as you get them right.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <h2>{state.language === 'bn' ? "ডিজিট স্প্যান টেস্ট" : "Digit Span Test"}</h2>
+        <p>{state.language === 'bn' ? "স্ক্রিনে একে একে সংখ্যার একটি ক্রম উপস্থিত হবে।" : "A sequence of numbers will appear on the screen, one at a time."}</p>
+        <p>{state.language === 'bn' ? "ক্রমটি শেষ হলে, আপনার কীবোর্ড বা স্ক্রিনের বোতামগুলি ব্যবহার করে সংখ্যাগুলি " : "When the sequence finishes, type the numbers in the "}<strong>{state.language === 'bn' ? "ঠিক যে ক্রমে উপস্থিত হয়েছিল" : "exact order"}</strong>{state.language === 'bn' ? " সেই ক্রমেই টাইপ করুন।" : " they appeared using your keyboard or the on-screen buttons."}</p>
+        <p>{state.language === 'bn' ? "আপনি সঠিক উত্তর দেওয়ার সাথে সাথে ক্রমটি দীর্ঘ হতে থাকবে।" : "The sequence will get longer as you get them right."}</p>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
       <div className="task-view-container">
         <div className="task-stimulus" style={{ flexDirection: "column" }}>
           <div style={{ maxWidth: 400, width: "100%", textAlign: "center" }}>
-            <h3 style={{ color: "var(--text-primary)" }}>What was the sequence?</h3>
+            <h3 style={{ color: "var(--text-primary)" }}>{state.language === 'bn' ? "ক্রমটি কী ছিল?" : "What was the sequence?"}</h3>
             
             <div style={{ 
               minHeight: 60, 
@@ -199,11 +199,11 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
 
   return (
     <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-      <h2>Task Completed!</h2>
-      {submitting ? <p>Uploading data...</p> : (
+      <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+      {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : (
         <>
-          <p>Your Maximum Digit Span: <strong>{maxSpan}</strong></p>
-          <p>Done!</p>
+          <p>{state.language === 'bn' ? "আপনার সর্বোচ্চ ডিজিট স্প্যান:" : "Your Maximum Digit Span:"} <strong>{maxSpan}</strong></p>
+          <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>
         </>
       )}
     </div>

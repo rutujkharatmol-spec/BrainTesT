@@ -27,6 +27,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid session" }, { status: 404 });
     }
 
+    // Delete old results for this test and session to allow retakes
+    await prisma.cognitiveTestResult.deleteMany({
+      where: {
+        sessionId,
+        specificTest
+      }
+    });
+
     const result = await prisma.cognitiveTestResult.create({
       data: {
         sessionId,
@@ -52,6 +60,12 @@ export async function POST(req: Request) {
         const payload = {
           idNumber: session.participantIdNumber || "N/A",
           name: session.participantName || "N/A",
+          age: session.age !== null ? session.age : "",
+          gender: session.gender || "N/A",
+          studentClass: session.studentClass || "N/A",
+          schoolName: session.schoolName || "N/A",
+          address: session.address || "N/A",
+          phoneNo: session.phoneNo || "N/A",
           testCategory: testCategory,
           specificTest: specificTest,
           param1: param1Value !== null ? param1Value : "",

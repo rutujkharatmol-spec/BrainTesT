@@ -49,13 +49,13 @@ export async function GET() {
           g.dotProbeBias = r.param3Value;
           break;
         case "2-Back Task":
-          g.nbackHit = r.param1Value;
-          g.nbackFalseAlarm = r.param2Value;
-          g.nbackDprime = r.param3Value;
+          g.nbackMeanRT = r.param1Value;
+          g.nbackHitRate = r.param2Value;
+          g.nbackFalseAlarmRate = r.param3Value;
           break;
         case "Corsi Block Task":
-          g.corsiForward = r.param1Value;
-          g.corsiBackward = r.param2Value;
+          g.corsiMaxSpan = r.param1Value;
+          g.corsiTotalCorrect = r.param2Value;
           break;
         case "Digit Span Task":
           g.digitSpanMax = r.param1Value;
@@ -69,6 +69,11 @@ export async function GET() {
           g.npControl = r.param1Value;
           g.npPrimed = r.param2Value;
           g.npEffect = r.param3Value;
+          break;
+        case "Eriksen Flanker Task":
+          g.flankerCongruent = r.param1Value;
+          g.flankerIncongruent = r.param2Value;
+          g.flankerEffect = r.param3Value;
           break;
       }
     });
@@ -114,6 +119,10 @@ export async function GET() {
     worksheet.getCell("U1").value = "Negative Priming";
     worksheet.getCell("U1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD8337B" } };
 
+    worksheet.mergeCells("X1:Z1");
+    worksheet.getCell("X1").value = "Eriksen Flanker Task";
+    worksheet.getCell("X1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF548235" } };
+
     // Set font style for super headers
     worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
     worksheet.getRow(1).alignment = { horizontal: "center" };
@@ -135,12 +144,12 @@ export async function GET() {
       { header: "Mean RT Incongruent", key: "dotProbeIncongruent", width: 20 },
       { header: "Attentional Bias Score", key: "dotProbeBias", width: 20 },
       // N-Back
-      { header: "Hit Rate", key: "nbackHit", width: 15 },
-      { header: "False Alarm Rate", key: "nbackFalseAlarm", width: 15 },
-      { header: "d-prime", key: "nbackDprime", width: 15 },
+      { header: "Mean RT Hits (ms)", key: "nbackMeanRT", width: 20 },
+      { header: "Hit Rate (%)", key: "nbackHitRate", width: 15 },
+      { header: "False Alarm Rate (%)", key: "nbackFalseAlarmRate", width: 20 },
       // Corsi
-      { header: "Forward Span", key: "corsiForward", width: 15 },
-      { header: "Backward Span", key: "corsiBackward", width: 15 },
+      { header: "Max Block Span", key: "corsiMaxSpan", width: 15 },
+      { header: "Total Correct", key: "corsiTotalCorrect", width: 15 },
       // Digit Span
       { header: "Max Span", key: "digitSpanMax", width: 15 },
       // LDT
@@ -151,6 +160,10 @@ export async function GET() {
       { header: "Mean RT Control", key: "npControl", width: 20 },
       { header: "Mean RT Primed", key: "npPrimed", width: 20 },
       { header: "Priming Effect (ms)", key: "npEffect", width: 20 },
+      // Flanker
+      { header: "Mean RT Congruent", key: "flankerCongruent", width: 20 },
+      { header: "Mean RT Incongruent", key: "flankerIncongruent", width: 20 },
+      { header: "Flanker Effect (ms)", key: "flankerEffect", width: 20 },
     ];
 
     worksheet.getRow(2).values = columns.map(c => c.header);
@@ -161,8 +174,8 @@ export async function GET() {
     worksheet.getRow(2).alignment = { horizontal: "center", wrapText: true };
     worksheet.getRow(2).height = 30;
 
-    worksheet.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7F9FB" } };
-    worksheet.getCell("B2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7F9FB" } };
+    worksheet.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7F7F7F" } };
+    worksheet.getCell("B2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7F7F7F" } };
     // We will just style the rest of row 2 with gray background for simplicity, 
     // or iterate through and set background color based on group.
     const colors = [
@@ -175,6 +188,7 @@ export async function GET() {
       "FF9FC5E8", // Digit
       "FFCCCCCC", "FFCCCCCC", "FFCCCCCC", // LDT
       "FFEA9999", "FFEA9999", "FFEA9999", // NP
+      "FF92D050", "FF92D050", "FF92D050", // Flanker
     ];
     worksheet.getRow(2).eachCell((cell, colNumber) => {
       const color = colors[colNumber - 1] || "FF888888";

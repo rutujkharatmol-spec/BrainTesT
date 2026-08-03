@@ -206,23 +206,22 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>N-Back Task (2-Back)</h2>
-        <p>You will see a sequence of letters presented one by one.</p>
+        <h2>{state.language === 'bn' ? "এন-ব্যাক টাস্ক (২-ব্যাক)" : "N-Back Task (2-Back)"}</h2>
+        <p>{state.language === 'bn' ? "আপনি একে একে অক্ষরের একটি ক্রম দেখতে পাবেন।" : "You will see a sequence of letters presented one by one."}</p>
         <p style={{ marginTop: 16 }}>
-          <strong>Press the SPACEBAR or tap MATCH</strong> if the current letter is the 
-          <strong> exact same as the letter seen 2 steps ago.</strong>
+          <strong>{state.language === 'bn' ? "বর্তমান অক্ষরটি যদি ২ ধাপ আগে দেখা অক্ষরের হুবহু একই হয় তবে স্পেসবার (SPACEBAR) চাপুন বা MATCH এ ট্যাপ করুন।" : "Press the SPACEBAR or tap MATCH if the current letter is the exact same as the letter seen 2 steps ago."}</strong>
         </p>
         <div style={{ margin: "24px auto", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>Example Sequence:</p>
+          <p>{state.language === 'bn' ? "উদাহরণ ক্রম:" : "Example Sequence:"}</p>
           <ul style={{ paddingLeft: 24, margin: "8px 0" }}>
-            <li>A (do nothing)</li>
-            <li>B (do nothing)</li>
-            <li><strong>A (PRESS SPACEBAR - matches 2 steps ago)</strong></li>
-            <li>C (do nothing)</li>
-            <li><strong>A (PRESS SPACEBAR - matches 2 steps ago)</strong></li>
+            <li>{state.language === 'bn' ? "A (কিছু করবেন না)" : "A (do nothing)"}</li>
+            <li>{state.language === 'bn' ? "B (কিছু করবেন না)" : "B (do nothing)"}</li>
+            <li><strong>{state.language === 'bn' ? "A (স্পেসবার চাপুন - ২ ধাপ আগের সাথে মিলে যায়)" : "A (PRESS SPACEBAR - matches 2 steps ago)"}</strong></li>
+            <li>{state.language === 'bn' ? "C (কিছু করবেন না)" : "C (do nothing)"}</li>
+            <li><strong>{state.language === 'bn' ? "A (স্পেসবার চাপুন - ২ ধাপ আগের সাথে মিলে যায়)" : "A (PRESS SPACEBAR - matches 2 steps ago)"}</strong></li>
           </ul>
         </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -250,7 +249,7 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
             fontWeight: "bold",
             whiteSpace: "nowrap"
           }}>
-            Response Registered
+            {state.language === 'bn' ? "প্রতিক্রিয়া নিবন্ধিত হয়েছে" : "Response Registered"}
           </div>
         </div>
         
@@ -261,7 +260,7 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
               onClick={handleResponse} 
               disabled={hasPressed}
             >
-              MATCH
+              {state.language === 'bn' ? "ম্যাচ (MATCH)" : "MATCH"}
             </button>
           </div>
         </div>
@@ -271,8 +270,8 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-      <h2>Task Completed!</h2>
-      {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+      <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+      {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
     </div>
   );
 }

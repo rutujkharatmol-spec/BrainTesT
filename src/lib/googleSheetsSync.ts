@@ -23,6 +23,12 @@ export async function syncCognitiveToGoogleSheets() {
         sessionId: r.sessionId,
         idNumber: r.session?.participantIdNumber || "N/A",
         name: r.session?.participantName || "N/A",
+        age: r.session?.age ?? "",
+        gender: r.session?.gender || "N/A",
+        studentClass: r.session?.studentClass || "N/A",
+        schoolName: r.session?.schoolName || "N/A",
+        address: r.session?.address || "N/A",
+        phoneNo: r.session?.phoneNo || "N/A",
         createdAt: r.session?.createdAt || r.createdAt
       };
     }
@@ -46,13 +52,13 @@ export async function syncCognitiveToGoogleSheets() {
         g.dotProbeBias = r.param3Value;
         break;
       case "2-Back Task":
-        g.nbackHit = r.param1Value;
-        g.nbackFalseAlarm = r.param2Value;
-        g.nbackDprime = r.param3Value;
+        g.nbackMeanRT = r.param1Value;
+        g.nbackHitRate = r.param2Value;
+        g.nbackFalseAlarmRate = r.param3Value;
         break;
       case "Corsi Block Task":
-        g.corsiForward = r.param1Value;
-        g.corsiBackward = r.param2Value;
+        g.corsiMaxSpan = r.param1Value;
+        g.corsiTotalCorrect = r.param2Value;
         break;
       case "Digit Span Task":
         g.digitSpanMax = r.param1Value;
@@ -67,6 +73,11 @@ export async function syncCognitiveToGoogleSheets() {
         g.npPrimed = r.param2Value;
         g.npEffect = r.param3Value;
         break;
+      case "Eriksen Flanker Task":
+        g.flankerCongruent = r.param1Value;
+        g.flankerIncongruent = r.param2Value;
+        g.flankerEffect = r.param3Value;
+        break;
     }
   });
 
@@ -74,6 +85,12 @@ export async function syncCognitiveToGoogleSheets() {
   const rows = Object.values(groupedData).map((g: any) => [
     g.idNumber,
     g.name,
+    g.age,
+    g.gender,
+    g.studentClass,
+    g.schoolName,
+    g.address,
+    g.phoneNo,
     g.stroopCongruent ?? "",
     g.stroopIncongruent ?? "",
     g.stroopEffect ?? "",
@@ -83,11 +100,11 @@ export async function syncCognitiveToGoogleSheets() {
     g.dotProbeCongruent ?? "",
     g.dotProbeIncongruent ?? "",
     g.dotProbeBias ?? "",
-    g.nbackHit ?? "",
-    g.nbackFalseAlarm ?? "",
-    g.nbackDprime ?? "",
-    g.corsiForward ?? "",
-    g.corsiBackward ?? "",
+    g.nbackMeanRT ?? "",
+    g.nbackHitRate ?? "",
+    g.nbackFalseAlarmRate ?? "",
+    g.corsiMaxSpan ?? "",
+    g.corsiTotalCorrect ?? "",
     g.digitSpanMax ?? "",
     g.ldtWord ?? "",
     g.ldtNonWord ?? "",
@@ -95,8 +112,11 @@ export async function syncCognitiveToGoogleSheets() {
     g.npControl ?? "",
     g.npPrimed ?? "",
     g.npEffect ?? "",
-    g.sessionId, // Keep sessionId in column X for deduplication
-    new Date(g.createdAt).toISOString() // Date in column Y
+    g.flankerCongruent ?? "",
+    g.flankerIncongruent ?? "",
+    g.flankerEffect ?? "",
+    g.sessionId, // Keep sessionId for deduplication
+    new Date(g.createdAt).toISOString()
   ]);
 
   // Send payload to Apps Script

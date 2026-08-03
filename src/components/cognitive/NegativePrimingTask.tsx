@@ -11,7 +11,7 @@ type WordData = {
   category: Category;
 };
 
-const WORDS: WordData[] = [
+const WORDS_EN: WordData[] = [
   { text: "DOG", category: "LIVING" },
   { text: "CAT", category: "LIVING" },
   { text: "BIRD", category: "LIVING" },
@@ -20,6 +20,17 @@ const WORDS: WordData[] = [
   { text: "BOOK", category: "NON_LIVING" },
   { text: "SHOE", category: "NON_LIVING" },
   { text: "DESK", category: "NON_LIVING" }
+];
+
+const WORDS_BN: WordData[] = [
+  { text: "কুকুর", category: "LIVING" },
+  { text: "বিড়াল", category: "LIVING" },
+  { text: "পাখি", category: "LIVING" },
+  { text: "মাছ", category: "LIVING" },
+  { text: "গাড়ি", category: "NON_LIVING" },
+  { text: "বই", category: "NON_LIVING" },
+  { text: "জুতো", category: "NON_LIVING" },
+  { text: "ডেস্ক", category: "NON_LIVING" }
 ];
 
 type Trial = {
@@ -52,6 +63,7 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   // Generate sequence
   useEffect(() => {
     const sequence: Trial[] = [];
+    const WORDS = state.language === 'bn' ? WORDS_BN : WORDS_EN;
     let previousDistractor: WordData | null = null;
     
     for (let i = 0; i < TOTAL_TRIALS; i++) {
@@ -78,7 +90,7 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
       previousDistractor = distractor; // save for next trial
     }
     setTrials(sequence);
-  }, []);
+  }, [state.language]);
 
   const startTask = () => {
     runNextTrial(0);
@@ -186,14 +198,14 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Negative Priming Task</h2>
-        <p>You will see two overlapping words. One will be <strong>RED</strong> and one will be <strong style={{color:"#00aaff"}}>BLUE</strong>.</p>
-        <p>Your goal is to categorize the <strong>RED WORD</strong> and completely ignore the blue word.</p>
+        <h2>{state.language === 'bn' ? "নেগেটিভ প্রাইমিং টাস্ক" : "Negative Priming Task"}</h2>
+        <p>{state.language === 'bn' ? "আপনি দুটি ওভারল্যাপিং (একের ওপর অন্যটি) শব্দ দেখতে পাবেন। একটি " : "You will see two overlapping words. One will be "}<strong>{state.language === 'bn' ? "লাল (RED)" : "RED"}</strong>{state.language === 'bn' ? " হবে এবং একটি " : " and one will be "}<strong style={{color:"#00aaff"}}>{state.language === 'bn' ? "নীল (BLUE)" : "BLUE"}</strong>{state.language === 'bn' ? " হবে।" : "."}</p>
+        <p>{state.language === 'bn' ? "আপনার লক্ষ্য হল " : "Your goal is to categorize the "}<strong>{state.language === 'bn' ? "লাল শব্দটিকে (RED WORD)" : "RED WORD"}</strong>{state.language === 'bn' ? " শ্রেণিবদ্ধ করা এবং নীল শব্দটিকে সম্পূর্ণ উপেক্ষা করা।" : " and completely ignore the blue word."}</p>
         <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>Press <strong>'F'</strong> or tap <strong>LIVING</strong> if the red word is a <strong>LIVING THING</strong> (e.g. DOG, CAT).</p>
-          <p style={{ marginTop: 8 }}>Press <strong>'J'</strong> or tap <strong>NON-LIVING</strong> if the red word is a <strong>NON-LIVING THING</strong> (e.g. CAR, SHOE).</p>
+          <p>{state.language === 'bn' ? "লাল শব্দটি যদি জীবন্ত কিছু হয় তবে 'F' চাপুন বা LIVING এ ট্যাপ করুন (উদাঃ কুকুর, বিড়াল)।" : "Press 'F' or tap LIVING if the red word is a LIVING THING (e.g. DOG, CAT)."}</p>
+          <p style={{ marginTop: 8 }}>{state.language === 'bn' ? "লাল শব্দটি যদি জড় বস্তু হয় তবে 'J' চাপুন বা NON-LIVING এ ট্যাপ করুন (উদাঃ গাড়ি, জুতো)।" : "Press 'J' or tap NON-LIVING if the red word is a NON-LIVING THING (e.g. CAR, SHOE)."}</p>
         </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -201,8 +213,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   if (phase === "completed") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Task Completed!</h2>
-        {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
       </div>
     );
   }
@@ -225,7 +237,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
               top: 20,
               left: 10,
               opacity: 0.8,
-              pointerEvents: "none"
+              pointerEvents: "none",
+              whiteSpace: "nowrap"
             }}>
               {trial.distractor.text}
             </h1>
@@ -236,7 +249,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
               fontWeight: "bold", 
               color: "#ff4444",
               position: "relative",
-              zIndex: 10
+              zIndex: 10,
+              whiteSpace: "nowrap"
             }}>
               {trial.target.text}
             </h1>
@@ -247,8 +261,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
       {phase === "stimulus" && (
         <div className="mobile-controls-container">
           <div className="mobile-controls">
-            <button className="mobile-btn" onClick={() => handleResponse("KeyF")}>LIVING</button>
-            <button className="mobile-btn" onClick={() => handleResponse("KeyJ")}>NON-LIVING</button>
+            <button className="mobile-btn" onClick={() => handleResponse("KeyF")}>{state.language === 'bn' ? "জীবন্ত (LIVING)" : "LIVING"}</button>
+            <button className="mobile-btn" onClick={() => handleResponse("KeyJ")}>{state.language === 'bn' ? "জড় বস্তু (NON-LIVING)" : "NON-LIVING"}</button>
           </div>
         </div>
       )}

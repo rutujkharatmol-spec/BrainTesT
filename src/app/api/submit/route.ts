@@ -102,6 +102,12 @@ export async function POST(req: Request) {
         const payload = {
           idNumber: session.participantIdNumber || "N/A",
           name: session.participantName || "N/A",
+          age: session.age !== null ? session.age : "",
+          gender: session.gender || "N/A",
+          studentClass: session.studentClass || "N/A",
+          schoolName: session.schoolName || "N/A",
+          address: session.address || "N/A",
+          phoneNo: session.phoneNo || "N/A",
           testId: testId,
           score: score !== undefined ? score : "",
           scoreSp: scoreSp !== undefined ? scoreSp : "",

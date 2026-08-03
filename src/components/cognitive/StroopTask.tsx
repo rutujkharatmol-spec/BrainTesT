@@ -95,10 +95,10 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
 
   // Handle Submission
   useEffect(() => {
-    if (phase === "completed" && !submitting) {
+    if (phase === "completed" && !submitting && results.length === TOTAL_TRIALS) {
       submitData();
     }
-  }, [phase]);
+  }, [phase, results]);
 
   const submitData = async () => {
     setSubmitting(true);
@@ -147,16 +147,16 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Stroop Task</h2>
-        <p>You will see words appear in different colors.</p>
-        <p><strong>Press the key or tap the button corresponding to the FONT COLOR of the word, ignoring what the word says.</strong></p>
+        <h2>{state.language === 'bn' ? "স্ট্রুপ টাস্ক" : "Stroop Task"}</h2>
+        <p>{state.language === 'bn' ? "আপনি বিভিন্ন রঙে শব্দ দেখতে পাবেন।" : "You will see words appear in different colors."}</p>
+        <p><strong>{state.language === 'bn' ? "শব্দটি কী বলছে তা উপেক্ষা করে, শব্দের ফন্ট কালার বা রঙের সাথে মিলে যায় এমন বোতামটি চাপুন।" : "Press the key or tap the button corresponding to the FONT COLOR of the word, ignoring what the word says."}</strong></p>
         <ul style={{ textAlign: "left", display: "inline-block", margin: "20px 0" }}>
-          <li>Press <strong>R</strong> for Red</li>
-          <li>Press <strong>B</strong> for Blue</li>
-          <li>Press <strong>G</strong> for Green</li>
-          <li>Press <strong>Y</strong> for Yellow</li>
+          <li>{state.language === 'bn' ? "লাল রঙের জন্য " : "Press "}<strong>R</strong>{state.language === 'bn' ? " চাপুন" : " for Red"}</li>
+          <li>{state.language === 'bn' ? "নীল রঙের জন্য " : "Press "}<strong>B</strong>{state.language === 'bn' ? " চাপুন" : " for Blue"}</li>
+          <li>{state.language === 'bn' ? "সবুজ রঙের জন্য " : "Press "}<strong>G</strong>{state.language === 'bn' ? " চাপুন" : " for Green"}</li>
+          <li>{state.language === 'bn' ? "হলুদ রঙের জন্য " : "Press "}<strong>Y</strong>{state.language === 'bn' ? " চাপুন" : " for Yellow"}</li>
         </ul>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -187,10 +187,10 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
         </div>
         <div className="mobile-controls-container">
           <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-            <button className="mobile-btn" onClick={() => handleResponse("RED")}>RED</button>
-            <button className="mobile-btn" onClick={() => handleResponse("BLUE")}>BLUE</button>
-            <button className="mobile-btn" onClick={() => handleResponse("GREEN")}>GREEN</button>
-            <button className="mobile-btn" onClick={() => handleResponse("YELLOW")}>YELLOW</button>
+            <button className="mobile-btn" onClick={() => handleResponse("RED")}>{state.language === 'bn' ? "লাল (RED)" : "RED"}</button>
+            <button className="mobile-btn" onClick={() => handleResponse("BLUE")}>{state.language === 'bn' ? "নীল (BLUE)" : "BLUE"}</button>
+            <button className="mobile-btn" onClick={() => handleResponse("GREEN")}>{state.language === 'bn' ? "সবুজ (GREEN)" : "GREEN"}</button>
+            <button className="mobile-btn" onClick={() => handleResponse("YELLOW")}>{state.language === 'bn' ? "হলুদ (YELLOW)" : "YELLOW"}</button>
           </div>
         </div>
       </div>
@@ -199,9 +199,9 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
 
   return (
     <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-      <h2>Task Completed!</h2>
-      <p>Saving your reaction times...</p>
-      {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+      <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+      <p>{state.language === 'bn' ? "আপনার প্রতিক্রিয়া সময় সংরক্ষণ করা হচ্ছে..." : "Saving your reaction times..."}</p>
+      {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
     </div>
   );
 }

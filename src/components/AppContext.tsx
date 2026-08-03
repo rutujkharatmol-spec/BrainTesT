@@ -9,6 +9,7 @@ type AppState = {
   participantName: string | null;
   participantIdNumber: string | null;
   completedTests: string[];
+  language: 'en' | 'bn';
 };
 
 type AppContextType = {
@@ -17,6 +18,7 @@ type AppContextType = {
   setConsentGiven: (given: boolean) => void;
   markTestCompleted: (testId: string) => void;
   resetSession: () => void;
+  toggleLanguage: () => void;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -27,6 +29,7 @@ const initialState: AppState = {
   participantName: null,
   participantIdNumber: null,
   completedTests: [],
+  language: 'en',
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -112,21 +115,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     completedTests: Array.from(new Set([...s.completedTests, testId]))
   }));
   const resetSession = () => {
-    const newState = { 
+    const newState: AppState = { 
       sessionId: null, 
       consentGiven: false, 
       participantName: null, 
       participantIdNumber: null, 
-      completedTests: [] 
+      completedTests: [],
+      language: s => s.language // Keep the same language setting across sessions
     };
-    setState(newState);
+    setState(s => ({...newState, language: s.language}));
     localStorage.removeItem('brainTestState');
   };
+
+  const toggleLanguage = () => setState(s => ({
+    ...s,
+    language: s.language === 'en' ? 'bn' : 'en'
+  }));
 
   if (!loaded) return null; // Avoid hydration mismatch
 
   return (
-    <AppContext.Provider value={{ state, setSessionId, setConsentGiven, markTestCompleted, resetSession }}>
+    <AppContext.Provider value={{ state, setSessionId, setConsentGiven, markTestCompleted, resetSession, toggleLanguage }}>
       {/* Offline / Sync Status Banner */}
       {(isOffline || syncMessage) && (
         <div style={{

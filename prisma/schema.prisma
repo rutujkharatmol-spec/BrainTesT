@@ -17,6 +17,12 @@ model Session {
   id                  String   @id @default(uuid())
   participantName     String?
   participantIdNumber String?
+  age                 Int?
+  gender              String?
+  studentClass        String?
+  schoolName          String?
+  address             String?
+  phoneNo             String?
   createdAt           DateTime @default(now())
   consentGiven Boolean  @default(false)
   completed    Boolean  @default(false)

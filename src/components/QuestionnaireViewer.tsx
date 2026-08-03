@@ -92,25 +92,31 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
   if (phase === "completed") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Questionnaire Completed!</h2>
-        <p>Saving your responses...</p>
-        {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+        <h2>{state.language === 'bn' ? "প্রশ্নাবলী সম্পন্ন হয়েছে!" : "Questionnaire Completed!"}</h2>
+        <p>{state.language === 'bn' ? "আপনার উত্তর সংরক্ষণ করা হচ্ছে..." : "Saving your responses..."}</p>
+        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
       </div>
     );
   }
 
+  const title = state.language === 'bn' && questionnaire.title_bn ? questionnaire.title_bn : questionnaire.title;
+  const description = state.language === 'bn' && questionnaire.description_bn ? questionnaire.description_bn : questionnaire.description;
+
   return (
     <div className="card" style={{ maxWidth: 800, margin: "auto" }}>
-      <h2>{questionnaire.title}</h2>
-      <p style={{ color: "var(--text-secondary)", marginTop: 8, fontSize: "0.9rem" }}>{questionnaire.description}</p>
+      <h2>{title}</h2>
+      <p style={{ color: "var(--text-secondary)", marginTop: 8, fontSize: "0.9rem" }}>{description}</p>
       
       <div style={{ marginTop: 24 }}>
         {questionnaire.items.map((item, index) => (
           <div key={item.id} style={{ marginBottom: 24, padding: 20, background: "#F9FAFB", borderRadius: 8, border: "1px solid var(--card-border)" }}>
-            <p style={{ marginBottom: 16, color: "var(--text-primary)", fontWeight: 500 }}><strong>{index + 1}.</strong> {item.text}</p>
+            <p style={{ marginBottom: 16, color: "var(--text-primary)", fontWeight: 500 }}>
+              <strong>{index + 1}.</strong> {state.language === 'bn' && item.text_bn ? item.text_bn : item.text}
+            </p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {questionnaire.scale.map(s => {
                 const isSelected = answers[item.id] === s.value;
+                const label = state.language === 'bn' && s.label_bn ? s.label_bn : s.label;
                 return (
                   <button
                     key={s.value}
@@ -126,7 +132,7 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
                       boxShadow: isSelected ? "none" : "0 1px 2px rgba(0,0,0,0.05)"
                     }}
                   >
-                    {s.label}
+                    {label}
                   </button>
                 );
               })}
@@ -141,7 +147,7 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         onClick={handleSubmit}
         style={{ marginTop: 24, width: "100%", opacity: isComplete ? 1 : 0.5 }}
       >
-        {submitting ? "Submitting..." : "Submit Answers"}
+        {submitting ? (state.language === 'bn' ? "জমা দেওয়া হচ্ছে..." : "Submitting...") : (state.language === 'bn' ? "উত্তর জমা দিন" : "Submit Answers")}
       </button>
     </div>
   );

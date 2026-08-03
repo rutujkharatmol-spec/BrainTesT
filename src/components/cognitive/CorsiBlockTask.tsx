@@ -143,12 +143,12 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Corsi Block Test</h2>
-        <p>You will see a set of squares on the screen.</p>
-        <p>The squares will light up one by one in a specific sequence.</p>
-        <p>When the sequence finishes, <strong>click the squares in the exact same order</strong> they lit up.</p>
-        <p>The sequence will get longer as you get them right.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <h2>{state.language === 'bn' ? "কোর্সি ব্লক টেস্ট" : "Corsi Block Test"}</h2>
+        <p>{state.language === 'bn' ? "আপনি স্ক্রিনে কিছু বর্গক্ষেত্র দেখতে পাবেন।" : "You will see a set of squares on the screen."}</p>
+        <p>{state.language === 'bn' ? "বর্গক্ষেত্রগুলো একটি নির্দিষ্ট ক্রমে একে একে আলোকিত হবে।" : "The squares will light up one by one in a specific sequence."}</p>
+        <p>{state.language === 'bn' ? "ক্রমটি শেষ হলে, " : "When the sequence finishes, "}<strong>{state.language === 'bn' ? "যে ক্রমে তারা আলোকিত হয়েছিল ঠিক সেই ক্রমেই বর্গক্ষেত্রগুলোতে ক্লিক করুন।" : "click the squares in the exact same order"}</strong>{state.language === 'bn' ? "" : " they lit up."}</p>
+        <p>{state.language === 'bn' ? "আপনি সঠিক উত্তর দেওয়ার সাথে সাথে ক্রমটি দীর্ঘ হতে থাকবে।" : "The sequence will get longer as you get them right."}</p>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -156,12 +156,12 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   if (phase === "completed") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>Task Completed!</h2>
-        {submitting ? <p>Uploading data...</p> : (
+        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : (
           <>
-            <p>Your Maximum Block Span: <strong>{maxSpan}</strong></p>
-            <p>Total Correct Trials: <strong>{totalCorrect}</strong></p>
-            <p>Done!</p>
+            <p>{state.language === 'bn' ? "আপনার সর্বোচ্চ ব্লক স্প্যান:" : "Your Maximum Block Span:"} <strong>{maxSpan}</strong></p>
+            <p>{state.language === 'bn' ? "মোট সঠিক ট্রায়াল:" : "Total Correct Trials:"} <strong>{totalCorrect}</strong></p>
+            <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>
           </>
         )}
       </div>
@@ -172,7 +172,7 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
     <div className="task-view-container">
       <div className="task-stimulus" style={{ flexDirection: "column" }}>
         {phase === "recall" ? (
-          <h3 style={{ marginBottom: 16, color: "var(--text-primary)" }}>Your turn! Click the blocks in order.</h3>
+          <h3 style={{ marginBottom: 16, color: "var(--text-primary)" }}>{state.language === 'bn' ? "আপনার পালা! ক্রমানুসারে ব্লকগুলিতে ক্লিক করুন।" : "Your turn! Click the blocks in order."}</h3>
         ) : (
           <h3 style={{ marginBottom: 16, opacity: 0 }}>Placeholder</h3>
         )}

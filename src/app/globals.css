@@ -251,7 +251,14 @@ p {
 }
 
 /* Allow text selection in specific inputs */
-input, textarea {
+input, textarea, select {
   user-select: auto;
   -webkit-user-select: auto;
+}
+
+/* Responsive grid for intake form on small screens */
+@media (max-width: 500px) {
+  .card {
+    padding: 20px;
+  }
 }

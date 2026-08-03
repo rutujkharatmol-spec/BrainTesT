@@ -186,16 +186,16 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
   if (phase === "instructions") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>SART (Sustained Attention to Response Task)</h2>
-        <p>You will see single digits (1 through 9) flash rapidly on the screen.</p>
+        <h2>{state.language === 'bn' ? "এস.এ.আর.টি (SART - সাসটেইন্ড অ্যাটেনশন টু রেসপন্স টাস্ক)" : "SART (Sustained Attention to Response Task)"}</h2>
+        <p>{state.language === 'bn' ? "আপনি স্ক্রিনে দ্রুত একক সংখ্যাগুলি (১ থেকে ৯) ঝলকানি দেখতে পাবেন।" : "You will see single digits (1 through 9) flash rapidly on the screen."}</p>
         <p style={{ marginTop: 16 }}>
-          <strong>Press the SPACEBAR or tap PRESS</strong> as quickly as possible for every digit...
+          <strong>{state.language === 'bn' ? "প্রতিটি সংখ্যার জন্য যত দ্রুত সম্ভব স্পেসবার (SPACEBAR) চাপুন বা PRESS এ ট্যাপ করুন..." : "Press the SPACEBAR or tap PRESS as quickly as possible for every digit..."}</strong>
         </p>
         <p style={{ margin: "16px 0", fontSize: "1.2rem", color: "var(--error-color)", fontWeight: "bold" }}>
-          EXCEPT for the number 3!
+          {state.language === 'bn' ? "তবে ৩ সংখ্যাটির জন্য নয়!" : "EXCEPT for the number 3!"}
         </p>
-        <p>If you see a 3, <strong>DO NOT PRESS ANYTHING</strong>.</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>Start Task</button>
+        <p>{state.language === 'bn' ? "যদি আপনি একটি ৩ দেখতে পান, তবে " : "If you see a 3, "}<strong>{state.language === 'bn' ? "কিছু চাপবেন না।" : "DO NOT PRESS ANYTHING"}</strong>{state.language === 'bn' ? "" : "."}</p>
+        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
       </div>
     );
   }
@@ -221,7 +221,7 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
             color: "var(--success-color)",
             fontWeight: "bold"
           }}>
-            Registered
+            {state.language === 'bn' ? "নিবন্ধিত" : "Registered"}
           </div>
         </div>
 
@@ -232,7 +232,7 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
               onClick={handleResponse} 
               disabled={hasPressed}
             >
-              PRESS (GO)
+              {state.language === 'bn' ? "চাপুন (PRESS - GO)" : "PRESS (GO)"}
             </button>
           </div>
         </div>
@@ -242,8 +242,8 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-      <h2>Task Completed!</h2>
-      {submitting ? <p>Uploading data...</p> : <p>Done!</p>}
+      <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+      {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
     </div>
   );
 }
