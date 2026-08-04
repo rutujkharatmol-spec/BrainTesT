@@ -138,6 +138,16 @@ export async function POST(req: Request) {
       }
     }
 
+    // DESTINATION C: MASTER GOOGLE SHEETS PIPELINE
+    // Trigger the consolidated sync script to update the master record for this session
+    try {
+      const { syncQuestionnairesToGoogleSheets } = await import('@/lib/googleSheetsSync');
+      await syncQuestionnairesToGoogleSheets();
+      console.log("Successfully pushed to Master Google Sheets (Sheet2) via Apps Script!");
+    } catch (syncErr) {
+      console.error("Master Google Sheets Questionnaire Sync Failed:", syncErr);
+    }
+
     return NextResponse.json({ success: true });
 
   } catch (error: any) {

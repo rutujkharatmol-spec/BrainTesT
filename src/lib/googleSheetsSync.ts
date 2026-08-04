@@ -1,4 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { 
+  getDass21DepressionSeverity, 
+  getDass21AnxietySeverity, 
+  getDass21StressSeverity, 
+  getPhq9Severity, 
+  getGad7Severity, 
+  getWho5Severity 
+} from "@/utils/scoring";
 
 export async function syncCognitiveToGoogleSheets() {
   const { APPS_SCRIPT_WEBAPP_URL } = process.env;
@@ -125,7 +133,92 @@ export async function syncCognitiveToGoogleSheets() {
     headers: {
       "Content-Type": "text/plain",
     },
-    body: JSON.stringify({ rows }),
+    body: JSON.stringify({ sheetName: "Sheet1", rows }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Apps Script responded with ${response.status}: ${text}`);
+  }
+
+  return await response.json().catch(() => ({}));
+}
+
+export async function syncQuestionnairesToGoogleSheets() {
+  const { APPS_SCRIPT_WEBAPP_URL } = process.env;
+
+  if (!APPS_SCRIPT_WEBAPP_URL) {
+    throw new Error("Missing APPS_SCRIPT_WEBAPP_URL in .env");
+  }
+
+  // Fetch questionnaire data
+  const sessions = await prisma.session.findMany({
+    orderBy: { createdAt: "asc" },
+    include: {
+      cfsSubmission: true,
+      gaeneSubmission: true,
+      mateSubmission: true,
+      sbsSubmission: true,
+      skepSubmission: true,
+      tsisSubmission: true,
+      ncs6Submission: true,
+      cfqSubmission: true,
+      dass21Submission: true,
+      phq9Submission: true,
+      gad7Submission: true,
+      who5Submission: true,
+    }
+  });
+
+  const rows = sessions.map(session => [
+    session.participantIdNumber || "N/A",
+    session.participantName || "N/A",
+    session.age ?? "",
+    session.gender || "N/A",
+    session.studentClass || "N/A",
+    session.schoolName || "N/A",
+    session.address || "N/A",
+    session.phoneNo || "N/A",
+    
+    // Questionnaire scores
+    session.cfsSubmission?.score ?? "",
+    session.gaeneSubmission?.score ?? "",
+    session.mateSubmission?.score ?? "",
+    session.sbsSubmission?.score ?? "",
+    session.skepSubmission?.score ?? "",
+    
+    session.tsisSubmission?.scoreSp ?? "",
+    session.tsisSubmission?.scoreSk ?? "",
+    session.tsisSubmission?.scoreSa ?? "",
+    
+    session.ncs6Submission?.score ?? "",
+    session.cfqSubmission?.score ?? "",
+    
+    session.dass21Submission?.scoreDepression ?? "",
+    getDass21DepressionSeverity(session.dass21Submission?.scoreDepression as number),
+    session.dass21Submission?.scoreAnxiety ?? "",
+    getDass21AnxietySeverity(session.dass21Submission?.scoreAnxiety as number),
+    session.dass21Submission?.scoreStress ?? "",
+    getDass21StressSeverity(session.dass21Submission?.scoreStress as number),
+    
+    session.phq9Submission?.score ?? "",
+    getPhq9Severity(session.phq9Submission?.score as number),
+    session.gad7Submission?.score ?? "",
+    getGad7Severity(session.gad7Submission?.score as number),
+    session.who5Submission?.score ?? "",
+    getWho5Severity(session.who5Submission?.score as number),
+
+    session.id, // sessionId
+    new Date(session.createdAt).toISOString()
+  ]);
+
+  // Send payload to Apps Script
+  const response = await fetch(APPS_SCRIPT_WEBAPP_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain",
+    },
+    body: JSON.stringify({ sheetName: "Sheet2", rows }),
   });
 
   if (!response.ok) {

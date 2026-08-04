@@ -4,12 +4,14 @@ import React, { useState } from "react";
 import { QuestionnaireDef } from "@/config/questionnaires";
 import { useAppContext } from "./AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import SeverityFeedback from "./SeverityFeedback";
 
 export default function QuestionnaireViewer({ questionnaire, onComplete }: { questionnaire: QuestionnaireDef, onComplete: () => void }) {
   const { state } = useAppContext();
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [phase, setPhase] = useState<"filling" | "completed">("filling");
+  const [calculatedScores, setCalculatedScores] = useState<any>(null);
 
   const isComplete = questionnaire.items.every(q => answers[q.id] !== undefined);
 
@@ -58,6 +60,8 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         scoreStress = stressIds.reduce((acc, id) => acc + (processedScores[id] || 0), 0) * 2;
       }
 
+      setCalculatedScores({ score, scoreDepression, scoreAnxiety, scoreStress, scoreSp, scoreSk, scoreSa });
+
       const res = await fetchWithOfflineSync("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -76,13 +80,13 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
       });
 
       if (!res.ok) {
-        throw new Error("Failed to submit");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to submit");
       }
       
-      onComplete();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to submit");
+      alert(e.message || "Failed to submit");
       setPhase("filling");
     } finally {
       setSubmitting(false);
@@ -93,8 +97,28 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
         <h2>{state.language === 'bn' ? "প্রশ্নাবলী সম্পন্ন হয়েছে!" : "Questionnaire Completed!"}</h2>
-        <p>{state.language === 'bn' ? "আপনার উত্তর সংরক্ষণ করা হচ্ছে..." : "Saving your responses..."}</p>
-        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
+
+            {calculatedScores && (
+              <div style={{ textAlign: "left", background: "#F9FAFB", padding: "20px", borderRadius: "12px", border: "1px solid var(--card-border)", marginBottom: 24 }}>
+                <h3 style={{ marginTop: 0, marginBottom: 16, borderBottom: "1px solid #eaeaea", paddingBottom: 12 }}>Results Overview</h3>
+                <SeverityFeedback questionnaireId={questionnaire.id} calculatedScores={calculatedScores} />
+              </div>
+            )}
+
+            {submitting ? (
+              <p style={{ color: "var(--accent-color)", fontWeight: "bold" }}>
+                {state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।" : "Uploading data... please wait."}
+              </p>
+            ) : (
+              <div>
+                <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
+                  {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
+                </p>
+                <button className="btn" onClick={onComplete} style={{ width: "100%" }}>
+                  {state.language === 'bn' ? "ফিরে যান" : "Return to Hub"}
+                </button>
+              </div>
+            )}
       </div>
     );
   }

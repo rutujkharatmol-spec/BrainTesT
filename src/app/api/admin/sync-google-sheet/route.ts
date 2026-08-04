@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { syncCognitiveToGoogleSheets } from "@/lib/googleSheetsSync";
+import { syncCognitiveToGoogleSheets, syncQuestionnairesToGoogleSheets } from "@/lib/googleSheetsSync";
 
 export async function POST() {
   const session = await getServerSession(authOptions);
@@ -10,10 +10,11 @@ export async function POST() {
   }
 
   try {
-    const data = await syncCognitiveToGoogleSheets();
+    const dataCognitive = await syncCognitiveToGoogleSheets();
+    const dataQuestionnaires = await syncQuestionnairesToGoogleSheets();
 
     return NextResponse.json({ 
-      message: data.message || `Successfully synced data to Google Sheets.` 
+      message: `Successfully synced data to Google Sheets.` 
     }, { status: 200 });
 
   } catch (error: any) {
