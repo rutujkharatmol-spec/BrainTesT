@@ -1,35 +1,23 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Admin Login",
+      name: "Admin Password",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "admin@example.com" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Admin Password", type: "password", placeholder: "Enter password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        if (credentials?.password === "0907") {
+          return { id: "admin", name: "Administrator", email: "admin@local" };
         }
-
-        const adminUser = await prisma.adminUser.findUnique({
-          where: { email: credentials.email }
-        });
-
-        if (!adminUser) return null;
-
-        const isMatch = await bcrypt.compare(credentials.password, adminUser.password);
-        if (!isMatch) return null;
-
-        return { id: adminUser.id, email: adminUser.email };
+        return null;
       }
     })
   ],
   session: {
     strategy: "jwt",
-  }
+  },
+  secret: process.env.NEXTAUTH_SECRET || "your-super-secret-string-here"
 };

@@ -6,82 +6,156 @@ import { usePathname } from "next/navigation";
 import { useAppContext } from "./AppContext";
 
 export default function Navbar() {
-  const { state } = useAppContext();
+  const { state, toggleLanguage } = useAppContext();
   const pathname = usePathname();
-
-  // Hide on intake screen
-  if (!state.sessionId) {
-    return null;
-  }
 
   // Hide during actual cognitive tasks to prevent distraction
   if (pathname?.startsWith("/cognitive/")) {
     return null;
   }
 
+  const isAdmin = pathname?.startsWith("/admin");
+
   return (
-    <nav style={{
-      background: "var(--card-bg)",
-      borderBottom: "1px solid var(--card-border)",
-      padding: "16px 24px",
-      display: "flex",
-      alignItems: "center",
-      position: "sticky",
-      top: 0,
-      zIndex: 100,
-      boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
-    }}>
-      {/* Centered navigation links */}
-      <div style={{ display: "flex", gap: "32px", margin: "0 auto" }}>
-        <Link 
-          href="/" 
-          style={{ 
-            textDecoration: "none", 
-            color: pathname === "/" ? "var(--accent-color)" : "var(--text-secondary)",
-            fontWeight: pathname === "/" ? 600 : 500,
-            borderBottom: pathname === "/" ? "2px solid var(--accent-color)" : "2px solid transparent",
-            paddingBottom: "4px",
-            transition: "all 0.2s"
-          }}
-        >
-          Cognitive Tests
+    <header
+      style={{
+        background: "rgba(255, 255, 255, 0.95)",
+        backdropFilter: "blur(10px)",
+        borderBottom: "1px solid var(--card-border)",
+        padding: "12px 24px",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.04)"
+      }}
+    >
+      <div style={{ maxWidth: 1600, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        {/* Lab Branding */}
+        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 8,
+              background: "linear-gradient(135deg, #1e40af, #3b82f6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: 700,
+              fontSize: 16,
+              boxShadow: "0 2px 4px rgba(30, 64, 175, 0.25)"
+            }}
+          >
+            🧠
+          </div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.2, lineHeight: 1.2 }}>
+              AIIMS Kalyani
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "var(--text-secondary)", lineHeight: 1 }}>
+              Physiology & Cognitive Lab
+            </div>
+          </div>
         </Link>
-        <Link 
-          href="/questionnaires" 
-          style={{ 
-            textDecoration: "none", 
-            color: pathname === "/questionnaires" ? "var(--accent-color)" : "var(--text-secondary)",
-            fontWeight: pathname === "/questionnaires" ? 600 : 500,
-            borderBottom: pathname === "/questionnaires" ? "2px solid var(--accent-color)" : "2px solid transparent",
-            paddingBottom: "4px",
-            transition: "all 0.2s"
-          }}
-        >
-          Questionnaires
-        </Link>
+
+        {/* Navigation Links */}
+        {!isAdmin && state.sessionId && (
+          <nav style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            <Link 
+              href="/" 
+              style={{ 
+                textDecoration: "none", 
+                color: pathname === "/" ? "var(--accent-color)" : "var(--text-secondary)",
+                fontWeight: pathname === "/" ? 600 : 500,
+                fontSize: 14,
+                position: "relative",
+                padding: "6px 2px",
+                transition: "color 0.15s"
+              }}
+            >
+              {state.language === "bn" ? "কগনিটিভ টেস্ট" : "Cognitive Tests"}
+              {pathname === "/" && (
+                <span style={{ position: "absolute", bottom: -6, left: 0, right: 0, height: 2, backgroundColor: "var(--accent-color)", borderRadius: 2 }} />
+              )}
+            </Link>
+
+            <Link 
+              href="/questionnaires" 
+              style={{ 
+                textDecoration: "none", 
+                color: pathname === "/questionnaires" ? "var(--accent-color)" : "var(--text-secondary)",
+                fontWeight: pathname === "/questionnaires" ? 600 : 500,
+                fontSize: 14,
+                position: "relative",
+                padding: "6px 2px",
+                transition: "color 0.15s"
+              }}
+            >
+              {state.language === "bn" ? "প্রশ্নাবলী" : "Questionnaires"}
+              {pathname === "/questionnaires" && (
+                <span style={{ position: "absolute", bottom: -6, left: 0, right: 0, height: 2, backgroundColor: "var(--accent-color)", borderRadius: 2 }} />
+              )}
+            </Link>
+          </nav>
+        )}
+
+        {/* Right Action Tools */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Language Switcher */}
+          <button 
+            onClick={toggleLanguage}
+            className="btn btn-outline"
+            style={{
+              padding: "6px 12px",
+              fontSize: 12,
+              fontWeight: 600,
+              gap: 6,
+              borderRadius: 6,
+            }}
+            title="Toggle Language"
+          >
+            <span>🌐</span> {state.language === 'bn' ? 'বাংলা' : 'English'}
+          </button>
+
+          {/* Participant Sign Out Button */}
+          {!isAdmin && state.sessionId && (
+            <button
+              onClick={useAppContext().resetSession}
+              className="btn btn-outline"
+              style={{
+                padding: "6px 12px",
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#dc2626",
+                borderColor: "#fecaca",
+                borderRadius: 6,
+              }}
+              title="Sign Out / Switch Participant"
+            >
+              <span>🚪</span> {state.language === 'bn' ? 'প্রস্থান' : 'Sign Out'}
+            </button>
+          )}
+
+          {/* Admin Portal Link */}
+          <Link
+            href="/admin/export"
+            className="btn"
+            style={{
+              padding: "6px 14px",
+              fontSize: 12,
+              fontWeight: 600,
+              background: isAdmin ? "var(--text-primary)" : "#f1f5f9",
+              color: isAdmin ? "#ffffff" : "var(--text-primary)",
+              border: "1px solid var(--card-border)",
+              borderRadius: 6,
+              boxShadow: "none",
+            }}
+          >
+            <span>🔒</span> {isAdmin ? "Admin Active" : "Admin Portal"}
+          </Link>
+        </div>
       </div>
-      
-      {/* Language Toggle Button on the Right */}
-      <button 
-        onClick={useAppContext().toggleLanguage}
-        style={{
-          position: "absolute",
-          right: "24px",
-          background: "transparent",
-          border: "1px solid var(--card-border)",
-          borderRadius: "6px",
-          padding: "6px 12px",
-          fontSize: "0.85rem",
-          fontWeight: 600,
-          cursor: "pointer",
-          color: "var(--accent-color)",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px"
-        }}
-      >
-        🌐 {state.language === 'bn' ? 'বাংলা' : 'EN'}
-      </button>
-    </nav>
+    </header>
   );
 }

@@ -55,6 +55,7 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   const [currentTrialIndex, setCurrentTrialIndex] = useState(0);
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [calculatedParams, setCalculatedParams] = useState<any>(null);
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -166,6 +167,12 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
     const meanRTIgnoredRep = mean(ignoredRepRTs);
     const primingEffect = meanRTIgnoredRep - meanRTControl; 
 
+    
+    setCalculatedParams({
+      param1Name: "Mean RT Control (ms)", param1Value: Math.round(meanRTControl),
+      param2Name: "Mean RT Ignored Rep (ms)", param2Value: Math.round(meanRTIgnoredRep),
+      param3Name: "Negative Priming Effect (ms)", param3Value: Math.round(primingEffect)
+    });
     try {
       await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",

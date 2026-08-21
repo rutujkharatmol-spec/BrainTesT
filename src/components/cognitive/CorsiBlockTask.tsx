@@ -32,6 +32,7 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [errorsAtCurrentSpan, setErrorsAtCurrentSpan] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [calculatedParams, setCalculatedParams] = useState<any>(null);
 
   const startTask = () => {
     generateAndPlaySequence(2); // Corsi usually starts at 2
@@ -111,6 +112,12 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   const submitData = async () => {
     setSubmitting(true);
     
+    
+    setCalculatedParams({
+      param1Name: "Maximum Block Span", param1Value: maxSpan,
+      param2Name: "Total Correct Trials", param2Value: totalCorrect,
+      param3Name: null, param3Value: null
+    });
     try {
       await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",

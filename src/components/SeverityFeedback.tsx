@@ -157,6 +157,45 @@ export default function SeverityFeedback({ questionnaireId, calculatedScores }: 
     );
   }
 
+  if (questionnaireId === "cfs") {
+    return (
+      <div>
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ margin: "8px 0", fontSize: "1.1rem" }}><strong>CFS Score:</strong> {calculatedScores.score} / 72</p>
+          <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)", fontStyle: "italic", margin: "8px 0" }}>
+            The average score among students is around 55 points. Higher scores indicate greater cognitive flexibility.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (questionnaireId === "cfq") {
+    return (
+      <div>
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ margin: "8px 0", fontSize: "1.1rem" }}><strong>CFQ Score:</strong> {calculatedScores.score} / 40</p>
+          <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)", fontStyle: "italic", margin: "8px 0" }}>
+            Higher scores indicate a higher frequency of self-reported cognitive failures (minor mistakes in daily life).
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (questionnaireId === "ncs6") {
+    return (
+      <div>
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ margin: "8px 0", fontSize: "1.1rem" }}><strong>NCS-6 Average Score:</strong> {calculatedScores.score !== undefined ? Number(calculatedScores.score).toFixed(2) : ""} / 5.00</p>
+          <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)", fontStyle: "italic", margin: "8px 0" }}>
+            Scores range from 1 to 5. Higher scores indicate a greater preference for and enjoyment of effortful thinking.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {calculatedScores.score !== undefined && <p><strong>Total Score:</strong> {calculatedScores.score}</p>}

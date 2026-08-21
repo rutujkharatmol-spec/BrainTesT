@@ -34,6 +34,7 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
   const [currentTrialIndex, setCurrentTrialIndex] = useState(0);
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [calculatedParams, setCalculatedParams] = useState<any>(null);
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -130,6 +131,12 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
     const meanRTNonWords = mean(nonWordRTs);
     const overallAccuracy = (results.filter(r => r.correct).length / TOTAL_TRIALS) * 100;
 
+    
+    setCalculatedParams({
+      param1Name: "Mean RT Words (ms)", param1Value: Math.round(meanRTWords),
+      param2Name: "Mean RT Non-words (ms)", param2Value: Math.round(meanRTNonWords),
+      param3Name: "Overall Accuracy (%)", param3Value: Math.round(overallAccuracy)
+    });
     try {
       await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",

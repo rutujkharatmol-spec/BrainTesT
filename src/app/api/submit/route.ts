@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     });
 
     if (!session) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 404 });
+      return NextResponse.json({ error: "Invalid session" }, { status: 400 });
     }
 
     // Delete old answers for this test and session to allow retakes

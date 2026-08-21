@@ -23,6 +23,7 @@ model Session {
   schoolName          String?
   address             String?
   phoneNo             String?
+  passcode            String?
   createdAt           DateTime @default(now())
   consentGiven Boolean  @default(false)
   completed    Boolean  @default(false)

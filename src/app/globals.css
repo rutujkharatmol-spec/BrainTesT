@@ -1,25 +1,43 @@
 :root {
-  --bg-gradient-start: #FAFAFA;
-  --bg-gradient-end: #F5F6F8;
+  --bg-gradient-start: #F8FAFC;
+  --bg-gradient-end: #F1F5F9;
   --card-bg: #FFFFFF;
-  --card-border: #E5E7EB;
-  --text-primary: #1A1D23;
-  --text-secondary: #4B5563;
-  --accent-color: #2D6E7E;
-  --accent-hover: #225663;
-  --success-color: #059669; /* Desaturated for status */
-  --error-color: #DC2626;   /* Desaturated for status */
-  --warning-color: #D97706; /* Desaturated for status */
-  --border-radius: 8px;     /* Changed from 16 to 8 */
-  --transition-speed: 0.2s;
+  --card-border: #E2E8F0;
+  --card-border-hover: #CBD5E1;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
   
+  --accent-color: #1E40AF;
+  --accent-hover: #1D4ED8;
+  --accent-light: #EFF6FF;
+  
+  --success-color: #059669;
+  --success-light: #ECFDF5;
+  --error-color: #DC2626;
+  --error-light: #FEF2F2;
+  --warning-color: #D97706;
+  --warning-light: #FFFBEB;
+  --info-color: #0284C7;
+  --info-light: #F0F9FF;
+
+  --border-radius-sm: 6px;
+  --border-radius: 10px;
+  --border-radius-lg: 14px;
+  --transition-speed: 0.18s;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+
   /* Type Scale */
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 16px;
   --text-lg: 20px;
-  --text-xl: 28px;
-  --text-2xl: 36px;
+  --text-xl: 26px;
+  --text-2xl: 32px;
 }
 
 * {
@@ -29,13 +47,14 @@
 }
 
 body {
-  /* Font family is handled by Next.js Inter, fallback below */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
   background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
   color: var(--text-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   /* PWA Native App Tweaks */
   user-select: none;
@@ -54,39 +73,49 @@ main {
   width: 100%;
 }
 
-/* Administrative Card - Replacing .glass-panel */
+/* Administrative Card */
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--border-radius);
-  padding: 32px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Soft single-layer shadow */
+  padding: 28px;
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.card:hover {
+  border-color: var(--card-border-hover);
 }
 
 /* Base Headings */
 h1 {
   font-size: var(--text-2xl);
-  margin-bottom: 16px;
-  line-height: 1.2;
+  margin-bottom: 12px;
+  line-height: 1.25;
   font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 h2 {
   font-size: var(--text-xl);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 h3 {
   font-size: var(--text-lg);
   margin-bottom: 8px;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 p {
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 16px;
+  line-height: 1.55;
+  margin-bottom: 14px;
   font-size: var(--text-base);
 }
 
@@ -94,51 +123,73 @@ p {
 .btn {
   background: var(--accent-color);
   color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: var(--text-base);
-  font-weight: 500;
+  border: 1px solid transparent;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition-speed), transform 150ms ease;
+  transition: all var(--transition-speed) ease;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
 }
 
 .btn:hover {
   background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
 .btn:disabled {
-  background: #E5E7EB;
-  color: #9CA3AF;
+  background: #E2E8F0;
+  color: #94A3B8;
+  border-color: #E2E8F0;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-outline {
-  background: transparent;
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
+  background: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-outline:hover {
-  background: rgba(45, 110, 126, 0.05);
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: var(--accent-color);
+}
+
+/* Form Controls */
+input, textarea, select {
+  font-family: inherit;
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15) !important;
 }
 
 /* Minimal Task View */
 .task-view-container {
-  /* Strip away everything - pure neutral background */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: #F5F6F8; /* Neutral background, no gradient */
+  background: #F8FAFC;
   display: flex;
   flex-direction: column;
   z-index: 1000;
@@ -154,7 +205,6 @@ p {
   padding: 0 16px;
 }
 
-/* Force all inline fonts inside stimulus to be responsive */
 .task-stimulus h1,
 .task-stimulus h2,
 .task-stimulus div {
@@ -163,7 +213,6 @@ p {
   text-align: center;
 }
 
-/* Adjust specifically known large text nodes to use clamp */
 .task-stimulus h1 {
   font-size: clamp(3rem, 10vw, 8rem) !important;
 }
@@ -171,13 +220,13 @@ p {
 /* Minimal Mobile Controls for Cognitive Tasks */
 .mobile-controls-container {
   width: 100%;
-  padding: 24px;
+  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: auto;
   background: #FFFFFF;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #E2E8F0;
 }
 
 .mobile-controls {
@@ -190,25 +239,24 @@ p {
 
 .mobile-btn {
   flex: 1;
-  padding: 20px 10px;
+  padding: 18px 10px;
   font-size: var(--text-lg);
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm);
   background: #FFFFFF;
-  border: 1px solid #D1D5DB;
+  border: 1px solid #CBD5E1;
   color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: background 150ms, transform 150ms, box-shadow 150ms;
+  box-shadow: var(--shadow-sm);
+  transition: all 150ms ease;
 }
 
-/* Exclude animations at the moment of stimulus presentation if possible. Here, we just keep button states fast */
 .mobile-btn:active {
   transform: translateY(2px);
   box-shadow: none;
-  background: #F3F4F6;
+  background: #F1F5F9;
 }
 
 .mobile-btn:disabled {
@@ -228,7 +276,7 @@ p {
 .error-text {
   color: var(--error-color);
   font-size: var(--text-sm);
-  margin-top: 8px;
+  margin-top: 6px;
   display: block;
 }
 
@@ -241,24 +289,62 @@ p {
   }
 }
 
-/* Hide scrollbars but keep scrolling */
-::-webkit-scrollbar {
-  display: none;
-}
-* {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Allow text selection in specific inputs */
-input, textarea, select {
-  user-select: auto;
-  -webkit-user-select: auto;
-}
-
 /* Responsive grid for intake form on small screens */
 @media (max-width: 500px) {
   .card {
-    padding: 20px;
+    padding: 18px;
   }
+}
+
+/* =========================================================================
+   ADMIN PORTAL & SPREADSHEET VIEWER STYLES
+   ========================================================================= */
+
+main:has(.admin-portal-wrapper) {
+  max-width: 100% !important;
+  padding: 16px 28px !important;
+  width: 100% !important;
+}
+
+.admin-portal-wrapper {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+.admin-portal-wrapper * {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+.admin-portal-wrapper .sheet-table-wrapper {
+  scrollbar-width: thin !important;
+  -ms-overflow-style: auto !important;
+}
+
+.admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar {
+  display: block !important;
+  height: 9px !important;
+  width: 9px !important;
+}
+
+.admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar-track {
+  background: #F1F5F9 !important;
+}
+
+.admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar-thumb {
+  background: #CBD5E1 !important;
+  border-radius: 4px !important;
+}
+
+.admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8 !important;
+}
+
+/* Glass panel effect */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
 }

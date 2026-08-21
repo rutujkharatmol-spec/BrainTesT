@@ -26,6 +26,7 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   const [currentTrialIndex, setCurrentTrialIndex] = useState(0);
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [calculatedParams, setCalculatedParams] = useState<any>(null);
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -122,6 +123,12 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
     const meanRTIncongruent = mean(incongruentRTs);
     const flankerEffect = meanRTIncongruent - meanRTCongruent; 
 
+    
+    setCalculatedParams({
+      param1Name: "Mean RT Congruent (ms)", param1Value: Math.round(meanRTCongruent),
+      param2Name: "Mean RT Incongruent (ms)", param2Value: Math.round(meanRTIncongruent),
+      param3Name: "Flanker Effect", param3Value: Math.round(flankerEffect)
+    });
     try {
       await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",

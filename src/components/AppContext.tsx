@@ -14,7 +14,8 @@ type AppState = {
 
 type AppContextType = {
   state: AppState;
-  setSessionId: (id: string, name: string, idNum: string) => void;
+  setSessionId: (id: string, name: string, idNum: string, completedTests?: string[]) => void;
+  loginParticipant: (id: string, name: string, idNum: string, completedTests?: string[]) => void;
   setConsentGiven: (given: boolean) => void;
   markTestCompleted: (testId: string) => void;
   resetSession: () => void;
@@ -103,12 +104,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [isOffline]);
 
-  const setSessionId = (id: string, name: string, idNum: string) => setState(s => ({ 
+  const setSessionId = (id: string, name: string, idNum: string, completedTests?: string[]) => setState(s => ({ 
     ...s, 
     sessionId: id,
     participantName: name,
-    participantIdNumber: idNum
+    participantIdNumber: idNum,
+    completedTests: completedTests ? Array.from(new Set([...s.completedTests, ...completedTests])) : s.completedTests,
+    consentGiven: true
   }));
+
+  const loginParticipant = (id: string, name: string, idNum: string, completedTests?: string[]) => {
+    setState(s => ({
+      ...s,
+      sessionId: id,
+      participantName: name,
+      participantIdNumber: idNum,
+      completedTests: completedTests || [],
+      consentGiven: true
+    }));
+  };
+
   const setConsentGiven = (given: boolean) => setState(s => ({ ...s, consentGiven: given }));
   const markTestCompleted = (testId: string) => setState(s => ({
     ...s,
@@ -134,7 +149,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   if (!loaded) return null; // Avoid hydration mismatch
 
   return (
-    <AppContext.Provider value={{ state, setSessionId, setConsentGiven, markTestCompleted, resetSession, toggleLanguage }}>
+    <AppContext.Provider value={{ state, setSessionId, loginParticipant, setConsentGiven, markTestCompleted, resetSession, toggleLanguage }}>
       {/* Offline / Sync Status Banner */}
       {(isOffline || syncMessage) && (
         <div style={{

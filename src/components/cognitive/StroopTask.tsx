@@ -27,6 +27,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   const [currentTrialIndex, setCurrentTrialIndex] = useState(0);
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [calculatedParams, setCalculatedParams] = useState<any>(null);
 
   const startTimeRef = useRef<number>(0);
 
@@ -115,6 +116,12 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     const meanRTIncongruent = mean(incongruentRTs);
     const stroopEffect = meanRTIncongruent - meanRTCongruent;
 
+    
+    setCalculatedParams({
+      param1Name: "Mean RT Congruent (ms)", param1Value: Math.round(meanRTCongruent),
+      param2Name: "Mean RT Incongruent (ms)", param2Value: Math.round(meanRTIncongruent),
+      param3Name: "Stroop Interference Effect (ms)", param3Value: Math.round(stroopEffect)
+    });
     try {
       await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
@@ -197,11 +204,59 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     );
   }
 
-  return (
-    <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-      <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-      <p>{state.language === 'bn' ? "আপনার প্রতিক্রিয়া সময় সংরক্ষণ করা হচ্ছে..." : "Saving your reaction times..."}</p>
-      {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
-    </div>
-  );
+  if (phase === "completed") {
+    return (
+      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
+        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
+        
+        {calculatedParams && (
+          <div style={{ textAlign: "left", background: "#F9FAFB", padding: "20px", borderRadius: "12px", border: "1px solid var(--card-border)", margin: "24px 0" }}>
+            <h3 style={{ marginTop: 0, marginBottom: 16, borderBottom: "1px solid #eaeaea", paddingBottom: 12 }}>Result Overview</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {calculatedParams.param1Name && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param1Name}:</span>
+                  <strong>{calculatedParams.param1Value}</strong>
+                </div>
+              )}
+              {calculatedParams.param2Name && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param2Name}:</span>
+                  <strong>{calculatedParams.param2Value}</strong>
+                </div>
+              )}
+              {calculatedParams.param3Name && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param3Name}:</span>
+                  <strong>{calculatedParams.param3Value}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {submitting ? (
+          <p style={{ color: "var(--accent-color)", fontWeight: "bold" }}>
+            {state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।" : "Uploading data... please wait."}
+          </p>
+        ) : (
+          <div>
+            <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
+              {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
+            </p>
+            <button className="btn" onClick={() => {
+              if (onComplete) onComplete();
+              else {
+                window.location.href = "/";
+              }
+            }} style={{ width: "100%" }}>
+              {state.language === 'bn' ? "ফিরে যান / চালিয়ে যান" : "Continue"}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null; // fallback
 }
