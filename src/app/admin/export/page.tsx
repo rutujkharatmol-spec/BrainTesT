@@ -10,7 +10,7 @@ export default async function AdminExportPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/api/auth/signin?callbackUrl=/admin/export");
+    redirect("/admin/login?callbackUrl=/admin/export");
   }
 
   const initialData = await getAdminSpreadsheetData();
