@@ -1,22 +1,14 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcrypt";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
-export async function GET() {
-  try {
-    const hash = await bcrypt.hash("password123", 10);
-    const admin = await prisma.adminUser.upsert({
-      where: { email: "admin@example.com" },
-      update: { password: hash },
-      create: { email: "admin@example.com", password: hash }
-    });
-    
-    return NextResponse.json({ 
-      message: "Default admin user created!", 
-      email: admin.email, 
-      password: "password123" 
-    }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+export const dynamic = "force-dynamic";
+
+export async function POST() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  return NextResponse.json({ message: "Admin system active with password 0907" });
 }

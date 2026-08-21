@@ -133,6 +133,10 @@ const QUESTIONNAIRE_CONFIGS: Record<string, { title: string; count: number; desc
   who5: { title: "WHO-5 (Well-Being Index)", count: 5, description: "Positive psychological well-being index", badge: "5 Items", color: "#16a34a" },
 };
 
+// Height of the cognitive "group" super-header row; the column header row is
+// pinned directly underneath it, so both must agree on this number.
+const GROUP_HEADER_H = 29;
+
 export default function AdminSpreadsheetViewer({ initialData }: { initialData: AdminDataPayload }) {
   const [data, setData] = useState<AdminDataPayload>(initialData);
   const [activeTab, setActiveTab] = useState<"cognitive" | "questionnaires" | "participants" | "raw">("cognitive");
@@ -164,6 +168,23 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
   const [syncMessage, setSyncMessage] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
+
+  // Viewport tracking drives the responsive layout below (phone / tablet / desktop)
+  const [vw, setVw] = useState<number>(1280);
+  useEffect(() => {
+    const compute = () => setVw(window.innerWidth);
+    compute();
+    window.addEventListener("resize", compute);
+    window.addEventListener("orientationchange", compute);
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("orientationchange", compute);
+    };
+  }, []);
+  const isMobile = vw <= 640;
+
+  // On phones the secondary toolbar collapses behind a single "Tools" toggle
+  const [showMobileTools, setShowMobileTools] = useState(false);
 
   // Reset page when tab changes
   useEffect(() => {
@@ -218,8 +239,8 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
     const targetId = `group-header-${groupName.replace(/\s+/g, '-').toLowerCase()}`;
     const el = document.getElementById(targetId);
     if (el) {
-      // Offset by the sticky participant columns (115px + 155px = 270px) + margin
-      const stickyColumnsWidth = 270;
+      // Offset by whichever participant columns are pinned at this breakpoint
+      const stickyColumnsWidth = isMobile ? 88 : 270;
       const targetScrollLeft = el.offsetLeft - stickyColumnsWidth - 6;
       tableWrapperRef.current.scrollTo({
         left: Math.max(0, targetScrollLeft),
@@ -392,6 +413,51 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
       };
     }
   }, [activeTab, activeQuestionnaire, data]);
+
+  // ---- Responsive sizing helpers -------------------------------------------
+  // On phones every column shrinks and only the ID column stays pinned, so at
+  // least one data column remains visible next to it on a 360px screen.
+  const stickyCount = isMobile ? 1 : columns.filter((c: any) => c.sticky).length;
+
+  const colWidth = (col: any) => {
+    if (!isMobile) return col.width;
+    if (col.isId) return 88;
+    if (col.isName) return 118;
+    return Math.max(54, Math.round(col.width * 0.86));
+  };
+
+  const isColSticky = (col: any, idx: number) => Boolean(col.sticky) && idx < stickyCount;
+  const stickyLeft = (col: any, idx: number) =>
+    isColSticky(col, idx) ? (idx === 0 ? 0 : colWidth(columns[0])) : undefined;
+  const isLastSticky = (col: any, idx: number) => isColSticky(col, idx) && idx === stickyCount - 1;
+
+  const cellFont = isMobile ? (density === "compact" ? 10 : 11) : density === "compact" ? 11 : 12;
+  const cellPad = density === "compact" ? (isMobile ? "5px 6px" : "5px 8px") : isMobile ? "7px 8px" : "8px 10px";
+  const headerFont = isMobile ? 10 : density === "compact" ? 11 : 12;
+  const headerPad = density === "compact" ? (isMobile ? "6px 6px" : "6px 8px") : isMobile ? "7px 8px" : "8px 10px";
+
+  // Primary (top bar) actions go full-width in a 2-up grid on phones
+  const actionBtnStyle: React.CSSProperties = {
+    padding: isMobile ? "9px 8px" : "5px 10px",
+    fontSize: 11,
+    borderRadius: 6,
+    minHeight: isMobile ? 38 : undefined,
+    width: isMobile ? "100%" : undefined,
+    justifyContent: "center",
+  };
+
+  // Secondary (toolbar) buttons get bigger tap targets on phones
+  const toolBtnStyle: React.CSSProperties = {
+    padding: isMobile ? "6px 10px" : "4px 7px",
+    fontSize: isMobile ? 12 : 11,
+    borderRadius: 6,
+    height: isMobile ? 32 : 26,
+  };
+
+  const pagerBtnStyle: React.CSSProperties = {
+    padding: isMobile ? "7px 10px" : "3px 6px",
+    fontSize: isMobile ? 11 : 10,
+  };
 
   // Filter and Sort rows
   const filteredAndSortedRows = useMemo(() => {
