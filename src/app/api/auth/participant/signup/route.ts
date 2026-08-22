@@ -23,8 +23,9 @@ export async function POST(req: Request) {
     if (!participantName?.trim()) {
       return NextResponse.json({ error: "Participant Name is required." }, { status: 400 });
     }
-    if (!participantIdNumber?.trim()) {
-      return NextResponse.json({ error: "Participant ID Number is required." }, { status: 400 });
+    const cleanId = participantIdNumber?.replace(/\D/g, "") || "";
+    if (!cleanId || cleanId.length !== 12) {
+      return NextResponse.json({ error: "Please enter a valid 12-digit Aadhaar Card Number." }, { status: 400 });
     }
     if (!passcode || passcode.trim().length < 4) {
       return NextResponse.json({ error: "Passcode must be at least 4 characters/digits." }, { status: 400 });
@@ -33,7 +34,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Please enter a valid 10-digit phone number." }, { status: 400 });
     }
 
-    const cleanId = participantIdNumber.trim();
     const cleanPhone = phoneNo.trim();
 
     // Hash passcode securely
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
       if (isDuplicate) {
         return NextResponse.json({
-          error: "A participant with this ID Number or Phone Number already exists. Please Sign In instead.",
+          error: "A participant with this Aadhaar Card Number or Phone Number already exists. Please Sign In instead.",
         }, { status: 409 });
       }
       throw insertErr;

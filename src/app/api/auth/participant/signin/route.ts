@@ -25,16 +25,15 @@ export async function POST(req: Request) {
     const { identifier, passcode } = body;
 
     if (!identifier?.trim()) {
-      return NextResponse.json({ error: "Please enter your ID Number or Phone Number." }, { status: 400 });
+      return NextResponse.json({ error: "Please enter your Aadhaar Card Number or Phone Number." }, { status: 400 });
     }
     if (!passcode?.trim()) {
       return NextResponse.json({ error: "Please enter your passcode." }, { status: 400 });
     }
 
-    const cleanId = identifier.trim();
+    const cleanId = identifier.trim().replace(/[\s-]/g, "");
 
-    // ID numbers are short and guessable, and a successful sign-in returns
-    // participant PII, so throttle per IP+identifier to prevent enumeration.
+    // Aadhaar / ID numbers are throttled per IP+identifier to prevent enumeration.
     const rateKey = `participant-signin:${clientIp(req)}:${cleanId}`;
     const limit = checkRateLimit(rateKey, { limit: 8, windowMs: 15 * 60_000, blockMs: 10 * 60_000 });
     if (!limit.allowed) {
@@ -44,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Look up participant by ID Number or Phone Number using raw SQL
+    // Look up participant by Aadhaar Number or Phone Number using raw SQL
     const sessions: any[] = await prisma.$queryRawUnsafe(
       `SELECT * FROM "Session" WHERE "participantIdNumber" = $1 OR "phoneNo" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
       cleanId
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
 
     if (!sessions || sessions.length === 0) {
       return NextResponse.json({ 
-        error: "No account found matching this ID Number or Phone Number. Please sign up." 
+        error: "No account found matching this Aadhaar Card Number or Phone Number. Please sign up." 
       }, { status: 404 });
     }
 

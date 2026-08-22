@@ -267,7 +267,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeText: "9 Tasks",
         badgeColor: "#1e40af",
         columns: [
-          { key: "idNumber", label: "ID Number", group: "Participant", width: 115, sticky: true, isId: true },
+          { key: "idNumber", label: "Aadhaar Number", group: "Participant", width: 135, sticky: true, isId: true },
           { key: "name", label: "Participant Name", group: "Participant", width: 155, sticky: true, isName: true },
           { key: "schoolName", label: "School / Institution", group: "Participant", width: 140 },
           { key: "createdAt", label: "Date", group: "Participant", width: 110, isDate: true, isLastInGroup: true },
@@ -314,7 +314,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           badgeText: "12 Scales Overview",
           badgeColor: "#1e40af",
           columns: [
-            { key: "idNumber", label: "ID Number", width: 115, sticky: true, isId: true },
+            { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
             { key: "name", label: "Participant Name", width: 155, sticky: true, isName: true },
             { key: "schoolName", label: "School", width: 130 },
             { key: "createdAt", label: "Date", width: 110, isDate: true, isLastInGroup: true },
@@ -341,7 +341,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         const rows = data.individualSheets[activeQuestionnaire] || [];
         
         const qCols: any[] = [
-          { key: "idNumber", label: "ID Number", width: 115, sticky: true, isId: true },
+          { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
           { key: "name", label: "Participant Name", width: 155, sticky: true, isName: true },
           { key: "schoolName", label: "School", width: 130 },
           { key: "createdAt", label: "Date", width: 110, isDate: true, isLastInGroup: true },
@@ -386,7 +386,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeText: `${data.participants.length} Enrolled`,
         badgeColor: "#059669",
         columns: [
-          { key: "idNumber", label: "ID Number", width: 115, sticky: true, isId: true },
+          { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
           { key: "name", label: "Participant Name", width: 155, sticky: true, isName: true },
           { key: "age", label: "Age", width: 70, isNumeric: true },
           { key: "gender", label: "Gender", width: 85 },
@@ -407,7 +407,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeText: `${data.rawTrials.length} Runs`,
         badgeColor: "#7c3aed",
         columns: [
-          { key: "idNumber", label: "ID Number", width: 115, sticky: true, isId: true },
+          { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
           { key: "name", label: "Participant Name", width: 145, sticky: true, isName: true },
           { key: "specificTest", label: "Test Name", width: 150, bold: true },
           { key: "category", label: "Category", width: 120 },

@@ -63,7 +63,7 @@ export default function IntakeScreen() {
   // Sign Up Validation
   const isSignUpValid =
     name.trim() &&
-    idNum.trim() &&
+    idNum.trim().length === 12 &&
     phoneNo.length === 10 &&
     passcode.trim().length >= 4 &&
     age.trim() &&
@@ -86,7 +86,7 @@ export default function IntakeScreen() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifier: signInIdentifier.trim(),
+          identifier: signInIdentifier.trim().replace(/[\s-]/g, ""),
           passcode: signInPasscode.trim(),
         }),
       });
@@ -282,22 +282,22 @@ export default function IntakeScreen() {
       )}
 
       {/* =====================================================================
-          SIGN IN FORM (ID Number / Phone Number + Passcode)
+          SIGN IN FORM (Aadhaar Card Number / Phone Number + Passcode)
           ===================================================================== */}
       {authMode === "signin" ? (
         <form onSubmit={handleSignIn}>
           <div style={{ marginBottom: 18 }}>
             <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px 0", textAlign: "center" }}>
               {lang === "bn"
-                ? "অধিবেশন চালিয়ে যেতে আপনার আইডি নম্বর বা ফোন নম্বর এবং পাসকোড লিখুন।"
-                : "Enter your ID Number or 10-digit Phone Number and Passcode to access your assessment profile."}
+                ? "অধিবেশন চালিয়ে যেতে আপনার ১২-সংখ্যার আধার কার্ড নম্বর অথবা ১০-সংখ্যার ফোন নম্বর এবং পাসকোড লিখুন।"
+                : "Enter your 12-digit Aadhaar Card Number or 10-digit Phone Number and Passcode to access your assessment profile."}
             </p>
           </div>
 
-          {/* Identifier: ID or Phone */}
+          {/* Identifier: Aadhaar or Phone */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>
-              {lang === "bn" ? "আইডি নম্বর অথবা ফোন নম্বর" : "ID NUMBER OR PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
+              {lang === "bn" ? "আধার কার্ড নম্বর অথবা ফোন নম্বর" : "AADHAAR CARD OR PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
             </label>
             <input
               type="text"
@@ -305,7 +305,7 @@ export default function IntakeScreen() {
               onChange={(e) => setSignInIdentifier(e.target.value)}
               required
               style={inputStyle}
-              placeholder="e.g. 123456 or 9876543210"
+              placeholder="e.g. 12-digit Aadhaar No or 10-digit Mobile No"
               autoFocus
             />
           </div>
@@ -381,7 +381,7 @@ export default function IntakeScreen() {
 
           {/* Switch to Sign Up */}
           <div style={{ marginTop: 20, textAlign: "center", fontSize: 13, color: "#64748b" }}>
-            {lang === "bn" ? "অ্যাকাউন্ট নেই? " : "Don't have an ID yet? "}
+            {lang === "bn" ? "অ্যাকাউন্ট নেই? " : "Don't have an account yet? "}
             <button
               type="button"
               onClick={() => {
@@ -413,7 +413,7 @@ export default function IntakeScreen() {
               : "Please fill in your details and create a passcode to register for the assessment."}
           </p>
 
-          {/* Row 1: Name + ID */}
+          {/* Row 1: Name + Aadhaar */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
@@ -430,16 +430,26 @@ export default function IntakeScreen() {
             </div>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "আইডি নম্বর / ID NUMBER" : "ID NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {lang === "bn" ? "আধার কার্ড নম্বর / AADHAAR CARD NUMBER" : "AADHAAR CARD NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="text"
                 value={idNum}
-                onChange={(e) => setIdNum(e.target.value)}
+                onChange={(e) => {
+                  const num = e.target.value.replace(/\D/g, "");
+                  if (num.length <= 12) setIdNum(num);
+                }}
                 required
+                pattern="\d{12}"
+                title="Aadhaar Card Number must be exactly 12 digits"
                 style={inputStyle}
-                placeholder="e.g. 123456"
+                placeholder="12-digit Aadhaar Number"
               />
+              {idNum.length > 0 && idNum.length < 12 && (
+                <span style={{ fontSize: "0.75rem", color: "var(--error-color)", marginTop: 4, display: "block" }}>
+                  Must be 12 digits ({idNum.length}/12)
+                </span>
+              )}
             </div>
           </div>
 

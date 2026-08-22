@@ -29,7 +29,9 @@ export default function CognitiveHub() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "1px solid var(--card-border)" }}>
         <div>
           <h2>{lang === 'bn' ? "স্নায়বিক পরীক্ষা হাব" : "Cognitive Testing Hub"}</h2>
-          <p style={{ margin: 0 }}>{lang === 'bn' ? "অংশগ্রহণকারী" : "Participant"}: {state.participantName} ({state.participantIdNumber})</p>
+          <p style={{ margin: 0 }}>
+            {lang === 'bn' ? "অংশগ্রহণকারী" : "Participant"}: <strong>{state.participantName}</strong> ({lang === 'bn' ? "আধার" : "Aadhaar"}: {state.participantIdNumber})
+          </p>
         </div>
         <button onClick={resetSession} className="btn btn-outline" style={{ border: "1px solid var(--error-color)", color: "var(--error-color)" }}>
           {lang === 'bn' ? "সেশন শেষ করুন" : "End Session"}

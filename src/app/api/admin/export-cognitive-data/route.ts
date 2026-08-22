@@ -130,7 +130,7 @@ export async function GET() {
 
     // Define columns (row 2 headers)
     const columns = [
-      { header: "IDnumber", key: "idNumber", width: 15 },
+      { header: "Aadhaar Number", key: "idNumber", width: 18 },
       { header: "Name", key: "name", width: 20 },
       // Stroop
       { header: "Mean RT Congruent", key: "stroopCongruent", width: 20 },
