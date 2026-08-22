@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import TaskCompleteScreen from "./TaskCompleteScreen";
 
 type Phase = "instructions" | "presentation" | "recall" | "completed";
 
@@ -21,7 +23,14 @@ const BLOCK_POSITIONS = [
 
 export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
+  const router = useRouter();
   
+  // Only 9 blocks exist, so a sequence longer than that is not presentable.
+  const MAX_SPAN = BLOCK_POSITIONS.length;
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const flashRef = useRef<NodeJS.Timeout | null>(null);
+  const advanceRef = useRef<NodeJS.Timeout | null>(null);
+
   const [phase, setPhase] = useState<Phase>("instructions");
   const [spanLength, setSpanLength] = useState(2);
   const [sequence, setSequence] = useState<number[]>([]);
@@ -33,12 +42,18 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   const [errorsAtCurrentSpan, setErrorsAtCurrentSpan] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
+  // True when the result was only queued locally (device offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   const startTask = () => {
     generateAndPlaySequence(2); // Corsi usually starts at 2
   };
 
   const generateAndPlaySequence = (length: number) => {
+    if (length > MAX_SPAN) {
+      setPhase("completed");
+      return;
+    }
     setPhase("presentation");
     setSpanLength(length);
     setUserSequence([]);
@@ -57,12 +72,16 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
 
     // Play sequence
     let step = 0;
-    const interval = setInterval(() => {
+    // Held in refs so the unmount cleanup can cancel them; previously these
+    // kept firing setState after the participant navigated away.
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
       if (step < newSeq.length) {
         setActiveBlock(newSeq[step]);
-        setTimeout(() => setActiveBlock(null), 500); // block lit for 500ms
+        if (flashRef.current) clearTimeout(flashRef.current);
+        flashRef.current = setTimeout(() => setActiveBlock(null), 500); // block lit for 500ms
       } else {
-        clearInterval(interval);
+        if (intervalRef.current) clearInterval(intervalRef.current);
         setPhase("recall");
       }
       step++;
@@ -74,13 +93,14 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
     
     // Briefly light it up on click for visual feedback
     setActiveBlock(blockId);
-    setTimeout(() => setActiveBlock(null), 200);
+    if (flashRef.current) clearTimeout(flashRef.current);
+    flashRef.current = setTimeout(() => setActiveBlock(null), 200);
 
     const newUserSequence = [...userSequence, blockId];
     setUserSequence(newUserSequence);
 
     if (newUserSequence.length === sequence.length) {
-      setTimeout(() => checkResult(newUserSequence), 300); // short delay before next
+      advanceRef.current = setTimeout(() => checkResult(newUserSequence), 300); // short delay before next
     }
   };
 
@@ -103,6 +123,12 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
     }
   };
 
+  useEffect(() => () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (flashRef.current) clearTimeout(flashRef.current);
+    if (advanceRef.current) clearTimeout(advanceRef.current);
+  }, []);
+
   useEffect(() => {
     if (phase === "completed" && !submitting) {
       submitData();
@@ -110,6 +136,10 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
   }, [phase]);
 
   const submitData = async () => {
+    if (!state.sessionId) {
+      alert("No active session — please sign in again before submitting.");
+      return;
+    }
     setSubmitting(true);
     
     
@@ -119,11 +149,11 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
       param3Name: null, param3Value: null
     });
     try {
-      await fetchWithOfflineSync("/api/submit-cognitive", {
+      const res = await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.sessionId || "demo-session",
+          sessionId: state.sessionId,
           testCategory: "Memory",
           specificTest: "Corsi Block Task",
           param1Name: "Maximum Block Span",
@@ -135,15 +165,21 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
           rawTrialData: { maxSpan, totalCorrect }
         })
       });
-      if (onComplete) {
-        onComplete();
-      } else {
-        markTestCompleted("/cognitive/corsi");
-        setTimeout(() => window.location.href = "/", 200);
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || `Upload failed (${res.status})`);
       }
+      setQueuedOffline(Boolean(payload?.offline));
+      markTestCompleted("/cognitive/corsi");
+      // Stay on the results screen; the Continue button navigates.
+      if (onComplete) onComplete();
     } catch (e) {
       console.error(e);
-      alert("Failed to save cognitive data.");
+      alert(`Could not save your results: ${e instanceof Error ? e.message : e}
+
+Please tell the study coordinator before continuing.`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -162,16 +198,13 @@ export default function CorsiBlockTask({ onComplete }: { onComplete?: () => void
 
   if (phase === "completed") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : (
-          <>
-            <p>{state.language === 'bn' ? "আপনার সর্বোচ্চ ব্লক স্প্যান:" : "Your Maximum Block Span:"} <strong>{maxSpan}</strong></p>
-            <p>{state.language === 'bn' ? "মোট সঠিক ট্রায়াল:" : "Total Correct Trials:"} <strong>{totalCorrect}</strong></p>
-            <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>
-          </>
-        )}
-      </div>
+      <TaskCompleteScreen
+        calculatedParams={calculatedParams}
+        submitting={submitting}
+        queuedOffline={queuedOffline}
+        language={state.language}
+        onContinue={() => (onComplete ? onComplete() : router.push("/"))}
+      />
     );
   }
 

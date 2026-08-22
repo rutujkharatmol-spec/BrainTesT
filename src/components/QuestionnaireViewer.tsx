@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { QuestionnaireDef } from "@/config/questionnaires";
 import { useAppContext } from "./AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { shuffle } from "@/utils/trials";
 import SeverityFeedback from "./SeverityFeedback";
 
 export default function QuestionnaireViewer({ questionnaire, onComplete }: { questionnaire: QuestionnaireDef, onComplete: () => void }) {
@@ -12,6 +13,17 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
   const [submitting, setSubmitting] = useState(false);
   const [phase, setPhase] = useState<"filling" | "completed">("filling");
   const [calculatedScores, setCalculatedScores] = useState<any>(null);
+  // Answers are only on this device so far (queued while offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
+
+  // `orderType: "random"` was declared on CFS and CFQ but never implemented —
+  // items always rendered in declaration order, reintroducing the order effect
+  // the config was written to avoid. Shuffled once per mount so answering does
+  // not reorder the list under the participant.
+  const displayItems = useMemo(
+    () => (questionnaire.orderType === "random" ? shuffle(questionnaire.items) : questionnaire.items),
+    [questionnaire]
+  );
 
   const isComplete = questionnaire.items.every(q => answers[q.id] !== undefined);
 
@@ -79,11 +91,12 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         })
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to submit");
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || "Failed to submit");
       }
-      
+      setQueuedOffline(Boolean(payload?.offline));
+
     } catch (e: any) {
       console.error(e);
       alert(e.message || "Failed to submit");
@@ -111,9 +124,17 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
               </p>
             ) : (
               <div>
-                <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
-                  {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
-                </p>
+                {queuedOffline ? (
+                  <p style={{ color: "#B45309", fontWeight: "bold", marginBottom: 24 }}>
+                    {state.language === 'bn'
+                      ? "এই ডিভাইসে সংরক্ষিত হয়েছে। ইন্টারনেট সংযোগ ফিরে এলে আপলোড হবে।"
+                      : "Saved on this device. It will upload automatically when you are back online."}
+                  </p>
+                ) : (
+                  <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
+                    {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
+                  </p>
+                )}
                 <button className="btn" onClick={onComplete} style={{ width: "100%" }}>
                   {state.language === 'bn' ? "ফিরে যান" : "Return to Hub"}
                 </button>
@@ -132,7 +153,7 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
       <p style={{ color: "var(--text-secondary)", marginTop: 8, fontSize: "0.9rem" }}>{description}</p>
       
       <div style={{ marginTop: 24 }}>
-        {questionnaire.items.map((item, index) => (
+        {displayItems.map((item, index) => (
           <div key={item.id} style={{ marginBottom: 24, padding: 20, background: "#F9FAFB", borderRadius: 8, border: "1px solid var(--card-border)" }}>
             <p style={{ marginBottom: 16, color: "var(--text-primary)", fontWeight: 500 }}>
               <strong>{index + 1}.</strong> {state.language === 'bn' && item.text_bn ? item.text_bn : item.text}

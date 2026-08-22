@@ -9,7 +9,7 @@ export default function FinalScreen() {
         Your results have been successfully recorded.
       </p>
       <p style={{ marginTop: 32, fontSize: "0.9rem" }}>
-        You may now close this tab, or click "End Session" below to start over.
+        You may now close this tab, or click &quot;End Session&quot; below to start over.
       </p>
     </div>
   );

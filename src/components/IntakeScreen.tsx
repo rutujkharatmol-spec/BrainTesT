@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAppContext } from "./AppContext";
-import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { fetchWithOfflineSync, OFFLINE_SESSION_PREFIX } from "@/utils/offlineSync";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -117,11 +117,19 @@ export default function IntakeScreen() {
     setLoading(true);
     setErrorMessage(null);
 
+    // Minted up front and sent along with the request. If we are offline the
+    // request is queued carrying this id, so when it is finally replayed the
+    // sync layer can map this placeholder to the real server-issued id and
+    // repoint every test result recorded against it. The server ignores the
+    // field when it does reach it.
+    const offlineSessionId = `${OFFLINE_SESSION_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
     try {
       const res = await fetchWithOfflineSync("/api/auth/participant/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          sessionId: offlineSessionId,
           participantName: name.trim(),
           participantIdNumber: idNum.trim(),
           phoneNo: phoneNo.trim(),
@@ -135,7 +143,7 @@ export default function IntakeScreen() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({} as any));
 
       if (!res.ok && !data.offline) {
         setErrorMessage(data.error || "Registration failed. Please check your information.");
@@ -145,7 +153,6 @@ export default function IntakeScreen() {
       if (data.sessionId) {
         setSessionId(data.sessionId, name.trim(), idNum.trim(), data.completedTests || []);
       } else if (data.offline) {
-        const offlineSessionId = `offline-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         setSessionId(offlineSessionId, name.trim(), idNum.trim(), []);
       } else {
         setErrorMessage("Failed to start session. Please try again.");

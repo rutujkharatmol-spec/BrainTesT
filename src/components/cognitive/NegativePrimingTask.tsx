@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
+import TaskCompleteScreen from "./TaskCompleteScreen";
 
 type Category = "LIVING" | "NON_LIVING";
 
@@ -49,6 +52,7 @@ const FIXATION_DURATION = 500;
 
 export default function NegativePrimingTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
+  const router = useRouter();
   
   const [phase, setPhase] = useState<"instructions" | "fixation" | "stimulus" | "completed">("instructions");
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -56,6 +60,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
+  // True when the result was only queued locally (device offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -155,50 +161,59 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   }, [phase, results]);
 
   const submitData = async () => {
+    if (!state.sessionId) {
+      alert("No active session — please sign in again before submitting.");
+      return;
+    }
     setSubmitting(true);
     
     const validTrials = results.filter(r => r.correct && r.rt !== null && r.rt > 100);
     const controlRTs = validTrials.filter(r => !r.isIgnoredRepetition).map(r => r.rt as number);
     const ignoredRepRTs = validTrials.filter(r => r.isIgnoredRepetition).map(r => r.rt as number);
 
-    const mean = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
     
-    const meanRTControl = mean(controlRTs);
-    const meanRTIgnoredRep = mean(ignoredRepRTs);
-    const primingEffect = meanRTIgnoredRep - meanRTControl; 
+    const meanRTControl = roundedMeanOrNull(controlRTs);
+    const meanRTIgnoredRep = roundedMeanOrNull(ignoredRepRTs);
+    const primingEffect = differenceOrNull(meanRTIgnoredRep, meanRTControl); 
 
     
     setCalculatedParams({
-      param1Name: "Mean RT Control (ms)", param1Value: Math.round(meanRTControl),
-      param2Name: "Mean RT Ignored Rep (ms)", param2Value: Math.round(meanRTIgnoredRep),
-      param3Name: "Negative Priming Effect (ms)", param3Value: Math.round(primingEffect)
+      param1Name: "Mean RT Control (ms)", param1Value: meanRTControl,
+      param2Name: "Mean RT Ignored Rep (ms)", param2Value: meanRTIgnoredRep,
+      param3Name: "Negative Priming Effect (ms)", param3Value: primingEffect
     });
     try {
-      await fetchWithOfflineSync("/api/submit-cognitive", {
+      const res = await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.sessionId || "demo-session",
+          sessionId: state.sessionId,
           testCategory: "Social & Emotional Cognition",
           specificTest: "Negative Priming Task",
           param1Name: "Mean RT Control (ms)",
-          param1Value: Math.round(meanRTControl),
+          param1Value: meanRTControl,
           param2Name: "Mean RT Ignored Rep (ms)",
-          param2Value: Math.round(meanRTIgnoredRep),
+          param2Value: meanRTIgnoredRep,
           param3Name: "Negative Priming Effect (ms)",
-          param3Value: Math.round(primingEffect),
+          param3Value: primingEffect,
           rawTrialData: results
         })
       });
-      if (onComplete) {
-        onComplete();
-      } else {
-        markTestCompleted("/cognitive/negative-priming");
-        setTimeout(() => window.location.href = "/", 200);
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || `Upload failed (${res.status})`);
       }
+      setQueuedOffline(Boolean(payload?.offline));
+      markTestCompleted("/cognitive/negative-priming");
+      // Stay on the results screen; the Continue button navigates.
+      if (onComplete) onComplete();
     } catch (e) {
       console.error(e);
-      alert("Failed to save cognitive data.");
+      alert(`Could not save your results: ${e instanceof Error ? e.message : e}
+
+Please tell the study coordinator before continuing.`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -219,10 +234,13 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
 
   if (phase === "completed") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
-      </div>
+      <TaskCompleteScreen
+        calculatedParams={calculatedParams}
+        submitting={submitting}
+        queuedOffline={queuedOffline}
+        language={state.language}
+        onContinue={() => (onComplete ? onComplete() : router.push("/"))}
+      />
     );
   }
 

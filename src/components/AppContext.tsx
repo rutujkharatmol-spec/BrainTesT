@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { processOfflineQueue, getOfflineQueueSize } from '@/utils/offlineSync';
+import { processOfflineQueue, getOfflineQueueSize, getDeadLetterCount, clearDeadLetters } from '@/utils/offlineSync';
 
 type AppState = {
   consentGiven: boolean;
@@ -33,27 +33,64 @@ const initialState: AppState = {
   language: 'en',
 };
 
+const STATE_KEY = 'brainTestState';
+// Bump when the shape of AppState changes incompatibly; older blobs are discarded.
+const STATE_VERSION = 1;
+const STATE_VERSION_KEY = 'brainTestStateVersion';
+
+/**
+ * Restores persisted state, tolerating blobs written by older builds.
+ * Always merged over initialState so a missing field (e.g. completedTests)
+ * can never surface as undefined and crash consumers.
+ */
+function loadPersistedState(): AppState {
+  try {
+    const savedVersion = Number(localStorage.getItem(STATE_VERSION_KEY) || '0');
+    if (savedVersion !== STATE_VERSION) {
+      localStorage.removeItem(STATE_KEY);
+      localStorage.setItem(STATE_VERSION_KEY, String(STATE_VERSION));
+      return initialState;
+    }
+
+    const saved = localStorage.getItem(STATE_KEY);
+    if (!saved) return initialState;
+
+    const parsed = JSON.parse(saved) as Partial<AppState>;
+    if (!parsed || typeof parsed !== 'object') return initialState;
+
+    return {
+      ...initialState,
+      ...parsed,
+      // Defend against these two specifically — consumers call array/string
+      // methods on them directly.
+      completedTests: Array.isArray(parsed.completedTests) ? parsed.completedTests : [],
+      language: parsed.language === 'bn' ? 'bn' : 'en',
+    };
+  } catch (e) {
+    console.error('Failed to restore saved state, starting fresh', e);
+    return initialState;
+  }
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(initialState);
   const [loaded, setLoaded] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  // Submissions the server rejected permanently (4xx). These will never sync,
+  // so the participant/researcher must be told rather than left believing
+  // everything uploaded.
+  const [failedCount, setFailedCount] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem('brainTestState');
-    if (saved) {
-      try {
-        setState(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse saved state", e);
-      }
-    }
+    setState(loadPersistedState());
     setLoaded(true);
 
     // Set initial online/offline status
     setIsOffline(!navigator.onLine);
     setPendingCount(getOfflineQueueSize());
+    setFailedCount(getDeadLetterCount());
 
     const handleOnline = async () => {
       setIsOffline(false);
@@ -69,6 +106,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         setPendingCount(getOfflineQueueSize());
       }
+      // Surface permanent failures rather than letting data vanish quietly.
+      setFailedCount(getDeadLetterCount());
     };
 
     const handleOffline = () => {
@@ -91,7 +130,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loaded) {
-      localStorage.setItem('brainTestState', JSON.stringify(state));
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      localStorage.setItem(STATE_VERSION_KEY, String(STATE_VERSION));
     }
   }, [state, loaded]);
 
@@ -138,7 +178,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       completedTests: []
     };
     setState(s => ({...s, ...newState}));
-    localStorage.removeItem('brainTestState');
+    localStorage.removeItem(STATE_KEY);
   };
 
   const toggleLanguage = () => setState(s => ({
@@ -169,10 +209,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           transition: "all 0.3s ease",
         }}>
-          {isOffline 
+          {isOffline
             ? `📡 You are offline. Results will be saved locally.${pendingCount > 0 ? ` (${pendingCount} pending)` : ""}`
             : syncMessage
           }
+        </div>
+      )}
+
+      {/* Permanent upload failures — never fail silently, this is research data. */}
+      {failedCount > 0 && (
+        <div style={{
+          position: "fixed",
+          top: (isOffline || syncMessage) ? 40 : 0,
+          left: 0,
+          right: 0,
+          zIndex: 10000,
+          padding: "10px 16px",
+          textAlign: "center",
+          fontSize: "13px",
+          fontWeight: 600,
+          color: "#fff",
+          background: "linear-gradient(90deg, #DC2626, #991B1B)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 12,
+        }}>
+          <span>
+            ⚠️ {failedCount} submission(s) could not be uploaded. Please inform the study coordinator.
+          </span>
+          <button
+            onClick={() => { clearDeadLetters(); setFailedCount(0); }}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "1px solid rgba(255,255,255,0.5)",
+              color: "#fff",
+              borderRadius: 4,
+              padding: "2px 10px",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Dismiss
+          </button>
         </div>
       )}
       {children}

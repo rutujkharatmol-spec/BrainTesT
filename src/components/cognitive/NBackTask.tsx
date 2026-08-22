@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import TaskCompleteScreen from "./TaskCompleteScreen";
 
 type Trial = {
   letter: string;
@@ -25,6 +27,7 @@ const ISI_DURATION = 1500; // Inter-stimulus interval
 
 export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
+  const router = useRouter();
   
   const [phase, setPhase] = useState<"instructions" | "running" | "completed">("instructions");
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -32,6 +35,8 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
+  // True when the result was only queued locally (device offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
   const [showStimulus, setShowStimulus] = useState(false);
   const [hasPressed, setHasPressed] = useState(false);
 
@@ -161,6 +166,10 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   }, [phase, results]);
 
   const submitData = async () => {
+    if (!state.sessionId) {
+      alert("No active session — please sign in again before submitting.");
+      return;
+    }
     setSubmitting(true);
     
     const hits = results.filter(r => r.type === "hit");
@@ -182,11 +191,11 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
       param3Name: "False Alarm Rate (%)", param3Value: Math.round(falseAlarmRate)
     });
     try {
-      await fetchWithOfflineSync("/api/submit-cognitive", {
+      const res = await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.sessionId || "demo-session",
+          sessionId: state.sessionId,
           testCategory: "Memory",
           specificTest: "2-Back Task",
           param1Name: "Mean RT (Hits) (ms)",
@@ -198,15 +207,21 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
           rawTrialData: results
         })
       });
-      if (onComplete) {
-        onComplete();
-      } else {
-        markTestCompleted("/cognitive/nback");
-        setTimeout(() => window.location.href = "/", 200);
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || `Upload failed (${res.status})`);
       }
+      setQueuedOffline(Boolean(payload?.offline));
+      markTestCompleted("/cognitive/nback");
+      // Stay on the results screen; the Continue button navigates.
+      if (onComplete) onComplete();
     } catch (e) {
       console.error(e);
-      alert("Failed to save cognitive data.");
+      alert(`Could not save your results: ${e instanceof Error ? e.message : e}
+
+Please tell the study coordinator before continuing.`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -277,55 +292,13 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
 
   if (phase === "completed") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-        
-        {calculatedParams && (
-          <div style={{ textAlign: "left", background: "#F9FAFB", padding: "20px", borderRadius: "12px", border: "1px solid var(--card-border)", margin: "24px 0" }}>
-            <h3 style={{ marginTop: 0, marginBottom: 16, borderBottom: "1px solid #eaeaea", paddingBottom: 12 }}>Result Overview</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {calculatedParams.param1Name && (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param1Name}:</span>
-                  <strong>{calculatedParams.param1Value}</strong>
-                </div>
-              )}
-              {calculatedParams.param2Name && (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param2Name}:</span>
-                  <strong>{calculatedParams.param2Value}</strong>
-                </div>
-              )}
-              {calculatedParams.param3Name && (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param3Name}:</span>
-                  <strong>{calculatedParams.param3Value}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {submitting ? (
-          <p style={{ color: "var(--accent-color)", fontWeight: "bold" }}>
-            {state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।" : "Uploading data... please wait."}
-          </p>
-        ) : (
-          <div>
-            <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
-              {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
-            </p>
-            <button className="btn" onClick={() => {
-              if (onComplete) onComplete();
-              else {
-                window.location.href = "/";
-              }
-            }} style={{ width: "100%" }}>
-              {state.language === 'bn' ? "ফিরে যান / চালিয়ে যান" : "Continue"}
-            </button>
-          </div>
-        )}
-      </div>
+      <TaskCompleteScreen
+        calculatedParams={calculatedParams}
+        submitting={submitting}
+        queuedOffline={queuedOffline}
+        language={state.language}
+        onContinue={() => (onComplete ? onComplete() : router.push("/"))}
+      />
     );
   }
 

@@ -9,37 +9,142 @@ import {
 } from "@/utils/scoring";
 import { QUESTIONNAIRES } from "@/config/questionnaires";
 
-export async function getAdminSpreadsheetData() {
-  // 1. Fetch all sessions with all relations
-  const sessions = await prisma.session.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      cognitiveTests: {
-        orderBy: { createdAt: "desc" }
-      },
-      answers: {
-        orderBy: [{ testName: "asc" }, { itemIndex: "asc" }]
-      },
-      cfsSubmission: true,
-      gaeneSubmission: true,
-      mateSubmission: true,
-      sbsSubmission: true,
-      skepSubmission: true,
-      tsisSubmission: true,
-      ncs6Submission: true,
-      cfqSubmission: true,
-      dass21Submission: true,
-      phq9Submission: true,
-      gad7Submission: true,
-      who5Submission: true,
-    }
-  });
+/**
+ * The 12 questionnaire submission tables, which differ only in their score
+ * columns. Fetching them via Prisma relation `include`s costs one round trip
+ * *each*; this metadata lets us pull all 12 in a single UNION ALL instead.
+ */
+const SUBMISSION_TABLES = [
+  { relation: "cfsSubmission", table: "CFSSubmission", cols: ["score"] },
+  { relation: "gaeneSubmission", table: "GAENESubmission", cols: ["score"] },
+  { relation: "mateSubmission", table: "MATESubmission", cols: ["score"] },
+  { relation: "sbsSubmission", table: "SBSSubmission", cols: ["score"] },
+  { relation: "skepSubmission", table: "SKEPSubmission", cols: ["score"] },
+  { relation: "tsisSubmission", table: "TSISSubmission", cols: ["scoreSp", "scoreSk", "scoreSa"] },
+  { relation: "ncs6Submission", table: "NCS6Submission", cols: ["score"] },
+  { relation: "cfqSubmission", table: "CFQSubmission", cols: ["score"] },
+  { relation: "dass21Submission", table: "DASS21Submission", cols: ["scoreDepression", "scoreAnxiety", "scoreStress"] },
+  { relation: "phq9Submission", table: "PHQ9Submission", cols: ["score"] },
+  { relation: "gad7Submission", table: "GAD7Submission", cols: ["score"] },
+  { relation: "who5Submission", table: "WHO5Submission", cols: ["score"] },
+] as const;
 
-  // 2. Fetch all cognitive test results
-  const cognitiveResults = await prisma.cognitiveTestResult.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { session: true }
+// Table and column names are compile-time constants here — no user input is
+// interpolated, so this string is not an injection surface.
+const SUBMISSIONS_SQL = SUBMISSION_TABLES.map(({ relation, table, cols }) => {
+  const vals = [0, 1, 2]
+    .map((i) => (cols[i] ? `"${cols[i]}"::double precision` : `NULL::double precision`))
+    .map((expr, i) => `${expr} AS v${i + 1}`)
+    .join(", ");
+  return `SELECT '${relation}' AS relation, "sessionId", ${vals} FROM "${table}"`;
+}).join("\nUNION ALL\n");
+
+type SubmissionRow = {
+  relation: string;
+  sessionId: string;
+  v1: number | null;
+  v2: number | null;
+  v3: number | null;
+};
+
+/** Rebuilds the object shape Prisma's `include` used to produce. */
+function toSubmissionObject(row: SubmissionRow) {
+  const meta = SUBMISSION_TABLES.find((t) => t.relation === row.relation);
+  if (!meta) return null;
+  const values = [row.v1, row.v2, row.v3];
+  const obj: Record<string, number | null> = {};
+  meta.cols.forEach((col, i) => {
+    obj[col] = values[i];
   });
+  return obj;
+}
+
+/**
+ * Everything the admin dashboard needs, in a single statement.
+ *
+ * This matters more than it looks: DATABASE_URL sets `connection_limit=1`
+ * (the correct setting for serverless + pgbouncer), which makes Prisma
+ * serialize every query onto one connection — `Promise.all` measurably buys
+ * nothing. With the database in ap-southeast-1 and users in West Bengal each
+ * round trip costs ~305ms, so query *count* is the only lever that matters.
+ * `rawTrialData` is excluded: it is the heaviest column and the UI never
+ * renders it.
+ */
+const BUNDLE_SQL = `
+SELECT
+  COALESCE((SELECT json_agg(s ORDER BY s."createdAt" DESC) FROM "Session" s), '[]'::json) AS sessions,
+  COALESCE((SELECT json_agg(a ORDER BY a."testName" ASC, a."itemIndex" ASC) FROM "Answer" a), '[]'::json) AS answers,
+  COALESCE((SELECT json_agg(c ORDER BY c."createdAt" DESC) FROM (
+    SELECT "id", "sessionId", "testCategory", "specificTest",
+           "param1Name", "param1Value", "param2Name", "param2Value",
+           "param3Name", "param3Value", "createdAt"
+    FROM "CognitiveTestResult"
+  ) c), '[]'::json) AS cognitive,
+  COALESCE((SELECT json_agg(x) FROM (
+${SUBMISSIONS_SQL}
+  ) x), '[]'::json) AS submissions
+`;
+
+type Bundle = {
+  sessions: any[];
+  answers: any[];
+  cognitive: any[];
+  submissions: SubmissionRow[];
+};
+
+export async function getAdminSpreadsheetData() {
+  // Was ~17 sequential round trips (~3.9s on an empty DB): a session.findMany
+  // with 14 relation includes, which Prisma splits into one query per
+  // relation, plus a second findMany with its own include. Now one.
+  const rows = await prisma.$queryRawUnsafe<Bundle[]>(BUNDLE_SQL);
+  const bundle: Bundle = rows[0] ?? { sessions: [], answers: [], cognitive: [], submissions: [] };
+
+  // json_agg hands back ISO strings; downstream code calls .toISOString() on
+  // these, so rehydrate them into real Dates.
+  const sessionRows = (bundle.sessions ?? []).map((s) => ({ ...s, createdAt: new Date(s.createdAt) }));
+  const answerRows: any[] = bundle.answers ?? [];
+  const cognitiveResultRows = (bundle.cognitive ?? []).map((r) => ({ ...r, createdAt: new Date(r.createdAt) }));
+  const submissionRows: SubmissionRow[] = bundle.submissions ?? [];
+
+  const sessionById = new Map(sessionRows.map((s) => [s.id, s]));
+
+  const answersBySession = new Map<string, typeof answerRows>();
+  for (const a of answerRows) {
+    const list = answersBySession.get(a.sessionId);
+    if (list) list.push(a);
+    else answersBySession.set(a.sessionId, [a]);
+  }
+
+  const cognitiveBySession = new Map<string, typeof cognitiveResultRows>();
+  for (const r of cognitiveResultRows) {
+    const list = cognitiveBySession.get(r.sessionId);
+    if (list) list.push(r);
+    else cognitiveBySession.set(r.sessionId, [r]);
+  }
+
+  const submissionsBySession = new Map<string, Record<string, any>>();
+  for (const row of submissionRows) {
+    const obj = toSubmissionObject(row);
+    if (!obj) continue;
+    const bucket = submissionsBySession.get(row.sessionId) ?? {};
+    bucket[row.relation] = obj;
+    submissionsBySession.set(row.sessionId, bucket);
+  }
+
+  // Reassemble the exact shape the rest of this function expects.
+  const sessions = sessionRows.map((s) => ({
+    ...s,
+    answers: answersBySession.get(s.id) ?? [],
+    cognitiveTests: cognitiveBySession.get(s.id) ?? [],
+    ...Object.fromEntries(SUBMISSION_TABLES.map((t) => [t.relation, null])),
+    ...(submissionsBySession.get(s.id) ?? {}),
+  })) as any[];
+
+  const cognitiveResults = cognitiveResultRows.map((r) => ({
+    ...r,
+    rawTrialData: null,
+    session: sessionById.get(r.sessionId) ?? null,
+  }));
 
   // 3. Construct Cognitive Battery Matrix (Participant Cognitive Metrics)
   const cognitiveGrouped: Record<string, any> = {};
@@ -186,7 +291,7 @@ export async function getAdminSpreadsheetData() {
   testNames.forEach(t => { answersByTest[t] = {}; });
 
   sessions.forEach(s => {
-    s.answers.forEach(ans => {
+    s.answers.forEach((ans: (typeof answerRows)[number]) => {
       const t = ans.testName.toLowerCase();
       if (answersByTest[t]) {
         if (!answersByTest[t][ans.sessionId]) {
@@ -274,7 +379,7 @@ export async function getAdminSpreadsheetData() {
     consentGiven: s.consentGiven ? "Yes" : "No",
     completed: s.completed ? "Completed" : "Incomplete",
     cognitiveTestsCount: s.cognitiveTests.length,
-    questionnairesAnsweredCount: s.answers.length > 0 ? Array.from(new Set(s.answers.map(a => a.testName))).length : 0,
+    questionnairesAnsweredCount: s.answers.length > 0 ? Array.from(new Set(s.answers.map((a: (typeof answerRows)[number]) => a.testName))).length : 0,
   }));
 
   // 7. Raw Cognitive Trials Details

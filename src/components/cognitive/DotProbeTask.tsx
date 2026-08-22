@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { balancedFlags, roundedMeanOrNull, differenceOrNull, sampleWithoutReplacement } from "@/utils/trials";
+import TaskCompleteScreen from "./TaskCompleteScreen";
 
 type Trial = {
   leftWord: string;
@@ -20,18 +23,40 @@ type TrialResult = Trial & {
 const TOTAL_TRIALS = 40;
 const FIXATION_DURATION = 500;
 const STIMULUS_DURATION = 500;
+// Trials that get no response within this window are recorded as misses
+// rather than hanging the task forever.
+const RESPONSE_DEADLINE = 2000;
 
+// Large enough to fill a full run without repeating an item, so repetition
+// priming does not confound the attentional-bias score.
 const NEUTRAL_WORDS = {
-  en: ["CHAIR", "TABLE", "WATER", "HOUSE", "PAPER", "PLANT", "CLOCK", "GLASS", "TRAIN", "APPLE"],
-  bn: ["চেয়ার", "টেবিল", "জল", "বাড়ি", "কাগজ", "গাছ", "ঘড়ি", "গ্লাস", "ট্রেন", "আপেল"]
+  en: [
+    "CHAIR", "TABLE", "WATER", "HOUSE", "PAPER", "PLANT", "CLOCK", "GLASS", "TRAIN", "APPLE",
+    "BREAD", "RIVER", "STONE", "LIGHT", "MUSIC", "BRUSH", "FIELD", "CLOUD", "SUGAR", "SHIRT",
+    "ROUTE", "GRASS", "STICK", "BOTTLE", "WINDOW", "PENCIL", "CARPET", "GARDEN", "BASKET", "CANDLE",
+  ],
+  bn: [
+    "চেয়ার", "টেবিল", "জল", "বাড়ি", "কাগজ", "গাছ", "ঘড়ি", "গ্লাস", "ট্রেন", "আপেল",
+    "রুটি", "নদী", "পাথর", "আলো", "গান", "তুলি", "মাঠ", "মেঘ", "চিনি", "জামা",
+    "রাস্তা", "ঘাস", "লাঠি", "বোতল", "জানালা", "পেন্সিল", "কার্পেট", "বাগান", "ঝুড়ি", "মোমবাতি",
+  ],
 };
 const TARGET_WORDS = {
-  en: ["ANGER", "DEATH", "FEAR", "PANIC", "GRIEF", "HATE", "ENEMY", "SNAKE", "SPIDER", "PAIN"],
-  bn: ["রাগ", "মৃত্যু", "ভয়", "আতঙ্ক", "শোক", "ঘৃণা", "শত্রু", "সাপ", "মাকড়সা", "ব্যথা"]
+  en: [
+    "ANGER", "DEATH", "FEAR", "PANIC", "GRIEF", "HATE", "ENEMY", "SNAKE", "SPIDER", "PAIN",
+    "TERROR", "AGONY", "THREAT", "DANGER", "DISEASE", "FUNERAL", "VICTIM", "CRUEL", "WOUND", "TRAUMA",
+    "DESPAIR", "HORROR", "POISON", "ASSAULT", "MISERY", "PANICKY", "SHAME", "DREAD", "CRISIS", "RUIN",
+  ],
+  bn: [
+    "রাগ", "মৃত্যু", "ভয়", "আতঙ্ক", "শোক", "ঘৃণা", "শত্রু", "সাপ", "মাকড়সা", "ব্যথা",
+    "সন্ত্রাস", "যন্ত্রণা", "হুমকি", "বিপদ", "রোগ", "শবযাত্রা", "শিকার", "নিষ্ঠুর", "ক্ষত", "আঘাত",
+    "হতাশা", "বিভীষিকা", "বিষ", "আক্রমণ", "দুঃখ", "উদ্বেগ", "লজ্জা", "ত্রাস", "সংকট", "ধ্বংস",
+  ],
 };
 
 export default function DotProbeTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
+  const router = useRouter();
   
   const [phase, setPhase] = useState<"instructions" | "fixation" | "words" | "dot" | "completed">("instructions");
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -39,32 +64,43 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
+  // True when the result was only queued locally (device offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const interTrialRef = useRef<NodeJS.Timeout | null>(null);
   const hasRespondedRef = useRef(false);
 
-  // Generate sequence
+  // Generate sequence — counterbalanced: exactly half the trials are congruent
+  // (dot behind the emotional word) and target side is balanced independently,
+  // so the attentional-bias score rests on equal-sized cells. Words are sampled
+  // without replacement to limit repetition priming.
   useEffect(() => {
-    const sequence: Trial[] = [];
     const neutralDict = state.language === 'bn' ? NEUTRAL_WORDS.bn : NEUTRAL_WORDS.en;
     const targetDict = state.language === 'bn' ? TARGET_WORDS.bn : TARGET_WORDS.en;
 
-    for (let i = 0; i < TOTAL_TRIALS; i++) {
-      const neutralWord = neutralDict[Math.floor(Math.random() * neutralDict.length)];
-      const targetWord = targetDict[Math.floor(Math.random() * targetDict.length)];
-      
-      const targetPosition = Math.random() < 0.5 ? "left" : "right";
-      const dotPosition = Math.random() < 0.5 ? "left" : "right";
-      
-      sequence.push({
-        leftWord: targetPosition === "left" ? targetWord : neutralWord,
-        rightWord: targetPosition === "right" ? targetWord : neutralWord,
+    const targetLeft = balancedFlags(TOTAL_TRIALS, 0.5);
+    const congruentFlags = balancedFlags(TOTAL_TRIALS, 0.5);
+    const neutralWords = sampleWithoutReplacement(neutralDict, TOTAL_TRIALS);
+    const targetWords = sampleWithoutReplacement(targetDict, TOTAL_TRIALS);
+
+    const sequence: Trial[] = targetLeft.map((isTargetLeft: boolean, i: number) => {
+      const targetPosition: "left" | "right" = isTargetLeft ? "left" : "right";
+      const congruent = congruentFlags[i];
+      const dotPosition: "left" | "right" = congruent
+        ? targetPosition
+        : (targetPosition === "left" ? "right" : "left");
+
+      return {
+        leftWord: targetPosition === "left" ? targetWords[i] : neutralWords[i],
+        rightWord: targetPosition === "right" ? targetWords[i] : neutralWords[i],
         targetPosition,
         dotPosition,
-        congruent: targetPosition === dotPosition
-      });
-    }
+        congruent,
+      };
+    });
     setTrials(sequence);
   }, [state.language]);
 
@@ -85,14 +121,26 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
     // 1. Fixation
     timeoutRef.current = setTimeout(() => {
       setPhase("words");
-      
+
       // 2. Words
       timeoutRef.current = setTimeout(() => {
         setPhase("dot");
         startTimeRef.current = performance.now();
-        // Waits indefinitely for user input here
+
+        // 3. Response deadline. Previously this waited indefinitely, so a
+        // distracted participant produced a 45-second "reaction time" that
+        // entered the mean, and an abandoned run hung with no way forward.
+        responseTimeoutRef.current = setTimeout(() => {
+          if (hasRespondedRef.current) return;
+          hasRespondedRef.current = true;
+          const trial = trials[index];
+          if (trial) {
+            setResults(prev => [...prev, { ...trial, rt: null, correct: false }]);
+          }
+          runNextTrial(index + 1);
+        }, RESPONSE_DEADLINE);
       }, STIMULUS_DURATION);
-      
+
     }, FIXATION_DURATION);
   };
 
@@ -100,13 +148,14 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
     if (phase !== "dot" || hasRespondedRef.current) return;
     
     hasRespondedRef.current = true;
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
     const rt = performance.now() - startTimeRef.current;
     const trial = trials[currentTrialIndex];
     const correct = responsePos === trial.dotPosition;
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
 
-    setTimeout(() => {
+    interTrialRef.current = setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
   }, [phase, currentTrialIndex, trials]);
@@ -124,7 +173,11 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
 
   useEffect(() => {
     return () => {
+      // All three must be cleared, otherwise navigating away mid-task
+      // leaves timers firing setState on an unmounted component.
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+      if (interTrialRef.current) clearTimeout(interTrialRef.current);
     };
   }, []);
 
@@ -135,6 +188,10 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
   }, [phase, results]);
 
   const submitData = async () => {
+    if (!state.sessionId) {
+      alert("No active session — please sign in again before submitting.");
+      return;
+    }
     setSubmitting(true);
     
     // Parameters (only correct, RT > 150ms)
@@ -142,44 +199,49 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
     const congruentRTs = validTrials.filter(r => r.congruent).map(r => r.rt as number);
     const incongruentRTs = validTrials.filter(r => !r.congruent).map(r => r.rt as number);
 
-    const mean = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
     
-    const meanRTCongruent = mean(congruentRTs);
-    const meanRTIncongruent = mean(incongruentRTs);
-    const biasScore = meanRTIncongruent - meanRTCongruent; // Positive means attention was captured by target word
+    const meanRTCongruent = roundedMeanOrNull(congruentRTs);
+    const meanRTIncongruent = roundedMeanOrNull(incongruentRTs);
+    const biasScore = differenceOrNull(meanRTIncongruent, meanRTCongruent); // Positive means attention was captured by target word
 
     
     setCalculatedParams({
-      param1Name: "Mean RT Congruent (ms)", param1Value: Math.round(meanRTCongruent),
-      param2Name: "Mean RT Incongruent (ms)", param2Value: Math.round(meanRTIncongruent),
-      param3Name: "Attentional Bias Score", param3Value: Math.round(biasScore)
+      param1Name: "Mean RT Congruent (ms)", param1Value: meanRTCongruent,
+      param2Name: "Mean RT Incongruent (ms)", param2Value: meanRTIncongruent,
+      param3Name: "Attentional Bias Score", param3Value: biasScore
     });
     try {
-      await fetchWithOfflineSync("/api/submit-cognitive", {
+      const res = await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.sessionId || "demo-session",
+          sessionId: state.sessionId,
           testCategory: "Attention",
           specificTest: "Dot Probe Task",
           param1Name: "Mean RT Congruent (ms)",
-          param1Value: Math.round(meanRTCongruent),
+          param1Value: meanRTCongruent,
           param2Name: "Mean RT Incongruent (ms)",
-          param2Value: Math.round(meanRTIncongruent),
+          param2Value: meanRTIncongruent,
           param3Name: "Attentional Bias Score",
-          param3Value: Math.round(biasScore),
+          param3Value: biasScore,
           rawTrialData: results
         })
       });
-      if (onComplete) {
-        onComplete();
-      } else {
-        markTestCompleted("/cognitive/dotprobe");
-        setTimeout(() => window.location.href = "/", 200);
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || `Upload failed (${res.status})`);
       }
+      setQueuedOffline(Boolean(payload?.offline));
+      markTestCompleted("/cognitive/dotprobe");
+      // Stay on the results screen; the Continue button navigates.
+      if (onComplete) onComplete();
     } catch (e) {
       console.error(e);
-      alert("Failed to save cognitive data.");
+      alert(`Could not save your results: ${e instanceof Error ? e.message : e}
+
+Please tell the study coordinator before continuing.`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -201,10 +263,13 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
 
   if (phase === "completed") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
-      </div>
+      <TaskCompleteScreen
+        calculatedParams={calculatedParams}
+        submitting={submitting}
+        queuedOffline={queuedOffline}
+        language={state.language}
+        onContinue={() => (onComplete ? onComplete() : router.push("/"))}
+      />
     );
   }
 

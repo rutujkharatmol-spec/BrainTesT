@@ -1,14 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import TaskCompleteScreen from "./TaskCompleteScreen";
 
 type Phase = "instructions" | "presentation" | "recall" | "completed";
 
 export default function DigitSpanTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
+  const router = useRouter();
   
+  // Beyond this the task stops being a meaningful span measure.
+  const MAX_SPAN = 12;
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const flashRef = useRef<NodeJS.Timeout | null>(null);
+  const advanceRef = useRef<NodeJS.Timeout | null>(null);
+
   const [phase, setPhase] = useState<Phase>("instructions");
   const [spanLength, setSpanLength] = useState(3);
   const [sequence, setSequence] = useState<number[]>([]);
@@ -19,12 +28,18 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
   const [errorsAtCurrentSpan, setErrorsAtCurrentSpan] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
+  // True when the result was only queued locally (device offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   const startTask = () => {
     generateAndPlaySequence(3);
   };
 
   const generateAndPlaySequence = (length: number) => {
+    if (length > MAX_SPAN) {
+      setPhase("completed");
+      return;
+    }
     setPhase("presentation");
     setSpanLength(length);
     setUserSequence([]);
@@ -37,12 +52,15 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
 
     // Play sequence
     let step = 0;
-    const interval = setInterval(() => {
+    // Refs so unmount can cancel these; they previously outlived the component.
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
       if (step < newSeq.length) {
         setActiveDigit(newSeq[step]);
-        setTimeout(() => setActiveDigit(null), 700); // 700ms visible
+        if (flashRef.current) clearTimeout(flashRef.current);
+        flashRef.current = setTimeout(() => setActiveDigit(null), 700); // 700ms visible
       } else {
-        clearInterval(interval);
+        if (intervalRef.current) clearInterval(intervalRef.current);
         setPhase("recall");
       }
       step++;
@@ -80,17 +98,23 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
     if (isCorrect) {
       setMaxSpan(Math.max(maxSpan, spanLength));
       setErrorsAtCurrentSpan(0);
-      setTimeout(() => generateAndPlaySequence(spanLength + 1), 1000);
+      advanceRef.current = setTimeout(() => generateAndPlaySequence(spanLength + 1), 1000);
     } else {
       if (errorsAtCurrentSpan === 0) {
         setErrorsAtCurrentSpan(1);
-        setTimeout(() => generateAndPlaySequence(spanLength), 1000); // try same span again
+        advanceRef.current = setTimeout(() => generateAndPlaySequence(spanLength), 1000); // try same span again
       } else {
         // 2 errors at same span -> test ends
         setPhase("completed");
       }
     }
   };
+
+  useEffect(() => () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (flashRef.current) clearTimeout(flashRef.current);
+    if (advanceRef.current) clearTimeout(advanceRef.current);
+  }, []);
 
   useEffect(() => {
     if (phase === "completed" && !submitting) {
@@ -99,6 +123,10 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
   }, [phase]);
 
   const submitData = async () => {
+    if (!state.sessionId) {
+      alert("No active session — please sign in again before submitting.");
+      return;
+    }
     setSubmitting(true);
     
     
@@ -108,11 +136,11 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
       param3Name: null, param3Value: null
     });
     try {
-      await fetchWithOfflineSync("/api/submit-cognitive", {
+      const res = await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.sessionId || "demo-session",
+          sessionId: state.sessionId,
           testCategory: "Memory",
           specificTest: "Digit Span Task",
           param1Name: "Maximum Digit Span",
@@ -124,15 +152,21 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
           rawTrialData: { maxSpan }
         })
       });
-      if (onComplete) {
-        onComplete();
-      } else {
-        markTestCompleted("/cognitive/digitspan");
-        setTimeout(() => window.location.href = "/", 200);
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || `Upload failed (${res.status})`);
       }
+      setQueuedOffline(Boolean(payload?.offline));
+      markTestCompleted("/cognitive/digitspan");
+      // Stay on the results screen; the Continue button navigates.
+      if (onComplete) onComplete();
     } catch (e) {
       console.error(e);
-      alert("Failed to save cognitive data.");
+      alert(`Could not save your results: ${e instanceof Error ? e.message : e}
+
+Please tell the study coordinator before continuing.`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -206,55 +240,13 @@ export default function DigitSpanTask({ onComplete }: { onComplete?: () => void 
 
   if (phase === "completed") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-        
-        {calculatedParams && (
-          <div style={{ textAlign: "left", background: "#F9FAFB", padding: "20px", borderRadius: "12px", border: "1px solid var(--card-border)", margin: "24px 0" }}>
-            <h3 style={{ marginTop: 0, marginBottom: 16, borderBottom: "1px solid #eaeaea", paddingBottom: 12 }}>Result Overview</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {calculatedParams.param1Name && (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param1Name}:</span>
-                  <strong>{calculatedParams.param1Value}</strong>
-                </div>
-              )}
-              {calculatedParams.param2Name && (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param2Name}:</span>
-                  <strong>{calculatedParams.param2Value}</strong>
-                </div>
-              )}
-              {calculatedParams.param3Name && (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "var(--text-secondary)" }}>{calculatedParams.param3Name}:</span>
-                  <strong>{calculatedParams.param3Value}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {submitting ? (
-          <p style={{ color: "var(--accent-color)", fontWeight: "bold" }}>
-            {state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।" : "Uploading data... please wait."}
-          </p>
-        ) : (
-          <div>
-            <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
-              {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
-            </p>
-            <button className="btn" onClick={() => {
-              if (onComplete) onComplete();
-              else {
-                window.location.href = "/";
-              }
-            }} style={{ width: "100%" }}>
-              {state.language === 'bn' ? "ফিরে যান / চালিয়ে যান" : "Continue"}
-            </button>
-          </div>
-        )}
-      </div>
+      <TaskCompleteScreen
+        calculatedParams={calculatedParams}
+        submitting={submitting}
+        queuedOffline={queuedOffline}
+        language={state.language}
+        onContinue={() => (onComplete ? onComplete() : router.push("/"))}
+      />
     );
   }
 

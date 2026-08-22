@@ -8,8 +8,10 @@ export const viewport: Viewport = {
   themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Pinch-zoom stays enabled: blocking it fails WCAG 1.4.4, and this app is
+  // used by schoolchildren who may need to enlarge text.
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export const metadata: Metadata = {
@@ -30,6 +32,7 @@ export const metadata: Metadata = {
 
 import { AppProvider } from "@/components/AppContext";
 import Navbar from "@/components/Navbar";
+import ServiceWorkerUpdater from "@/components/ServiceWorkerUpdater";
 
 export default function RootLayout({
   children,
@@ -42,6 +45,7 @@ export default function RootLayout({
         <AppProvider>
           <Navbar />
           <main>{children}</main>
+          <ServiceWorkerUpdater />
         </AppProvider>
       </body>
     </html>

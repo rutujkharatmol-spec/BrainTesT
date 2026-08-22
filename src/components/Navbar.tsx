@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAppContext } from "./AppContext";
 
 export default function Navbar() {
-  const { state, toggleLanguage } = useAppContext();
+  const { state, toggleLanguage, resetSession } = useAppContext();
   const pathname = usePathname();
 
   // Hide during actual cognitive tasks to prevent distraction
@@ -122,7 +122,7 @@ export default function Navbar() {
           {/* Participant Sign Out Button */}
           {!isAdmin && state.sessionId && (
             <button
-              onClick={useAppContext().resetSession}
+              onClick={resetSession}
               className="btn btn-outline"
               style={{
                 padding: "6px 12px",
@@ -138,23 +138,24 @@ export default function Navbar() {
             </button>
           )}
 
-          {/* Admin Portal Link */}
-          <Link
-            href="/admin/export"
-            className="btn"
-            style={{
-              padding: "6px 14px",
-              fontSize: 12,
-              fontWeight: 600,
-              background: isAdmin ? "var(--text-primary)" : "#f1f5f9",
-              color: isAdmin ? "#ffffff" : "var(--text-primary)",
-              border: "1px solid var(--card-border)",
-              borderRadius: 6,
-              boxShadow: "none",
-            }}
-          >
-            <span>🔒</span> <span className="nav-hide-sm">{isAdmin ? "Admin Active" : "Admin Portal"}</span>
-          </Link>
+          {/* Admin status badge — shown only once already inside /admin.
+              The portal is intentionally not linked from the participant UI;
+              it is reached by navigating to /admin directly. */}
+          {isAdmin && (
+            <span
+              style={{
+                padding: "6px 14px",
+                fontSize: 12,
+                fontWeight: 600,
+                background: "var(--text-primary)",
+                color: "#ffffff",
+                border: "1px solid var(--card-border)",
+                borderRadius: 6,
+              }}
+            >
+              <span>🔒</span> <span className="nav-hide-sm">Admin Active</span>
+            </span>
+          )}
         </div>
       </div>
     </header>

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+import { checkRateLimit, resetRateLimit, clientIp } from "@/lib/rateLimit";
+
+export const dynamic = "force-dynamic";
 
 const TEST_PATH_MAP: Record<string, string> = {
   "Stroop Task": "/cognitive/stroop",
@@ -30,6 +33,17 @@ export async function POST(req: Request) {
 
     const cleanId = identifier.trim();
 
+    // ID numbers are short and guessable, and a successful sign-in returns
+    // participant PII, so throttle per IP+identifier to prevent enumeration.
+    const rateKey = `participant-signin:${clientIp(req)}:${cleanId}`;
+    const limit = checkRateLimit(rateKey, { limit: 8, windowMs: 15 * 60_000, blockMs: 10 * 60_000 });
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: `Too many attempts. Please try again in ${Math.ceil(limit.retryAfter / 60)} minute(s).` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+
     // Look up participant by ID Number or Phone Number using raw SQL
     const sessions: any[] = await prisma.$queryRawUnsafe(
       `SELECT * FROM "Session" WHERE "participantIdNumber" = $1 OR "phoneNo" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
@@ -44,40 +58,58 @@ export async function POST(req: Request) {
 
     const session = sessions[0];
 
-    // Verify passcode if set
-    if (session.passcode) {
-      let isMatch = false;
-      if (session.passcode.startsWith("$2a$") || session.passcode.startsWith("$2b$")) {
-        isMatch = await bcrypt.compare(passcode.trim(), session.passcode);
-      } else {
-        isMatch = session.passcode === passcode.trim();
-      }
-
-      if (!isMatch) {
-        return NextResponse.json({ error: "Incorrect passcode. Please check and try again." }, { status: 401 });
-      }
-    } else {
-      // If legacy record had no passcode, set the passcode now
-      const hashedPasscode = await bcrypt.hash(passcode.trim(), 10);
-      await prisma.$executeRawUnsafe(
-        `UPDATE "Session" SET "passcode" = $1 WHERE "id" = $2`,
-        hashedPasscode,
-        session.id
-      );
+    // A record with no passcode used to accept ANY passcode and then claim the
+    // account permanently. Combined with publicly-creatable passcode-less
+    // sessions that was an account-takeover path, so such records are now
+    // refused and must be resolved by a coordinator instead.
+    if (!session.passcode) {
+      return NextResponse.json({
+        error: "This record has no passcode set and cannot be accessed directly. Please contact the study coordinator.",
+      }, { status: 403 });
     }
 
-    // Fetch completed cognitive tests for this session
-    const cognitiveTests: any[] = await prisma.$queryRawUnsafe(
-      `SELECT "specificTest" FROM "CognitiveTestResult" WHERE "sessionId" = $1`,
-      session.id
-    );
+    let isMatch = false;
+    if (session.passcode.startsWith("$2a$") || session.passcode.startsWith("$2b$")) {
+      isMatch = await bcrypt.compare(passcode.trim(), session.passcode);
+    } else {
+      // Legacy plaintext passcode: verify, then transparently upgrade to bcrypt.
+      isMatch = session.passcode === passcode.trim();
+      if (isMatch) {
+        const hashed = await bcrypt.hash(passcode.trim(), 10);
+        await prisma.$executeRawUnsafe(
+          `UPDATE "Session" SET "passcode" = $1 WHERE "id" = $2`,
+          hashed,
+          session.id
+        );
+      }
+    }
+
+    if (!isMatch) {
+      return NextResponse.json({ error: "Incorrect passcode. Please check and try again." }, { status: 401 });
+    }
+
+    resetRateLimit(rateKey);
+
+    // Completed cognitive tests AND questionnaires. Questionnaires used to be
+    // omitted, and the client replaces completedTests wholesale on login, so a
+    // returning participant was told to redo every questionnaire.
+    const [cognitiveTests, answeredQuestionnaires] = await Promise.all([
+      prisma.$queryRawUnsafe<any[]>(
+        `SELECT DISTINCT "specificTest" FROM "CognitiveTestResult" WHERE "sessionId" = $1`,
+        session.id
+      ),
+      prisma.$queryRawUnsafe<any[]>(
+        `SELECT DISTINCT "testName" FROM "Answer" WHERE "sessionId" = $1`,
+        session.id
+      ),
+    ]);
 
     const completedTestPaths = Array.from(
-      new Set(
-        cognitiveTests
-          .map(t => TEST_PATH_MAP[t.specificTest])
-          .filter(Boolean)
-      )
+      new Set([
+        ...cognitiveTests.map(t => TEST_PATH_MAP[t.specificTest]).filter(Boolean),
+        // Questionnaires are tracked by their bare id (e.g. "dass21").
+        ...answeredQuestionnaires.map(a => a.testName).filter(Boolean),
+      ])
     );
 
     return NextResponse.json({
@@ -85,11 +117,6 @@ export async function POST(req: Request) {
       sessionId: session.id,
       participantName: session.participantName || "Participant",
       participantIdNumber: session.participantIdNumber || cleanId,
-      phoneNo: session.phoneNo || "",
-      age: session.age,
-      gender: session.gender,
-      studentClass: session.studentClass,
-      schoolName: session.schoolName,
       completedTests: completedTestPaths,
       completed: session.completed,
       consentGiven: session.consentGiven,

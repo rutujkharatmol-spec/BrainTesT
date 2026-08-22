@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
+import TaskCompleteScreen from "./TaskCompleteScreen";
 
 type Trial = {
   direction: "left" | "right"; // direction of the center arrow
@@ -20,6 +23,7 @@ const FIXATION_DURATION = 500;
 
 export default function FlankerTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
+  const router = useRouter();
   
   const [phase, setPhase] = useState<"instructions" | "fixation" | "stimulus" | "completed">("instructions");
   const [trials, setTrials] = useState<Trial[]>([]);
@@ -27,26 +31,30 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
+  // True when the result was only queued locally (device offline).
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasRespondedRef = useRef(false);
 
-  // Generate sequence
+  // Generate sequence — counterbalanced on both factors: exactly half
+  // congruent and half left-facing, independently shuffled.
   useEffect(() => {
-    const sequence: Trial[] = [];
-    for (let i = 0; i < TOTAL_TRIALS; i++) {
-      const direction = Math.random() < 0.5 ? "left" : "right";
-      const congruent = Math.random() < 0.5;
-      
+    const congruency = balancedFlags(TOTAL_TRIALS, 0.5);
+    const directions = balancedFlags(TOTAL_TRIALS, 0.5);
+
+    const sequence: Trial[] = congruency.map((congruent: boolean, i: number) => {
+      const direction: "left" | "right" = directions[i] ? "left" : "right";
+
       let stimulusString = "";
       if (direction === "left" && congruent) stimulusString = "<<<<<";
       if (direction === "right" && congruent) stimulusString = ">>>>>";
       if (direction === "left" && !congruent) stimulusString = ">><>>";
       if (direction === "right" && !congruent) stimulusString = "<<><<";
-      
-      sequence.push({ direction, congruent, stimulusString });
-    }
+
+      return { direction, congruent, stimulusString };
+    });
     setTrials(sequence);
   }, []);
 
@@ -110,6 +118,10 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   }, [phase, results]);
 
   const submitData = async () => {
+    if (!state.sessionId) {
+      alert("No active session — please sign in again before submitting.");
+      return;
+    }
     setSubmitting(true);
     
     // Parameters (only correct, RT > 100ms)
@@ -117,44 +129,49 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
     const congruentRTs = validTrials.filter(r => r.congruent).map(r => r.rt as number);
     const incongruentRTs = validTrials.filter(r => !r.congruent).map(r => r.rt as number);
 
-    const mean = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
     
-    const meanRTCongruent = mean(congruentRTs);
-    const meanRTIncongruent = mean(incongruentRTs);
-    const flankerEffect = meanRTIncongruent - meanRTCongruent; 
+    const meanRTCongruent = roundedMeanOrNull(congruentRTs);
+    const meanRTIncongruent = roundedMeanOrNull(incongruentRTs);
+    const flankerEffect = differenceOrNull(meanRTIncongruent, meanRTCongruent); 
 
     
     setCalculatedParams({
-      param1Name: "Mean RT Congruent (ms)", param1Value: Math.round(meanRTCongruent),
-      param2Name: "Mean RT Incongruent (ms)", param2Value: Math.round(meanRTIncongruent),
-      param3Name: "Flanker Effect", param3Value: Math.round(flankerEffect)
+      param1Name: "Mean RT Congruent (ms)", param1Value: meanRTCongruent,
+      param2Name: "Mean RT Incongruent (ms)", param2Value: meanRTIncongruent,
+      param3Name: "Flanker Effect", param3Value: flankerEffect
     });
     try {
-      await fetchWithOfflineSync("/api/submit-cognitive", {
+      const res = await fetchWithOfflineSync("/api/submit-cognitive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: state.sessionId || "demo-session",
+          sessionId: state.sessionId,
           testCategory: "Executive Function",
           specificTest: "Eriksen Flanker Task",
           param1Name: "Mean RT Congruent (ms)",
-          param1Value: Math.round(meanRTCongruent),
+          param1Value: meanRTCongruent,
           param2Name: "Mean RT Incongruent (ms)",
-          param2Value: Math.round(meanRTIncongruent),
+          param2Value: meanRTIncongruent,
           param3Name: "Flanker Effect",
-          param3Value: Math.round(flankerEffect),
+          param3Value: flankerEffect,
           rawTrialData: results
         })
       });
-      if (onComplete) {
-        onComplete();
-      } else {
-        markTestCompleted("/cognitive/flanker");
-        setTimeout(() => window.location.href = "/", 200);
+      const payload = await res.json().catch(() => ({} as any));
+      if (!res.ok && !payload?.offline) {
+        throw new Error(payload?.error || `Upload failed (${res.status})`);
       }
+      setQueuedOffline(Boolean(payload?.offline));
+      markTestCompleted("/cognitive/flanker");
+      // Stay on the results screen; the Continue button navigates.
+      if (onComplete) onComplete();
     } catch (e) {
       console.error(e);
-      alert("Failed to save cognitive data.");
+      alert(`Could not save your results: ${e instanceof Error ? e.message : e}
+
+Please tell the study coordinator before continuing.`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -176,10 +193,13 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
 
   if (phase === "completed") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "টাস্ক সম্পন্ন হয়েছে!" : "Task Completed!"}</h2>
-        {submitting ? <p>{state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে..." : "Uploading data..."}</p> : <p>{state.language === 'bn' ? "সম্পন্ন!" : "Done!"}</p>}
-      </div>
+      <TaskCompleteScreen
+        calculatedParams={calculatedParams}
+        submitting={submitting}
+        queuedOffline={queuedOffline}
+        language={state.language}
+        onContinue={() => (onComplete ? onComplete() : router.push("/"))}
+      />
     );
   }
 

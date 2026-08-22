@@ -138,15 +138,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // DESTINATION C: MASTER GOOGLE SHEETS PIPELINE
-    // Trigger the consolidated sync script to update the master record for this session
-    try {
-      const { syncQuestionnairesToGoogleSheets } = await import('@/lib/googleSheetsSync');
-      await syncQuestionnairesToGoogleSheets();
-      console.log("Successfully pushed to Master Google Sheets (Sheet2) via Apps Script!");
-    } catch (syncErr) {
-      console.error("Master Google Sheets Questionnaire Sync Failed:", syncErr);
-    }
+    // NOTE: the full-table reconciliation sync (syncQuestionnairesToGoogleSheets)
+    // used to run here, awaited, on every submission — reading every Session
+    // with all 12 submission relations and re-POSTing the whole table. That is
+    // O(N) per write. Reconciliation now happens only via the admin-triggered
+    // /api/admin/sync-google-sheet button; the single-row webhook above keeps
+    // the sheet live in the meantime.
 
     return NextResponse.json({ success: true });
 

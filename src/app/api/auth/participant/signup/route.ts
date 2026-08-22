@@ -36,42 +36,48 @@ export async function POST(req: Request) {
     const cleanId = participantIdNumber.trim();
     const cleanPhone = phoneNo.trim();
 
-    // Check if a participant with this ID or phone already exists
-    const existing: any[] = await prisma.$queryRawUnsafe(
-      `SELECT "id" FROM "Session" WHERE "participantIdNumber" = $1 OR "phoneNo" = $2 LIMIT 1`,
-      cleanId,
-      cleanPhone
-    );
-
-    if (existing && existing.length > 0) {
-      return NextResponse.json({ 
-        error: "A participant with this ID Number or Phone Number already exists. Please Sign In instead." 
-      }, { status: 409 });
-    }
-
     // Hash passcode securely
     const hashedPasscode = await bcrypt.hash(passcode.trim(), 10);
     const newSessionId = crypto.randomUUID();
 
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO "Session" (
-        "id", "participantName", "participantIdNumber", "phoneNo", "passcode",
-        "age", "gender", "studentClass", "schoolName", "address",
-        "consentGiven", "completed", "createdAt"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
-      newSessionId,
-      participantName.trim(),
-      cleanId,
-      cleanPhone,
-      hashedPasscode,
-      age ? parseInt(age) : null,
-      gender || null,
-      studentClass?.trim() || null,
-      schoolName?.trim() || null,
-      address?.trim() || null,
-      Boolean(consentGiven),
-      false
-    );
+    // Uniqueness is enforced by the database (see the @unique columns on
+    // Session). A prior read-then-write check was racy: two devices
+    // registering the same participant at once both passed it and inserted,
+    // splitting that participant's results across two rows. A duplicate now
+    // surfaces as P2002 and is handled below.
+    try {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO "Session" (
+          "id", "participantName", "participantIdNumber", "phoneNo", "passcode",
+          "age", "gender", "studentClass", "schoolName", "address",
+          "consentGiven", "completed", "createdAt"
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
+        newSessionId,
+        participantName.trim(),
+        cleanId,
+        cleanPhone,
+        hashedPasscode,
+        age ? parseInt(age) : null,
+        gender || null,
+        studentClass?.trim() || null,
+        schoolName?.trim() || null,
+        address?.trim() || null,
+        Boolean(consentGiven),
+        false
+      );
+    } catch (insertErr: any) {
+      const isDuplicate =
+        insertErr?.code === "P2002" ||
+        insertErr?.meta?.code === "23505" ||
+        /duplicate key value|unique constraint/i.test(String(insertErr?.message ?? ""));
+
+      if (isDuplicate) {
+        return NextResponse.json({
+          error: "A participant with this ID Number or Phone Number already exists. Please Sign In instead.",
+        }, { status: 409 });
+      }
+      throw insertErr;
+    }
 
     return NextResponse.json({
       success: true,

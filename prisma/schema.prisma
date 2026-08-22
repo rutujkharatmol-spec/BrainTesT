@@ -16,13 +16,18 @@ model AdminUser {
 model Session {
   id                  String   @id @default(uuid())
   participantName     String?
-  participantIdNumber String?
+  // Unique so the database — not a read-then-write check in the signup route —
+  // enforces one record per participant. Without this, two concurrent signups
+  // (a classroom registering at once) both passed the check and inserted, and
+  // sign-in's "most recent match" could then land on the wrong row.
+  // NULL is exempt from UNIQUE in Postgres, so legacy rows are unaffected.
+  participantIdNumber String?  @unique
   age                 Int?
   gender              String?
   studentClass        String?
   schoolName          String?
   address             String?
-  phoneNo             String?
+  phoneNo             String?  @unique
   passcode            String?
   createdAt           DateTime @default(now())
   consentGiven Boolean  @default(false)

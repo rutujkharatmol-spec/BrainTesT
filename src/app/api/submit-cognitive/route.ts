@@ -91,15 +91,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // DESTINATION C: MASTER GOOGLE SHEETS PIPELINE
-    // Trigger the consolidated sync script to update the master record for this session
-    try {
-      const { syncCognitiveToGoogleSheets } = await import('@/lib/googleSheetsSync');
-      await syncCognitiveToGoogleSheets();
-      console.log("Successfully pushed to Master Google Sheets via Apps Script!");
-    } catch (syncErr) {
-      console.error("Master Google Sheets Sync Failed:", syncErr);
-    }
+    // NOTE: the full-table reconciliation sync (syncCognitiveToGoogleSheets)
+    // used to run here, awaited, on every single submission. It reads every
+    // CognitiveTestResult and re-POSTs the entire table, so cost grew O(N) per
+    // write and each participant waited on it. Reconciliation now happens only
+    // via the admin-triggered /api/admin/sync-google-sheet button; the
+    // single-row webhook above keeps the sheet live in the meantime.
 
     return NextResponse.json({ success: true, id: result.id });
   } catch (error: any) {
