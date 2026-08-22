@@ -27,17 +27,14 @@ export async function POST(req: Request) {
     if (!cleanId || cleanId.length !== 12) {
       return NextResponse.json({ error: "Please enter a valid 12-digit Aadhaar Card Number." }, { status: 400 });
     }
-    if (!passcode || passcode.trim().length < 4) {
-      return NextResponse.json({ error: "Passcode must be at least 4 characters/digits." }, { status: 400 });
-    }
-    if (!phoneNo || phoneNo.trim().length !== 10) {
+    const cleanPhone = phoneNo?.replace(/\D/g, "") || "";
+    if (!cleanPhone || cleanPhone.length !== 10) {
       return NextResponse.json({ error: "Please enter a valid 10-digit phone number." }, { status: 400 });
     }
 
-    const cleanPhone = phoneNo.trim();
-
-    // Hash passcode securely
-    const hashedPasscode = await bcrypt.hash(passcode.trim(), 10);
+    // Use phone number as the passcode and hash it securely
+    const rawPasscode = (passcode && passcode.trim().length >= 4) ? passcode.trim() : cleanPhone;
+    const hashedPasscode = await bcrypt.hash(rawPasscode, 10);
     const newSessionId = crypto.randomUUID();
 
     // Uniqueness is enforced by the database (see the @unique columns on

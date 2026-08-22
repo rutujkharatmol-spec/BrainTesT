@@ -36,16 +36,13 @@ export default function IntakeScreen() {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
   // Sign In Form States
-  const [signInIdentifier, setSignInIdentifier] = useState("");
-  const [signInPasscode, setSignInPasscode] = useState("");
-  const [showSignInPasscode, setShowSignInPasscode] = useState(false);
+  const [signInAadhaar, setSignInAadhaar] = useState("");
+  const [signInPhone, setSignInPhone] = useState("");
 
   // Sign Up Form States
   const [name, setName] = useState("");
   const [idNum, setIdNum] = useState("");
   const [phoneNo, setPhoneNo] = useState("");
-  const [passcode, setPasscode] = useState("");
-  const [showSignUpPasscode, setShowSignUpPasscode] = useState(false);
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [studentClass, setStudentClass] = useState("");
@@ -57,15 +54,14 @@ export default function IntakeScreen() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Sign In Validation
-  const isSignInValid = signInIdentifier.trim() && signInPasscode.trim();
+  // Sign In Validation (12-digit Aadhaar + 10-digit Phone)
+  const isSignInValid = signInAadhaar.trim().length === 12 && signInPhone.trim().length === 10;
 
   // Sign Up Validation
   const isSignUpValid =
     name.trim() &&
     idNum.trim().length === 12 &&
     phoneNo.length === 10 &&
-    passcode.trim().length >= 4 &&
     age.trim() &&
     gender &&
     studentClass.trim() &&
@@ -86,8 +82,8 @@ export default function IntakeScreen() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifier: signInIdentifier.trim().replace(/[\s-]/g, ""),
-          passcode: signInPasscode.trim(),
+          aadhaarNumber: signInAadhaar.trim().replace(/\D/g, ""),
+          phoneNo: signInPhone.trim().replace(/\D/g, ""),
         }),
       });
 
@@ -133,7 +129,7 @@ export default function IntakeScreen() {
           participantName: name.trim(),
           participantIdNumber: idNum.trim(),
           phoneNo: phoneNo.trim(),
-          passcode: passcode.trim(),
+          passcode: phoneNo.trim(),
           age: parseInt(age),
           gender,
           studentClass: studentClass.trim(),
@@ -282,83 +278,67 @@ export default function IntakeScreen() {
       )}
 
       {/* =====================================================================
-          SIGN IN FORM (Aadhaar Card Number / Phone Number + Passcode)
+          SIGN IN FORM (Aadhaar Card Number + Phone Number)
           ===================================================================== */}
       {authMode === "signin" ? (
         <form onSubmit={handleSignIn}>
           <div style={{ marginBottom: 18 }}>
             <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px 0", textAlign: "center" }}>
               {lang === "bn"
-                ? "অধিবেশন চালিয়ে যেতে আপনার ১২-সংখ্যার আধার কার্ড নম্বর অথবা ১০-সংখ্যার ফোন নম্বর এবং পাসকোড লিখুন।"
-                : "Enter your 12-digit Aadhaar Card Number or 10-digit Phone Number and Passcode to access your assessment profile."}
+                ? "অধিবেশন চালিয়ে যেতে আপনার ১২-সংখ্যার আধার কার্ড নম্বর এবং ১০-সংখ্যার ফোন নম্বর লিখুন।"
+                : "Enter your 12-digit Aadhaar Card Number and 10-digit Phone Number to access your assessment profile."}
             </p>
           </div>
 
-          {/* Identifier: Aadhaar or Phone */}
+          {/* Aadhaar Card Number */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>
-              {lang === "bn" ? "আধার কার্ড নম্বর অথবা ফোন নম্বর" : "AADHAAR CARD OR PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
+              {lang === "bn" ? "আধার কার্ড নম্বর / AADHAAR CARD NUMBER" : "AADHAAR CARD NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
             </label>
             <input
               type="text"
-              value={signInIdentifier}
-              onChange={(e) => setSignInIdentifier(e.target.value)}
+              value={signInAadhaar}
+              onChange={(e) => {
+                const num = e.target.value.replace(/\D/g, "");
+                if (num.length <= 12) setSignInAadhaar(num);
+              }}
               required
+              pattern="\d{12}"
+              title="Aadhaar Card Number must be exactly 12 digits"
               style={inputStyle}
-              placeholder="e.g. 12-digit Aadhaar No or 10-digit Mobile No"
+              placeholder="12-digit Aadhaar Number"
               autoFocus
             />
+            {signInAadhaar.length > 0 && signInAadhaar.length < 12 && (
+              <span style={{ fontSize: "0.75rem", color: "var(--error-color)", marginTop: 4, display: "block" }}>
+                Must be 12 digits ({signInAadhaar.length}/12)
+              </span>
+            )}
           </div>
 
-          {/* Passcode */}
+          {/* Phone Number */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>
-              {lang === "bn" ? "পাসকোড" : "PASSCODE"} <span style={{ color: "var(--error-color)" }}>*</span>
+              {lang === "bn" ? "ফোন নম্বর / PHONE NUMBER" : "PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
             </label>
-            <div style={{ position: "relative" }}>
-              <input
-                type={showSignInPasscode ? "text" : "password"}
-                value={signInPasscode}
-                onChange={(e) => setSignInPasscode(e.target.value)}
-                required
-                style={{ ...inputStyle, paddingRight: 40 }}
-                placeholder="Enter your passcode"
-              />
-              <button
-                type="button"
-                onClick={() => setShowSignInPasscode(v => !v)}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#64748b",
-                  padding: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                title={showSignInPasscode ? "Hide passcode" : "Show passcode"}
-                aria-label={showSignInPasscode ? "Hide passcode" : "Show passcode"}
-              >
-                {showSignInPasscode ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                    <line x1="2" x2="22" y1="2" y2="22" />
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
-            </div>
+            <input
+              type="tel"
+              value={signInPhone}
+              onChange={(e) => {
+                const num = e.target.value.replace(/\D/g, "");
+                if (num.length <= 10) setSignInPhone(num);
+              }}
+              required
+              pattern="\d{10}"
+              title="Phone number must be exactly 10 digits"
+              style={inputStyle}
+              placeholder="10-digit Mobile Number"
+            />
+            {signInPhone.length > 0 && signInPhone.length < 10 && (
+              <span style={{ fontSize: "0.75rem", color: "var(--error-color)", marginTop: 4, display: "block" }}>
+                Must be 10 digits ({signInPhone.length}/10)
+              </span>
+            )}
           </div>
 
           {/* Submit Sign In */}
@@ -404,30 +384,32 @@ export default function IntakeScreen() {
         </form>
       ) : (
         /* =====================================================================
-            SIGN UP FORM (Full Intake with Passcode Creation)
+            SIGN UP FORM (Full Intake)
             ===================================================================== */
         <form onSubmit={handleSignUp}>
           <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px 0", textAlign: "center" }}>
             {lang === "bn"
-              ? "মূল্যায়ন শুরু করতে নীচের সমস্ত বিবরণ পূরণ করুন এবং একটি পাসকোড সেট করুন।"
-              : "Please fill in your details and create a passcode to register for the assessment."}
+              ? "মূল্যায়ন শুরু করতে নীচের সমস্ত বিবরণ পূরণ করুন।"
+              : "Please fill in your details to register for the assessment."}
           </p>
 
-          {/* Row 1: Name + Aadhaar */}
+          {/* Row 1: Full Name */}
+          <div style={fieldGroupStyle}>
+            <label style={labelStyle}>
+              {lang === "bn" ? "নাম / NAME" : "FULL NAME"} <span style={{ color: "var(--error-color)" }}>*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={inputStyle}
+              placeholder="e.g. Nihal Sarin"
+            />
+          </div>
+
+          {/* Row 2: Aadhaar Number + Phone Number */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
-            <div style={fieldGroupStyle}>
-              <label style={labelStyle}>
-                {lang === "bn" ? "নাম / NAME" : "FULL NAME"} <span style={{ color: "var(--error-color)" }}>*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                style={inputStyle}
-                placeholder="e.g. Nihal Sarin"
-              />
-            </div>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
                 {lang === "bn" ? "আধার কার্ড নম্বর / AADHAAR CARD NUMBER" : "AADHAAR CARD NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
@@ -451,13 +433,10 @@ export default function IntakeScreen() {
                 </span>
               )}
             </div>
-          </div>
 
-          {/* Row 2: Phone + Passcode */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "ফোন নম্বর / PHONE NO" : "PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {lang === "bn" ? "ফোন নম্বর / PHONE NUMBER" : "PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="tel"
@@ -477,57 +456,6 @@ export default function IntakeScreen() {
                   Must be 10 digits ({phoneNo.length}/10)
                 </span>
               )}
-            </div>
-
-            <div style={fieldGroupStyle}>
-              <label style={labelStyle}>
-                {lang === "bn" ? "পাসকোড তৈরি করুন / PASSCODE" : "CREATE PASSCODE"} <span style={{ color: "var(--error-color)" }}>*</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <input
-                  type={showSignUpPasscode ? "text" : "password"}
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  required
-                  minLength={4}
-                  style={{ ...inputStyle, paddingRight: 38 }}
-                  placeholder="Min 4 characters/digits"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSignUpPasscode(v => !v)}
-                  style={{
-                    position: "absolute",
-                    right: 10,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#64748b",
-                    padding: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  title={showSignUpPasscode ? "Hide passcode" : "Show passcode"}
-                  aria-label={showSignUpPasscode ? "Hide passcode" : "Show passcode"}
-                >
-                  {showSignUpPasscode ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                      <line x1="2" x2="22" y1="2" y2="22" />
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
-                </button>
-              </div>
             </div>
           </div>
 

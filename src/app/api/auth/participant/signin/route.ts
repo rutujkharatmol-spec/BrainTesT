@@ -22,19 +22,18 @@ const TEST_PATH_MAP: Record<string, string> = {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { identifier, passcode } = body;
+    const rawAadhaar = (body.aadhaarNumber || body.identifier || "").replace(/\D/g, "");
+    const rawPhone = (body.phoneNo || body.passcode || "").replace(/\D/g, "");
 
-    if (!identifier?.trim()) {
-      return NextResponse.json({ error: "Please enter your Aadhaar Card Number or Phone Number." }, { status: 400 });
+    if (!rawAadhaar || rawAadhaar.length !== 12) {
+      return NextResponse.json({ error: "Please enter a valid 12-digit Aadhaar Card Number." }, { status: 400 });
     }
-    if (!passcode?.trim()) {
-      return NextResponse.json({ error: "Please enter your passcode." }, { status: 400 });
+    if (!rawPhone || rawPhone.length !== 10) {
+      return NextResponse.json({ error: "Please enter a valid 10-digit Phone Number." }, { status: 400 });
     }
 
-    const cleanId = identifier.trim().replace(/[\s-]/g, "");
-
-    // Aadhaar / ID numbers are throttled per IP+identifier to prevent enumeration.
-    const rateKey = `participant-signin:${clientIp(req)}:${cleanId}`;
+    // Throttled per IP+Aadhaar to prevent enumeration.
+    const rateKey = `participant-signin:${clientIp(req)}:${rawAadhaar}`;
     const limit = checkRateLimit(rateKey, { limit: 8, windowMs: 15 * 60_000, blockMs: 10 * 60_000 });
     if (!limit.allowed) {
       return NextResponse.json(
@@ -43,48 +42,47 @@ export async function POST(req: Request) {
       );
     }
 
-    // Look up participant by Aadhaar Number or Phone Number using raw SQL
+    // Look up participant by Aadhaar Number using raw SQL
     const sessions: any[] = await prisma.$queryRawUnsafe(
-      `SELECT * FROM "Session" WHERE "participantIdNumber" = $1 OR "phoneNo" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
-      cleanId
+      `SELECT * FROM "Session" WHERE "participantIdNumber" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
+      rawAadhaar
     );
 
     if (!sessions || sessions.length === 0) {
       return NextResponse.json({ 
-        error: "No account found matching this Aadhaar Card Number or Phone Number. Please sign up." 
+        error: "No account found matching this Aadhaar Card Number. Please sign up." 
       }, { status: 404 });
     }
 
     const session = sessions[0];
 
-    // A record with no passcode used to accept ANY passcode and then claim the
-    // account permanently. Combined with publicly-creatable passcode-less
-    // sessions that was an account-takeover path, so such records are now
-    // refused and must be resolved by a coordinator instead.
-    if (!session.passcode) {
-      return NextResponse.json({
-        error: "This record has no passcode set and cannot be accessed directly. Please contact the study coordinator.",
-      }, { status: 403 });
-    }
+    // Check phone number match directly or via bcrypt-hashed passcode (which stores the phone number)
+    const isPhoneDirectMatch = session.phoneNo === rawPhone;
+    let isPasscodeMatch = false;
 
-    let isMatch = false;
-    if (session.passcode.startsWith("$2a$") || session.passcode.startsWith("$2b$")) {
-      isMatch = await bcrypt.compare(passcode.trim(), session.passcode);
-    } else {
-      // Legacy plaintext passcode: verify, then transparently upgrade to bcrypt.
-      isMatch = session.passcode === passcode.trim();
-      if (isMatch) {
-        const hashed = await bcrypt.hash(passcode.trim(), 10);
-        await prisma.$executeRawUnsafe(
-          `UPDATE "Session" SET "passcode" = $1 WHERE "id" = $2`,
-          hashed,
-          session.id
-        );
+    if (session.passcode) {
+      if (session.passcode.startsWith("$2a$") || session.passcode.startsWith("$2b$")) {
+        isPasscodeMatch = await bcrypt.compare(rawPhone, session.passcode);
+      } else {
+        isPasscodeMatch = session.passcode === rawPhone;
       }
     }
 
+    const isMatch = isPhoneDirectMatch || isPasscodeMatch;
+
     if (!isMatch) {
-      return NextResponse.json({ error: "Incorrect passcode. Please check and try again." }, { status: 401 });
+      return NextResponse.json({ error: "Phone number does not match this Aadhaar record. Please check and try again." }, { status: 401 });
+    }
+
+    // Seamlessly upgrade / ensure phoneNo and hashed passcode match the phone number
+    if (!session.phoneNo || !session.passcode || !session.passcode.startsWith("$2")) {
+      const hashed = await bcrypt.hash(rawPhone, 10);
+      await prisma.$executeRawUnsafe(
+        `UPDATE "Session" SET "phoneNo" = COALESCE("phoneNo", $1), "passcode" = $2 WHERE "id" = $3`,
+        rawPhone,
+        hashed,
+        session.id
+      );
     }
 
     resetRateLimit(rateKey);
@@ -115,7 +113,7 @@ export async function POST(req: Request) {
       success: true,
       sessionId: session.id,
       participantName: session.participantName || "Participant",
-      participantIdNumber: session.participantIdNumber || cleanId,
+      participantIdNumber: session.participantIdNumber || rawAadhaar,
       completedTests: completedTestPaths,
       completed: session.completed,
       consentGiven: session.consentGiven,
