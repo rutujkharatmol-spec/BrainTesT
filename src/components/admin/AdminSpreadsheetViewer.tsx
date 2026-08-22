@@ -151,7 +151,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // UI View Controls
-  const [density, setDensity] = useState<"comfortable" | "compact">("compact");
+  const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showStatsBar, setShowStatsBar] = useState(false);
 
@@ -267,43 +267,43 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeText: "9 Tasks",
         badgeColor: "#1e40af",
         columns: [
-          { key: "idNumber", label: "Aadhaar Number", group: "Participant", width: 135, sticky: true, isId: true },
-          { key: "name", label: "Participant Name", group: "Participant", width: 155, sticky: true, isName: true },
-          { key: "schoolName", label: "School / Institution", group: "Participant", width: 140 },
-          { key: "createdAt", label: "Date", group: "Participant", width: 110, isDate: true, isLastInGroup: true },
+          { key: "idNumber", label: "Aadhaar Number", group: "Participant", width: 145, sticky: true, isId: true },
+          { key: "name", label: "Participant Name", group: "Participant", width: 175, sticky: true, isName: true },
+          { key: "schoolName", label: "School / Institution", group: "Participant", width: 160 },
+          { key: "createdAt", label: "Date", group: "Participant", width: 120, isDate: true, isLastInGroup: true },
           // Stroop
-          { key: "stroopCongruent", label: "RT Cong (ms)", group: "Stroop Task", color: "#2563eb", width: 110, isNumeric: true },
-          { key: "stroopIncongruent", label: "RT Incong (ms)", group: "Stroop Task", color: "#2563eb", width: 115, isNumeric: true },
-          { key: "stroopEffect", label: "Stroop Effect", group: "Stroop Task", color: "#2563eb", width: 110, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
+          { key: "stroopCongruent", label: "RT Cong (ms)", group: "Stroop Task", color: "#2563eb", width: 120, isNumeric: true },
+          { key: "stroopIncongruent", label: "RT Incong (ms)", group: "Stroop Task", color: "#2563eb", width: 125, isNumeric: true },
+          { key: "stroopEffect", label: "Stroop Effect", group: "Stroop Task", color: "#2563eb", width: 125, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
           // SART
-          { key: "sartRt", label: "RT Go (ms)", group: "SART", color: "#059669", width: 105, isNumeric: true },
-          { key: "sartCommission", label: "Comm Errors", group: "SART", color: "#059669", width: 105, isNumeric: true },
-          { key: "sartOmission", label: "Omiss Errors", group: "SART", color: "#059669", width: 105, isNumeric: true, isLastInGroup: true },
+          { key: "sartRt", label: "RT Go (ms)", group: "SART", color: "#059669", width: 115, isNumeric: true },
+          { key: "sartCommission", label: "Comm Errors", group: "SART", color: "#059669", width: 115, isNumeric: true },
+          { key: "sartOmission", label: "Omiss Errors", group: "SART", color: "#059669", width: 115, isNumeric: true, isLastInGroup: true },
           // Dot Probe
-          { key: "dotProbeCongruent", label: "RT Cong (ms)", group: "Dot Probe", color: "#dc2626", width: 110, isNumeric: true },
-          { key: "dotProbeIncongruent", label: "RT Incong (ms)", group: "Dot Probe", color: "#dc2626", width: 115, isNumeric: true },
-          { key: "dotProbeBias", label: "Bias Score", group: "Dot Probe", color: "#dc2626", width: 105, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
+          { key: "dotProbeCongruent", label: "RT Cong (ms)", group: "Dot Probe", color: "#dc2626", width: 120, isNumeric: true },
+          { key: "dotProbeIncongruent", label: "RT Incong (ms)", group: "Dot Probe", color: "#dc2626", width: 125, isNumeric: true },
+          { key: "dotProbeBias", label: "Bias Score", group: "Dot Probe", color: "#dc2626", width: 115, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
           // 2-Back
-          { key: "nbackMeanRT", label: "RT Hits (ms)", group: "2-Back Task", color: "#d97706", width: 105, isNumeric: true },
-          { key: "nbackHitRate", label: "Hit Rate %", group: "2-Back Task", color: "#d97706", width: 100, isNumeric: true, isPercent: true },
-          { key: "nbackFalseAlarmRate", label: "FA Rate %", group: "2-Back Task", color: "#d97706", width: 100, isNumeric: true, isPercent: true, isLastInGroup: true },
+          { key: "nbackMeanRT", label: "RT Hits (ms)", group: "2-Back Task", color: "#d97706", width: 115, isNumeric: true },
+          { key: "nbackHitRate", label: "Hit Rate %", group: "2-Back Task", color: "#d97706", width: 110, isNumeric: true, isPercent: true },
+          { key: "nbackFalseAlarmRate", label: "FA Rate %", group: "2-Back Task", color: "#d97706", width: 110, isNumeric: true, isPercent: true, isLastInGroup: true },
           // Corsi
-          { key: "corsiMaxSpan", label: "Max Block Span", group: "Corsi Block", color: "#7c3aed", width: 115, isNumeric: true, bold: true, isHighlightPill: true },
-          { key: "corsiTotalCorrect", label: "Total Correct", group: "Corsi Block", color: "#7c3aed", width: 105, isNumeric: true, isLastInGroup: true },
+          { key: "corsiMaxSpan", label: "Max Block Span", group: "Corsi Block", color: "#7c3aed", width: 125, isNumeric: true, bold: true, isHighlightPill: true },
+          { key: "corsiTotalCorrect", label: "Total Correct", group: "Corsi Block", color: "#7c3aed", width: 115, isNumeric: true, isLastInGroup: true },
           // Digit Span
-          { key: "digitSpanMax", label: "Max Digit Span", group: "Digit Span", color: "#0891b2", width: 115, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
+          { key: "digitSpanMax", label: "Max Digit Span", group: "Digit Span", color: "#0891b2", width: 125, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
           // LDT
-          { key: "ldtWord", label: "RT Word (ms)", group: "Lexical Decision", color: "#475569", width: 110, isNumeric: true },
-          { key: "ldtNonWord", label: "RT Non-Word", group: "Lexical Decision", color: "#475569", width: 110, isNumeric: true },
-          { key: "ldtAccuracy", label: "Accuracy %", group: "Lexical Decision", color: "#475569", width: 100, isNumeric: true, isPercent: true, isLastInGroup: true },
+          { key: "ldtWord", label: "RT Word (ms)", group: "Lexical Decision", color: "#475569", width: 120, isNumeric: true },
+          { key: "ldtNonWord", label: "RT Non-Word", group: "Lexical Decision", color: "#475569", width: 120, isNumeric: true },
+          { key: "ldtAccuracy", label: "Accuracy %", group: "Lexical Decision", color: "#475569", width: 110, isNumeric: true, isPercent: true, isLastInGroup: true },
           // Negative Priming
-          { key: "npControl", label: "RT Ctrl (ms)", group: "Negative Priming", color: "#db2777", width: 105, isNumeric: true },
-          { key: "npPrimed", label: "RT Primed", group: "Negative Priming", color: "#db2777", width: 105, isNumeric: true },
-          { key: "npEffect", label: "Priming Effect", group: "Negative Priming", color: "#db2777", width: 115, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
+          { key: "npControl", label: "RT Ctrl (ms)", group: "Negative Priming", color: "#db2777", width: 115, isNumeric: true },
+          { key: "npPrimed", label: "RT Primed", group: "Negative Priming", color: "#db2777", width: 115, isNumeric: true },
+          { key: "npEffect", label: "Priming Effect", group: "Negative Priming", color: "#db2777", width: 125, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
           // Flanker
-          { key: "flankerCongruent", label: "RT Cong (ms)", group: "Flanker Task", color: "#65a30d", width: 110, isNumeric: true },
-          { key: "flankerIncongruent", label: "RT Incong", group: "Flanker Task", color: "#65a30d", width: 110, isNumeric: true },
-          { key: "flankerEffect", label: "Flanker Effect", group: "Flanker Task", color: "#65a30d", width: 110, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
+          { key: "flankerCongruent", label: "RT Cong (ms)", group: "Flanker Task", color: "#65a30d", width: 120, isNumeric: true },
+          { key: "flankerIncongruent", label: "RT Incong", group: "Flanker Task", color: "#65a30d", width: 120, isNumeric: true },
+          { key: "flankerEffect", label: "Flanker Effect", group: "Flanker Task", color: "#65a30d", width: 120, isNumeric: true, bold: true, isHighlightPill: true, isLastInGroup: true },
         ]
       };
     } else if (activeTab === "questionnaires") {
@@ -314,26 +314,26 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           badgeText: "12 Scales Overview",
           badgeColor: "#1e40af",
           columns: [
-            { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
-            { key: "name", label: "Participant Name", width: 155, sticky: true, isName: true },
-            { key: "schoolName", label: "School", width: 130 },
-            { key: "createdAt", label: "Date", width: 110, isDate: true, isLastInGroup: true },
-            { key: "cfsScore", label: "CFS", width: 85, isNumeric: true },
-            { key: "gaeneScore", label: "GAENE", width: 85, isNumeric: true },
-            { key: "mateScore", label: "MATE", width: 85, isNumeric: true },
-            { key: "sbsScore", label: "SBS", width: 85, isNumeric: true },
-            { key: "skepScore", label: "SKEP", width: 85, isNumeric: true },
-            { key: "tsisSp", label: "TSIS-SP", width: 85, isNumeric: true },
-            { key: "tsisSk", label: "TSIS-SK", width: 85, isNumeric: true },
-            { key: "tsisSa", label: "TSIS-SA", width: 85, isNumeric: true },
-            { key: "ncs6Score", label: "NCS-6", width: 85, isNumeric: true },
-            { key: "cfqScore", label: "CFQ", width: 85, isNumeric: true },
-            { key: "dass21Depression", label: "DASS-Dep", width: 110, isNumeric: true, badgeKey: "dass21DepressionSeverity" },
-            { key: "dass21Anxiety", label: "DASS-Anx", width: 110, isNumeric: true, badgeKey: "dass21AnxietySeverity" },
-            { key: "dass21Stress", label: "DASS-Str", width: 110, isNumeric: true, badgeKey: "dass21StressSeverity" },
-            { key: "phq9Score", label: "PHQ-9", width: 105, isNumeric: true, badgeKey: "phq9Severity" },
-            { key: "gad7Score", label: "GAD-7", width: 105, isNumeric: true, badgeKey: "gad7Severity" },
-            { key: "who5Score", label: "WHO-5", width: 105, isNumeric: true, badgeKey: "who5Severity" },
+            { key: "idNumber", label: "Aadhaar Number", width: 145, sticky: true, isId: true },
+            { key: "name", label: "Participant Name", width: 175, sticky: true, isName: true },
+            { key: "schoolName", label: "School", width: 150 },
+            { key: "createdAt", label: "Date", width: 120, isDate: true, isLastInGroup: true },
+            { key: "cfsScore", label: "CFS", width: 95, isNumeric: true },
+            { key: "gaeneScore", label: "GAENE", width: 95, isNumeric: true },
+            { key: "mateScore", label: "MATE", width: 95, isNumeric: true },
+            { key: "sbsScore", label: "SBS", width: 95, isNumeric: true },
+            { key: "skepScore", label: "SKEP", width: 95, isNumeric: true },
+            { key: "tsisSp", label: "TSIS-SP", width: 95, isNumeric: true },
+            { key: "tsisSk", label: "TSIS-SK", width: 95, isNumeric: true },
+            { key: "tsisSa", label: "TSIS-SA", width: 95, isNumeric: true },
+            { key: "ncs6Score", label: "NCS-6", width: 95, isNumeric: true },
+            { key: "cfqScore", label: "CFQ", width: 95, isNumeric: true },
+            { key: "dass21Depression", label: "DASS-Dep", width: 120, isNumeric: true, badgeKey: "dass21DepressionSeverity" },
+            { key: "dass21Anxiety", label: "DASS-Anx", width: 120, isNumeric: true, badgeKey: "dass21AnxietySeverity" },
+            { key: "dass21Stress", label: "DASS-Str", width: 120, isNumeric: true, badgeKey: "dass21StressSeverity" },
+            { key: "phq9Score", label: "PHQ-9", width: 115, isNumeric: true, badgeKey: "phq9Severity" },
+            { key: "gad7Score", label: "GAD-7", width: 115, isNumeric: true, badgeKey: "gad7Severity" },
+            { key: "who5Score", label: "WHO-5", width: 115, isNumeric: true, badgeKey: "who5Severity" },
           ]
         };
       } else {
@@ -341,34 +341,34 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         const rows = data.individualSheets[activeQuestionnaire] || [];
         
         const qCols: any[] = [
-          { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
-          { key: "name", label: "Participant Name", width: 155, sticky: true, isName: true },
-          { key: "schoolName", label: "School", width: 130 },
-          { key: "createdAt", label: "Date", width: 110, isDate: true, isLastInGroup: true },
+          { key: "idNumber", label: "Aadhaar Number", width: 145, sticky: true, isId: true },
+          { key: "name", label: "Participant Name", width: 175, sticky: true, isName: true },
+          { key: "schoolName", label: "School", width: 150 },
+          { key: "createdAt", label: "Date", width: 120, isDate: true, isLastInGroup: true },
         ];
 
         // Add Q1 to Qn
         for (let i = 1; i <= qConf.count; i++) {
-          qCols.push({ key: `q${i}`, label: `Q${i}`, width: 52, isNumeric: true, isAnswerItem: true });
+          qCols.push({ key: `q${i}`, label: `Q${i}`, width: 58, isNumeric: true, isAnswerItem: true });
         }
 
         // Add scores
         if (activeQuestionnaire === "tsis") {
           qCols.push(
-            { key: "scoreSp", label: "Score SP", width: 90, isNumeric: true, bold: true },
-            { key: "scoreSk", label: "Score SK", width: 90, isNumeric: true, bold: true },
-            { key: "scoreSa", label: "Score SA", width: 90, isNumeric: true, bold: true }
+            { key: "scoreSp", label: "Score SP", width: 100, isNumeric: true, bold: true },
+            { key: "scoreSk", label: "Score SK", width: 100, isNumeric: true, bold: true },
+            { key: "scoreSa", label: "Score SA", width: 100, isNumeric: true, bold: true }
           );
         } else if (activeQuestionnaire === "dass21") {
           qCols.push(
-            { key: "scoreDepression", label: "Depression", width: 105, isNumeric: true, badgeKey: "severityDepression", bold: true },
-            { key: "scoreAnxiety", label: "Anxiety", width: 105, isNumeric: true, badgeKey: "severityAnxiety", bold: true },
-            { key: "scoreStress", label: "Stress", width: 105, isNumeric: true, badgeKey: "severityStress", bold: true }
+            { key: "scoreDepression", label: "Depression", width: 115, isNumeric: true, badgeKey: "severityDepression", bold: true },
+            { key: "scoreAnxiety", label: "Anxiety", width: 115, isNumeric: true, badgeKey: "severityAnxiety", bold: true },
+            { key: "scoreStress", label: "Stress", width: 115, isNumeric: true, badgeKey: "severityStress", bold: true }
           );
         } else if (["phq9", "gad7", "who5"].includes(activeQuestionnaire)) {
-          qCols.push({ key: "score", label: "Final Score", width: 105, isNumeric: true, badgeKey: "severity", bold: true });
+          qCols.push({ key: "score", label: "Final Score", width: 115, isNumeric: true, badgeKey: "severity", bold: true });
         } else {
-          qCols.push({ key: "score", label: "Final Score", width: 105, isNumeric: true, bold: true });
+          qCols.push({ key: "score", label: "Final Score", width: 115, isNumeric: true, bold: true });
         }
 
         return {
@@ -386,18 +386,18 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeText: `${data.participants.length} Enrolled`,
         badgeColor: "#059669",
         columns: [
-          { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
-          { key: "name", label: "Participant Name", width: 155, sticky: true, isName: true },
-          { key: "age", label: "Age", width: 70, isNumeric: true },
-          { key: "gender", label: "Gender", width: 85 },
-          { key: "studentClass", label: "Class", width: 80 },
-          { key: "schoolName", label: "School / Institution", width: 160 },
-          { key: "phoneNo", label: "Phone", width: 120 },
-          { key: "consentGiven", label: "Consent", width: 90, badgeKey: "consentGiven" },
-          { key: "completed", label: "Status", width: 100, badgeKey: "completed" },
-          { key: "cognitiveTestsCount", label: "Cognitive Tasks", width: 115, isNumeric: true },
-          { key: "questionnairesAnsweredCount", label: "Surveys Done", width: 105, isNumeric: true },
-          { key: "createdAt", label: "Enrolled Date", width: 130, isDate: true },
+          { key: "idNumber", label: "Aadhaar Number", width: 145, sticky: true, isId: true },
+          { key: "name", label: "Participant Name", width: 175, sticky: true, isName: true },
+          { key: "age", label: "Age", width: 80, isNumeric: true },
+          { key: "gender", label: "Gender", width: 95 },
+          { key: "studentClass", label: "Class", width: 90 },
+          { key: "schoolName", label: "School / Institution", width: 180 },
+          { key: "phoneNo", label: "Phone", width: 135 },
+          { key: "consentGiven", label: "Consent", width: 100, badgeKey: "consentGiven" },
+          { key: "completed", label: "Status", width: 115, badgeKey: "completed" },
+          { key: "cognitiveTestsCount", label: "Cognitive Tasks", width: 125, isNumeric: true },
+          { key: "questionnairesAnsweredCount", label: "Surveys Done", width: 120, isNumeric: true },
+          { key: "createdAt", label: "Enrolled Date", width: 135, isDate: true },
         ]
       };
     } else {
@@ -407,32 +407,31 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeText: `${data.rawTrials.length} Runs`,
         badgeColor: "#7c3aed",
         columns: [
-          { key: "idNumber", label: "Aadhaar Number", width: 135, sticky: true, isId: true },
-          { key: "name", label: "Participant Name", width: 145, sticky: true, isName: true },
-          { key: "specificTest", label: "Test Name", width: 150, bold: true },
-          { key: "category", label: "Category", width: 120 },
-          { key: "param1Name", label: "Param 1 Name", width: 130 },
-          { key: "param1Value", label: "Param 1 Val", width: 100, isNumeric: true },
-          { key: "param2Name", label: "Param 2 Name", width: 130 },
-          { key: "param2Value", label: "Param 2 Val", width: 100, isNumeric: true },
-          { key: "param3Name", label: "Param 3 Name", width: 130 },
-          { key: "param3Value", label: "Param 3 Val", width: 100, isNumeric: true },
-          { key: "createdAt", label: "Timestamp", width: 130, isDate: true },
+          { key: "idNumber", label: "Aadhaar Number", width: 145, sticky: true, isId: true },
+          { key: "name", label: "Participant Name", width: 165, sticky: true, isName: true },
+          { key: "specificTest", label: "Test Name", width: 165, bold: true },
+          { key: "category", label: "Category", width: 135 },
+          { key: "param1Name", label: "Param 1 Name", width: 135 },
+          { key: "param1Value", label: "Param 1 Val", width: 105, isNumeric: true },
+          { key: "param2Name", label: "Param 2 Name", width: 135 },
+          { key: "param2Value", label: "Param 2 Val", width: 105, isNumeric: true },
+          { key: "param3Name", label: "Param 3 Name", width: 135 },
+          { key: "param3Value", label: "Param 3 Val", width: 105, isNumeric: true },
+          { key: "createdAt", label: "Timestamp", width: 140, isDate: true },
         ]
       };
     }
   }, [activeTab, activeQuestionnaire, data]);
 
   // ---- Responsive sizing helpers -------------------------------------------
-  // On phones every column shrinks and only the ID column stays pinned, so at
-  // least one data column remains visible next to it on a 360px screen.
+  const GROUP_HEADER_H = isMobile ? 32 : 36;
   const stickyCount = isMobile ? 1 : columns.filter((c: any) => c.sticky).length;
 
   const colWidth = (col: any) => {
     if (!isMobile) return col.width;
-    if (col.isId) return 88;
-    if (col.isName) return 118;
-    return Math.max(54, Math.round(col.width * 0.86));
+    if (col.isId) return 105;
+    if (col.isName) return 130;
+    return Math.max(65, Math.round(col.width * 0.9));
   };
 
   const isColSticky = (col: any, idx: number) => Boolean(col.sticky) && idx < stickyCount;
@@ -440,32 +439,45 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
     isColSticky(col, idx) ? (idx === 0 ? 0 : colWidth(columns[0])) : undefined;
   const isLastSticky = (col: any, idx: number) => isColSticky(col, idx) && idx === stickyCount - 1;
 
-  const cellFont = isMobile ? (density === "compact" ? 10 : 11) : density === "compact" ? 11 : 12;
-  const cellPad = density === "compact" ? (isMobile ? "5px 6px" : "5px 8px") : isMobile ? "7px 8px" : "8px 10px";
-  const headerFont = isMobile ? 10 : density === "compact" ? 11 : 12;
-  const headerPad = density === "compact" ? (isMobile ? "6px 6px" : "6px 8px") : isMobile ? "7px 8px" : "8px 10px";
+  const cellFont = isMobile ? (density === "compact" ? 11 : 12) : density === "compact" ? 12 : 13;
+  const cellPad = density === "compact" ? (isMobile ? "8px 10px" : "10px 14px") : isMobile ? "10px 12px" : "13px 18px";
+  const headerFont = isMobile ? 11 : density === "compact" ? 12 : 13;
+  const headerPad = density === "compact" ? (isMobile ? "8px 10px" : "10px 14px") : isMobile ? "10px 12px" : "13px 18px";
 
-  // Primary (top bar) actions go full-width in a 2-up grid on phones
+  // Primary (top bar) action buttons
   const actionBtnStyle: React.CSSProperties = {
-    padding: isMobile ? "9px 8px" : "5px 10px",
-    fontSize: 11,
-    borderRadius: 6,
-    minHeight: isMobile ? 38 : undefined,
+    padding: isMobile ? "10px 12px" : "8px 15px",
+    fontSize: 13,
+    fontWeight: 600,
+    borderRadius: 8,
+    minHeight: 38,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    cursor: "pointer",
     width: isMobile ? "100%" : undefined,
     justifyContent: "center",
   };
 
-  // Secondary (toolbar) buttons get bigger tap targets on phones
+  // Secondary (toolbar) buttons
   const toolBtnStyle: React.CSSProperties = {
-    padding: isMobile ? "6px 10px" : "4px 7px",
-    fontSize: isMobile ? 12 : 11,
-    borderRadius: 6,
-    height: isMobile ? 32 : 26,
+    padding: isMobile ? "8px 12px" : "7px 12px",
+    fontSize: isMobile ? 12 : 13,
+    fontWeight: 600,
+    borderRadius: 7,
+    height: 38,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 5,
+    cursor: "pointer",
   };
 
   const pagerBtnStyle: React.CSSProperties = {
-    padding: isMobile ? "7px 10px" : "3px 6px",
-    fontSize: isMobile ? 11 : 10,
+    padding: isMobile ? "8px 12px" : "6px 12px",
+    fontSize: 12,
+    fontWeight: 600,
+    borderRadius: 6,
   };
 
   // Filter and Sort rows
@@ -736,15 +748,16 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         padding: isFullScreen ? (isMobile ? "8px" : "12px") : undefined,
       }}
     >
-      {/* Sleek Compact Executive Top Bar */}
+      {/* Executive Top Header Bar */}
       <div
         className="card"
         style={{
-          marginBottom: 10,
-          padding: isMobile ? "10px 12px" : "10px 16px",
+          marginBottom: 16,
+          padding: isMobile ? "16px 14px" : "18px 24px",
           background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
           border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
+          boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+          borderRadius: 14,
         }}
       >
         <div
@@ -754,61 +767,53 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             flexDirection: isMobile ? "column" : "row",
             justifyContent: "space-between",
             alignItems: isMobile ? "stretch" : "center",
-            gap: 10,
+            gap: 14,
           }}
         >
-          {/* Left Title & Live Metric Badges in 1 Line */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: isMobile ? "100%" : undefined }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 18 }}>🧠</span>
-              <span style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", letterSpacing: -0.2 }}>
-                Admin Hub
-              </span>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  backgroundColor: "#ecfdf5",
-                  color: "#047857",
-                  border: "1px solid #a7f3d0",
-                  padding: "1px 6px",
-                  borderRadius: 10,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4
-                }}
-              >
-                <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "#10b981" }} />
-                Live
-              </span>
-            </div>
-
-            {!isMobile && <div style={{ height: 16, width: 1, backgroundColor: "#cbd5e1" }} />}
-
-            {/* Quick KPI Inline Badges */}
+          {/* Left Title & Branding */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div
               style={{
-                display: isMobile ? "grid" : "flex",
-                gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : undefined,
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
+                display: "flex",
                 alignItems: "center",
-                gap: 6,
-                flexWrap: "wrap",
-                fontSize: 11,
-                width: isMobile ? "100%" : undefined,
+                justifyContent: "center",
+                fontSize: 22,
+                boxShadow: "0 4px 10px rgba(30, 64, 175, 0.25)",
+                flex: "0 0 auto",
               }}
             >
-              <span style={{ background: "#f1f5f9", padding: "2px 8px", borderRadius: 6, color: "#334155", fontWeight: 600 }}>
-                👥 <strong>{data.stats.totalParticipants}</strong> Enrolled
-              </span>
-              <span style={{ background: "#ecfdf5", padding: "2px 8px", borderRadius: 6, color: "#047857", fontWeight: 600 }}>
-                ✅ <strong>{data.stats.completedSessions}</strong> Done
-              </span>
-              <span style={{ background: "#eff6ff", padding: "2px 8px", borderRadius: 6, color: "#1e40af", fontWeight: 600 }}>
-                ⚡ <strong>{data.stats.totalCognitiveTests}</strong> Cognitive
-              </span>
-              <span style={{ background: "#faf5ff", padding: "2px 8px", borderRadius: 6, color: "#6b21a8", fontWeight: 600 }}>
-                📋 <strong>{data.stats.totalQuestionnaireAnswers}</strong> Surveys
-              </span>
+              🧠
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: -0.3 }}>
+                  Admin & Clinical Intelligence Hub
+                </h1>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    backgroundColor: "#ecfdf5",
+                    color: "#047857",
+                    border: "1px solid #a7f3d0",
+                    padding: "3px 8px",
+                    borderRadius: 12,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                >
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+                  Live Sync Active
+                </span>
+              </div>
+              <p style={{ margin: "2px 0 0 0", fontSize: 13, color: "#64748b", fontWeight: 500 }}>
+                AIIMS Kalyani Physiology & Cognitive Assessment Platform
+              </p>
             </div>
           </div>
 
@@ -818,7 +823,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               display: isMobile ? "grid" : "flex",
               gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : undefined,
               flexWrap: "wrap",
-              gap: 6,
+              gap: 8,
               alignItems: "center",
               width: isMobile ? "100%" : undefined,
             }}
@@ -831,7 +836,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               title="Pull newest records from PostgreSQL"
             >
               <span style={{ transform: isRefreshing ? "rotate(180deg)" : "none", transition: "transform 0.5s" }}>🔄</span>
-              {isRefreshing ? "..." : "Refresh"}
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </button>
 
             <a
@@ -858,7 +863,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               onClick={handleSyncGoogleSheets}
               disabled={syncStatus === "loading"}
               className="btn"
-              style={{ ...actionBtnStyle, backgroundColor: syncStatus === "success" ? "#10b981" : "#1e40af" }}
+              style={{ ...actionBtnStyle, backgroundColor: syncStatus === "success" ? "#10b981" : "#1e40af", color: "#ffffff" }}
               title="Send batch sync to connected Google Sheets"
             >
               <span>☁️</span>
@@ -880,10 +885,10 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         {syncStatus !== "idle" && (
           <div
             style={{
-              marginTop: 6,
-              padding: "4px 10px",
-              borderRadius: 6,
-              fontSize: 11,
+              marginTop: 12,
+              padding: "8px 14px",
+              borderRadius: 8,
+              fontSize: 12,
               fontWeight: 600,
               display: "flex",
               alignItems: "center",
@@ -897,7 +902,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <span style={{ wordBreak: "break-word" }}>{syncMessage}</span>
             <button
               onClick={() => setSyncStatus("idle")}
-              style={{ background: "none", border: "none", cursor: "pointer", fontWeight: "bold" }}
+              style={{ background: "none", border: "none", cursor: "pointer", fontWeight: "bold", fontSize: 14 }}
             >
               ✕
             </button>
@@ -905,9 +910,276 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         )}
       </div>
 
+      {/* Dedicated Spacious KPI Cards Row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: isMobile ? 10 : 16,
+          marginBottom: 16,
+        }}
+      >
+        <div
+          className="card"
+          style={{
+            padding: "16px 20px",
+            borderRadius: 12,
+            border: "1px solid #e2e8f0",
+            backgroundColor: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+          }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+            👥
+          </div>
+          <div>
+            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "#0f172a", lineHeight: 1.1 }}>
+              {data.stats.totalParticipants}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#64748b", marginTop: 2 }}>
+              Enrolled Participants
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="card"
+          style={{
+            padding: "16px 20px",
+            borderRadius: 12,
+            border: "1px solid #a7f3d0",
+            backgroundColor: "#f0fdf4",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+          }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+            ✅
+          </div>
+          <div>
+            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "#047857", lineHeight: 1.1 }}>
+              {data.stats.completedSessions}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#065f46", marginTop: 2 }}>
+              Completed Assessments
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="card"
+          style={{
+            padding: "16px 20px",
+            borderRadius: 12,
+            border: "1px solid #bfdbfe",
+            backgroundColor: "#eff6ff",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+          }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+            ⚡
+          </div>
+          <div>
+            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "#1e40af", lineHeight: 1.1 }}>
+              {data.stats.totalCognitiveTests}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#1e3a8a", marginTop: 2 }}>
+              Cognitive Task Runs
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="card"
+          style={{
+            padding: "16px 20px",
+            borderRadius: 12,
+            border: "1px solid #e9d5ff",
+            backgroundColor: "#faf5ff",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+          }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: "#f3e8ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+            📋
+          </div>
+          <div>
+            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "#6b21a8", lineHeight: 1.1 }}>
+              {data.stats.totalQuestionnaireAnswers}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#581c87", marginTop: 2 }}>
+              Questionnaire Scales
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Unified Table Card */}
-      <div className="card" style={{ padding: "0px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
-        {/* Unified Tab Bar + Toolbar in One Compact Strip */}
+      <div className="card" style={{ padding: "0px", overflow: "hidden", border: "1px solid #e2e8f0", borderRadius: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.04)", backgroundColor: "#ffffff" }}>
+        {/* Navigation Tabs Strip */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "#ffffff",
+            borderBottom: "1px solid #e2e8f0",
+            padding: isMobile ? "8px 10px 0 10px" : "10px 18px 0 18px",
+          }}
+        >
+          <div className="admin-scroll-x" style={{ display: "flex", gap: 6, overflowX: "auto", minWidth: 0, width: "100%" }}>
+            <button
+              onClick={() => setActiveTab("cognitive")}
+              style={{
+                padding: isMobile ? "10px 14px" : "12px 22px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
+                border: "none",
+                borderBottom: activeTab === "cognitive" ? "3px solid #1e40af" : "3px solid transparent",
+                backgroundColor: activeTab === "cognitive" ? "#eff6ff" : "transparent",
+                color: activeTab === "cognitive" ? "#1e40af" : "#64748b",
+                fontWeight: activeTab === "cognitive" ? 800 : 600,
+                fontSize: isMobile ? 13 : 14,
+                cursor: "pointer",
+                borderRadius: "8px 8px 0 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🧠</span> Cognitive Matrix
+              <span
+                style={{
+                  fontSize: 11,
+                  background: activeTab === "cognitive" ? "#1e40af" : "#e2e8f0",
+                  color: activeTab === "cognitive" ? "#ffffff" : "#475569",
+                  padding: "1px 7px",
+                  borderRadius: 10,
+                  fontWeight: 700,
+                }}
+              >
+                {data.cognitiveRows.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("questionnaires")}
+              style={{
+                padding: isMobile ? "10px 14px" : "12px 22px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
+                border: "none",
+                borderBottom: activeTab === "questionnaires" ? "3px solid #1e40af" : "3px solid transparent",
+                backgroundColor: activeTab === "questionnaires" ? "#eff6ff" : "transparent",
+                color: activeTab === "questionnaires" ? "#1e40af" : "#64748b",
+                fontWeight: activeTab === "questionnaires" ? 800 : 600,
+                fontSize: isMobile ? 13 : 14,
+                cursor: "pointer",
+                borderRadius: "8px 8px 0 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>📋</span> Questionnaires
+              <span
+                style={{
+                  fontSize: 11,
+                  background: activeTab === "questionnaires" ? "#1e40af" : "#e2e8f0",
+                  color: activeTab === "questionnaires" ? "#ffffff" : "#475569",
+                  padding: "1px 7px",
+                  borderRadius: 10,
+                  fontWeight: 700,
+                }}
+              >
+                12
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("participants")}
+              style={{
+                padding: isMobile ? "10px 14px" : "12px 22px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
+                border: "none",
+                borderBottom: activeTab === "participants" ? "3px solid #1e40af" : "3px solid transparent",
+                backgroundColor: activeTab === "participants" ? "#eff6ff" : "transparent",
+                color: activeTab === "participants" ? "#1e40af" : "#64748b",
+                fontWeight: activeTab === "participants" ? 800 : 600,
+                fontSize: isMobile ? 13 : 14,
+                cursor: "pointer",
+                borderRadius: "8px 8px 0 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>👥</span> Participant Directory
+              <span
+                style={{
+                  fontSize: 11,
+                  background: activeTab === "participants" ? "#1e40af" : "#e2e8f0",
+                  color: activeTab === "participants" ? "#ffffff" : "#475569",
+                  padding: "1px 7px",
+                  borderRadius: 10,
+                  fontWeight: 700,
+                }}
+              >
+                {data.participants.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("raw")}
+              style={{
+                padding: isMobile ? "10px 14px" : "12px 22px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
+                border: "none",
+                borderBottom: activeTab === "raw" ? "3px solid #1e40af" : "3px solid transparent",
+                backgroundColor: activeTab === "raw" ? "#eff6ff" : "transparent",
+                color: activeTab === "raw" ? "#1e40af" : "#64748b",
+                fontWeight: activeTab === "raw" ? 800 : 600,
+                fontSize: isMobile ? 13 : 14,
+                cursor: "pointer",
+                borderRadius: "8px 8px 0 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🔬</span> Raw Trial Logs
+              <span
+                style={{
+                  fontSize: 11,
+                  background: activeTab === "raw" ? "#1e40af" : "#e2e8f0",
+                  color: activeTab === "raw" ? "#ffffff" : "#475569",
+                  padding: "1px 7px",
+                  borderRadius: 10,
+                  fontWeight: 700,
+                }}
+              >
+                {data.rawTrials.length}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Filter, Search & Table Controls Toolbar */}
         <div
           style={{
             display: "flex",
@@ -916,309 +1188,188 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             justifyContent: "space-between",
             alignItems: isMobile ? "stretch" : "center",
             backgroundColor: "#f8fafc",
-            borderBottom: "1px solid #cbd5e1",
-            padding: isMobile ? "4px 6px 6px 6px" : "4px 10px 0 10px",
-            gap: 8,
+            borderBottom: "1px solid #e2e8f0",
+            padding: isMobile ? "12px 14px" : "12px 20px",
+            gap: 12,
           }}
         >
-          {/* Tab Buttons */}
-          <div className="admin-scroll-x" style={{ display: "flex", gap: 2, overflowX: "auto", minWidth: 0, maxWidth: "100%" }}>
-            <button
-              onClick={() => setActiveTab("cognitive")}
-              style={{
-                padding: isMobile ? "9px 11px" : "8px 14px",
-                whiteSpace: "nowrap",
-                flex: "0 0 auto",
-                border: "none",
-                borderBottom: activeTab === "cognitive" ? "2px solid #1e40af" : "2px solid transparent",
-                backgroundColor: activeTab === "cognitive" ? "#ffffff" : "transparent",
-                color: activeTab === "cognitive" ? "#1e40af" : "#64748b",
-                fontWeight: activeTab === "cognitive" ? 700 : 500,
-                fontSize: 12,
-                cursor: "pointer",
-                borderRadius: "6px 6px 0 0",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span>🧠</span> Cognitive Matrix
-              <span style={{ fontSize: 10, background: "#e2e8f0", padding: "0 5px", borderRadius: 8, color: "#1e293b", fontWeight: 700 }}>
-                {data.cognitiveRows.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("questionnaires")}
-              style={{
-                padding: isMobile ? "9px 11px" : "8px 14px",
-                whiteSpace: "nowrap",
-                flex: "0 0 auto",
-                border: "none",
-                borderBottom: activeTab === "questionnaires" ? "2px solid #1e40af" : "2px solid transparent",
-                backgroundColor: activeTab === "questionnaires" ? "#ffffff" : "transparent",
-                color: activeTab === "questionnaires" ? "#1e40af" : "#64748b",
-                fontWeight: activeTab === "questionnaires" ? 700 : 500,
-                fontSize: 12,
-                cursor: "pointer",
-                borderRadius: "6px 6px 0 0",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span>📋</span> Questionnaires
-              <span style={{ fontSize: 10, background: "#e2e8f0", padding: "0 5px", borderRadius: 8, color: "#1e293b", fontWeight: 700 }}>
-                12
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("participants")}
-              style={{
-                padding: isMobile ? "9px 11px" : "8px 14px",
-                whiteSpace: "nowrap",
-                flex: "0 0 auto",
-                border: "none",
-                borderBottom: activeTab === "participants" ? "2px solid #1e40af" : "2px solid transparent",
-                backgroundColor: activeTab === "participants" ? "#ffffff" : "transparent",
-                color: activeTab === "participants" ? "#1e40af" : "#64748b",
-                fontWeight: activeTab === "participants" ? 700 : 500,
-                fontSize: 12,
-                cursor: "pointer",
-                borderRadius: "6px 6px 0 0",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span>👥</span> Directory
-              <span style={{ fontSize: 10, background: "#e2e8f0", padding: "0 5px", borderRadius: 8, color: "#1e293b", fontWeight: 700 }}>
-                {data.participants.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("raw")}
-              style={{
-                padding: isMobile ? "9px 11px" : "8px 14px",
-                whiteSpace: "nowrap",
-                flex: "0 0 auto",
-                border: "none",
-                borderBottom: activeTab === "raw" ? "2px solid #1e40af" : "2px solid transparent",
-                backgroundColor: activeTab === "raw" ? "#ffffff" : "transparent",
-                color: activeTab === "raw" ? "#1e40af" : "#64748b",
-                fontWeight: activeTab === "raw" ? 700 : 500,
-                fontSize: 12,
-                cursor: "pointer",
-                borderRadius: "6px 6px 0 0",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span>🔬</span> Raw Trials
-              <span style={{ fontSize: 10, background: "#e2e8f0", padding: "0 5px", borderRadius: 8, color: "#1e293b", fontWeight: 700 }}>
-                {data.rawTrials.length}
-              </span>
-            </button>
-          </div>
-
-          {/* Quick Toolbar - search stays visible, the rest collapses on phones */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: isMobile ? "column" : "row",
-              flexWrap: "wrap",
-              alignItems: isMobile ? "stretch" : "center",
-              gap: 6,
-              paddingBottom: 4,
-              width: isMobile ? "100%" : undefined,
-            }}
-          >
-            {/* Search + (phones) the Tools drawer toggle */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, width: isMobile ? "100%" : undefined }}>
-              <div style={{ position: "relative", flex: isMobile ? 1 : undefined, minWidth: 0 }}>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    padding: isMobile ? "6px 26px 6px 26px" : "4px 8px 4px 22px",
-                    fontSize: isMobile ? 13 : 11,
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 6,
-                    width: isMobile ? "100%" : 140,
-                    outline: "none",
-                    height: isMobile ? 34 : 26,
-                    boxSizing: "border-box",
-                  }}
-                />
-                <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", fontSize: isMobile ? 12 : 10, color: "#94a3b8" }}>🔍</span>
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    aria-label="Clear search"
-                    style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#94a3b8", cursor: "pointer", fontSize: isMobile ? 12 : 10, padding: 2 }}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {isMobile && (
+          {/* Left: Search Bar + Filter Preset Segmented Switch */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: isMobile ? "100%" : undefined }}>
+            <div style={{ position: "relative", width: isMobile ? "100%" : 260 }}>
+              <input
+                type="text"
+                placeholder="Search across all columns..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  padding: "8px 30px 8px 34px",
+                  fontSize: 13,
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 8,
+                  width: "100%",
+                  outline: "none",
+                  height: 38,
+                  boxSizing: "border-box",
+                  backgroundColor: "#ffffff",
+                }}
+              />
+              <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#94a3b8" }}>🔍</span>
+              {searchTerm && (
                 <button
-                  onClick={() => setShowMobileTools((v) => !v)}
-                  className="btn btn-outline"
-                  style={{ ...toolBtnStyle, height: 34, whiteSpace: "nowrap", flex: "0 0 auto" }}
-                  aria-expanded={showMobileTools}
-                  title="Show filters, export and view options"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                  style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, padding: 2 }}
                 >
-                  ⚙️ Tools {showMobileTools ? "▲" : "▼"}
+                  ✕
                 </button>
               )}
             </div>
 
-            {(!isMobile || showMobileTools) && (
-              <div
+            {/* Filter Preset Pills */}
+            <div style={{ display: "flex", backgroundColor: "#e2e8f0", padding: 3, borderRadius: 8, gap: 2, width: isMobile ? "100%" : undefined }}>
+              <button
+                onClick={() => setFilterPreset("all")}
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 6,
-                  alignItems: "center",
-                  width: isMobile ? "100%" : undefined,
+                  padding: "6px 14px",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  flex: isMobile ? 1 : undefined,
+                  backgroundColor: filterPreset === "all" ? "#ffffff" : "transparent",
+                  color: filterPreset === "all" ? "#0f172a" : "#64748b",
+                  boxShadow: filterPreset === "all" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.15s ease",
                 }}
               >
-                {/* Filter Preset Pills */}
-                <div style={{ display: "flex", backgroundColor: "#e2e8f0", padding: 2, borderRadius: 6, gap: 1, flex: isMobile ? "1 1 100%" : undefined }}>
-                  <button
-                    onClick={() => setFilterPreset("all")}
-                    style={{
-                      padding: isMobile ? "6px 8px" : "3px 6px",
-                      border: "none",
-                      borderRadius: 4,
-                      fontSize: isMobile ? 11 : 10,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      flex: isMobile ? 1 : undefined,
-                      backgroundColor: filterPreset === "all" ? "white" : "transparent",
-                      color: filterPreset === "all" ? "#0f172a" : "#64748b",
-                    }}
-                  >
-                    All ({currentRows.length})
-                  </button>
-                  <button
-                    onClick={() => setFilterPreset("completed")}
-                    style={{
-                      padding: isMobile ? "6px 8px" : "3px 6px",
-                      border: "none",
-                      borderRadius: 4,
-                      fontSize: isMobile ? 11 : 10,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      flex: isMobile ? 1 : undefined,
-                      backgroundColor: filterPreset === "completed" ? "white" : "transparent",
-                      color: filterPreset === "completed" ? "#059669" : "#64748b",
-                    }}
-                  >
-                    Completed
-                  </button>
-                  <button
-                    onClick={() => setFilterPreset("severe")}
-                    style={{
-                      padding: isMobile ? "6px 8px" : "3px 6px",
-                      border: "none",
-                      borderRadius: 4,
-                      fontSize: isMobile ? 11 : 10,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      flex: isMobile ? 1 : undefined,
-                      backgroundColor: filterPreset === "severe" ? "white" : "transparent",
-                      color: filterPreset === "severe" ? "#dc2626" : "#64748b",
-                    }}
-                  >
-                    Severe
-                  </button>
-                </div>
+                All ({currentRows.length})
+              </button>
+              <button
+                onClick={() => setFilterPreset("completed")}
+                style={{
+                  padding: "6px 14px",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  flex: isMobile ? 1 : undefined,
+                  backgroundColor: filterPreset === "completed" ? "#ffffff" : "transparent",
+                  color: filterPreset === "completed" ? "#059669" : "#64748b",
+                  boxShadow: filterPreset === "completed" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Completed
+              </button>
+              <button
+                onClick={() => setFilterPreset("severe")}
+                style={{
+                  padding: "6px 14px",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  flex: isMobile ? 1 : undefined,
+                  backgroundColor: filterPreset === "severe" ? "#ffffff" : "transparent",
+                  color: filterPreset === "severe" ? "#dc2626" : "#64748b",
+                  boxShadow: filterPreset === "severe" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Severe
+              </button>
+            </div>
+          </div>
 
-                {/* Density Toggle */}
-                <button
-                  onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
-                  className="btn btn-outline"
-                  style={toolBtnStyle}
-                  title="Toggle Compact/Comfortable row height"
-                >
-                  {density === "compact" ? "📏 Compact" : "📐 Spaced"}
-                </button>
+          {/* Right: Table View Options & Export Controls */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              alignItems: "center",
+              width: isMobile ? "100%" : undefined,
+            }}
+          >
+            {/* Density Toggle */}
+            <button
+              onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
+              className="btn btn-outline"
+              style={toolBtnStyle}
+              title="Toggle Compact/Comfortable row height"
+            >
+              {density === "compact" ? "📏 Compact" : "📐 Spaced"}
+            </button>
 
-                {/* Stats Toggle */}
-                <button
-                  onClick={() => setShowStatsBar((v) => !v)}
-                  className="btn btn-outline"
-                  style={toolBtnStyle}
-                  title="Toggle summary metrics"
-                >
-                  📊 Stats
-                </button>
+            {/* Stats Toggle */}
+            <button
+              onClick={() => setShowStatsBar((v) => !v)}
+              className="btn btn-outline"
+              style={toolBtnStyle}
+              title="Toggle summary metrics"
+            >
+              📊 Stats
+            </button>
 
-                {/* Copy TSV */}
-                <button
-                  onClick={handleCopyTSV}
-                  className="btn btn-outline"
-                  style={toolBtnStyle}
-                  title="Copy active sheet for Excel"
-                >
-                  <span>📋</span> {copyFeedback ? "Copied!" : "Copy"}
-                </button>
+            {/* Copy TSV */}
+            <button
+              onClick={handleCopyTSV}
+              className="btn btn-outline"
+              style={toolBtnStyle}
+              title="Copy active sheet for Excel"
+            >
+              <span>📋</span> {copyFeedback ? "Copied!" : "Copy TSV"}
+            </button>
 
-                {/* Download CSV */}
-                <button
-                  onClick={handleDownloadCSV}
-                  className="btn btn-outline"
-                  style={toolBtnStyle}
-                  title="Download CSV"
-                >
-                  <span>💾</span> CSV
-                </button>
+            {/* Download CSV */}
+            <button
+              onClick={handleDownloadCSV}
+              className="btn btn-outline"
+              style={toolBtnStyle}
+              title="Download CSV"
+            >
+              <span>💾</span> Export CSV
+            </button>
 
-                {/* Full Screen Toggle */}
-                <button
-                  onClick={() => setIsFullScreen((f) => !f)}
-                  className="btn btn-outline"
-                  style={toolBtnStyle}
-                  title="Fullscreen"
-                >
-                  {isFullScreen ? "🗗 Exit" : "⛶ Full"}
-                </button>
+            {/* Full Screen Toggle */}
+            <button
+              onClick={() => setIsFullScreen((f) => !f)}
+              className="btn btn-outline"
+              style={toolBtnStyle}
+              title="Fullscreen"
+            >
+              {isFullScreen ? "🗗 Exit Fullscreen" : "⛶ Fullscreen"}
+            </button>
 
-                {/* Rows Per Page */}
-                <select
-                  value={rowsPerPage}
-                  onChange={(e) => {
-                    setRowsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  aria-label="Rows per page"
-                  style={{
-                    padding: isMobile ? "4px 6px" : "2px 4px",
-                    fontSize: isMobile ? 12 : 11,
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 6,
-                    backgroundColor: "white",
-                    color: "#334155",
-                    outline: "none",
-                    cursor: "pointer",
-                    height: isMobile ? 32 : 26,
-                  }}
-                >
-                  <option value={15}>15</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={-1}>All</option>
-                </select>
-              </div>
-            )}
+            {/* Rows Per Page */}
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              aria-label="Rows per page"
+              style={{
+                padding: "6px 10px",
+                fontSize: 13,
+                border: "1px solid #cbd5e1",
+                borderRadius: 7,
+                backgroundColor: "white",
+                color: "#334155",
+                outline: "none",
+                cursor: "pointer",
+                height: 38,
+                fontWeight: 600,
+              }}
+            >
+              <option value={15}>15 rows</option>
+              <option value={25}>25 rows</option>
+              <option value={50}>50 rows</option>
+              <option value={-1}>All rows</option>
+            </select>
           </div>
         </div>
 
@@ -1229,15 +1380,15 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 4,
-              padding: isMobile ? "6px 8px" : "5px 10px",
+              gap: 8,
+              padding: isMobile ? "10px 12px" : "10px 20px",
               backgroundColor: "#ffffff",
               borderBottom: "1px solid #e2e8f0",
               overflowX: "auto",
             }}
           >
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4 }}>
-              🎯 Jump:
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#475569", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4, display: "flex", alignItems: "center", gap: 4 }}>
+              <span>🎯</span> Task Jump:
             </span>
             {groupHeaders?.map((g) => (
               <button
@@ -1248,17 +1399,18 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                   border: `1px solid ${g.meta?.borderColor || "#cbd5e1"}`,
                   background: g.meta?.headerBg || "#ffffff",
                   color: g.meta?.pillColor || "#334155",
-                  padding: isMobile ? "6px 9px" : "2px 6px",
-                  borderRadius: 4,
-                  fontSize: isMobile ? 11 : 10,
+                  padding: isMobile ? "8px 12px" : "5px 12px",
+                  borderRadius: 6,
+                  fontSize: isMobile ? 12 : 12,
                   flex: "0 0 auto",
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 3,
+                  gap: 5,
                   whiteSpace: "nowrap",
-                  transition: "all 0.1s"
+                  transition: "all 0.15s ease",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
                 }}
               >
                 <span>{g.meta?.icon}</span>
@@ -1271,8 +1423,8 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: isMobile ? 6 : 4,
-              padding: isMobile ? "8px 8px" : "5px 10px",
+              gap: 8,
+              padding: isMobile ? "10px 12px" : "10px 20px",
               backgroundColor: "#ffffff",
               borderBottom: "1px solid #e2e8f0",
               alignItems: "center",
@@ -1281,17 +1433,21 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <button
               onClick={() => setActiveQuestionnaire("overview")}
               style={{
-                padding: isMobile ? "7px 11px" : "3px 8px",
-                fontSize: isMobile ? 12 : 11,
-                borderRadius: 4,
+                padding: "6px 14px",
+                fontSize: 12,
+                borderRadius: 6,
                 border: activeQuestionnaire === "overview" ? "1px solid #1e40af" : "1px solid #cbd5e1",
                 backgroundColor: activeQuestionnaire === "overview" ? "#1e40af" : "#ffffff",
                 color: activeQuestionnaire === "overview" ? "#ffffff" : "#334155",
-                fontWeight: activeQuestionnaire === "overview" ? 700 : 500,
-                cursor: "pointer"
+                fontWeight: activeQuestionnaire === "overview" ? 800 : 600,
+                cursor: "pointer",
+                boxShadow: activeQuestionnaire === "overview" ? "0 2px 6px rgba(30,64,175,0.2)" : "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
               }}
             >
-              ⭐ Overview
+              <span>⭐</span> Overview
             </button>
 
             {Object.entries(QUESTIONNAIRE_CONFIGS).map(([id, conf]) => {
@@ -1301,17 +1457,19 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                   key={id}
                   onClick={() => setActiveQuestionnaire(id)}
                   style={{
-                    padding: isMobile ? "7px 10px" : "3px 6px",
-                    fontSize: isMobile ? 11 : 10,
-                    borderRadius: 4,
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    borderRadius: 6,
                     border: isSelected ? `1px solid ${conf.color}` : "1px solid #cbd5e1",
                     backgroundColor: isSelected ? conf.color : "#ffffff",
                     color: isSelected ? "#ffffff" : "#334155",
-                    fontWeight: isSelected ? 700 : 500,
+                    fontWeight: isSelected ? 800 : 600,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: 3
+                    gap: 4,
+                    boxShadow: isSelected ? "0 2px 6px rgba(0,0,0,0.15)" : "none",
+                    transition: "all 0.15s ease",
                   }}
                 >
                   <span>{id.toUpperCase()}</span>
@@ -1607,14 +1765,14 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         </div>
 
         {/* Table Footer & Pagination */}
-        <div style={{ padding: "8px 12px", borderTop: "1px solid #e2e8f0", display: "flex", flexWrap: "wrap", justifyContent: isMobile ? "center" : "space-between", alignItems: "center", gap: 8, fontSize: 11, color: "#64748b", textAlign: "center" }}>
+        <div style={{ padding: isMobile ? "12px 14px" : "14px 20px", borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc", display: "flex", flexWrap: "wrap", justifyContent: isMobile ? "center" : "space-between", alignItems: "center", gap: 10, fontSize: 13, color: "#64748b", textAlign: "center" }}>
           <div>
-            Showing <strong>{paginatedRows.length}</strong> of <strong>{totalRowsCount}</strong> entries
+            Showing <strong style={{ color: "#0f172a" }}>{paginatedRows.length}</strong> of <strong style={{ color: "#0f172a" }}>{totalRowsCount}</strong> entries
             {searchTerm && ` (filtered)`}
           </div>
 
           {totalPages > 1 && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 4, width: isMobile ? "100%" : undefined }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 6, width: isMobile ? "100%" : undefined }}>
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
@@ -1631,7 +1789,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               >
                 ◀ Prev
               </button>
-              <span style={{ padding: "0 6px", fontWeight: 600, color: "#0f172a" }}>
+              <span style={{ padding: "0 8px", fontWeight: 700, color: "#0f172a" }}>
                 Page {currentPage} of {totalPages}
               </span>
               <button

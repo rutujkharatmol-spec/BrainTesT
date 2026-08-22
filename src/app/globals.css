@@ -302,7 +302,7 @@ input:focus, textarea:focus, select:focus {
 
 main:has(.admin-portal-wrapper) {
   max-width: 100% !important;
-  padding: 16px 28px !important;
+  padding: 24px 36px !important;
   width: 100% !important;
 }
 
@@ -323,8 +323,8 @@ main:has(.admin-portal-wrapper) {
 
 .admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar {
   display: block !important;
-  height: 9px !important;
-  width: 9px !important;
+  height: 10px !important;
+  width: 10px !important;
 }
 
 .admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar-track {
@@ -333,7 +333,7 @@ main:has(.admin-portal-wrapper) {
 
 .admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar-thumb {
   background: #CBD5E1 !important;
-  border-radius: 4px !important;
+  border-radius: 6px !important;
 }
 
 .admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar-thumb:hover {
@@ -342,15 +342,15 @@ main:has(.admin-portal-wrapper) {
 
 /* Glass panel effect */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* =========================================================================
-   ADMIN PORTAL — MOBILE / TABLET RESPONSIVE LAYER
+   ADMIN PORTAL — RESPONSIVE LAYER
    ========================================================================= */
 
 /* Horizontally scrollable strips (tab bar, task-jump bar, stats bar, dossier tabs) */
@@ -361,7 +361,7 @@ main:has(.admin-portal-wrapper) {
 }
 
 .admin-scroll-x::-webkit-scrollbar {
-  height: 4px;
+  height: 6px;
 }
 
 .admin-scroll-x::-webkit-scrollbar-track {
@@ -378,50 +378,22 @@ main:has(.admin-portal-wrapper) {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Tablets: reclaim the generous desktop gutters */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   main:has(.admin-portal-wrapper) {
-    padding: 14px 16px !important;
+    padding: 20px 24px !important;
   }
 }
 
-/* Phones: edge-to-edge grid, thinner scrollbars, tighter cards */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   main:has(.admin-portal-wrapper) {
-    padding: 8px 8px 20px !important;
+    padding: 14px 14px 24px !important;
   }
 
-  .admin-portal-wrapper .card {
-    border-radius: 10px;
-  }
-
-  .admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar {
-    height: 6px !important;
-    width: 6px !important;
-  }
-
-  /* Buttons inside the portal should never overflow their grid cell */
-  .admin-portal-wrapper .btn {
-    min-width: 0;
-    max-width: 100%;
-  }
-}
-
-/* Navbar compaction on small screens */
-@media (max-width: 640px) {
   .app-navbar {
-    padding: 8px 12px !important;
+    padding: 10px 16px !important;
   }
 
-  .nav-brand-sub,
-  .nav-hide-sm {
+  .nav-brand-sub {
     display: none !important;
-  }
-}
-
-/* Admin login card breathes a little tighter on small screens */
-@media (max-width: 480px) {
-  .admin-login-card {
-    padding: 24px 18px !important;
   }
 }
