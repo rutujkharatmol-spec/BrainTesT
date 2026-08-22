@@ -229,6 +229,15 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/admin/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    window.location.href = "/admin/login";
+  };
+
   // Smooth scroll directly to a task column group in the spreadsheet
   const scrollToGroup = (groupName: string) => {
     if (!tableWrapperRef.current) return;
@@ -723,7 +732,8 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         zIndex: isFullScreen ? 999 : "auto",
         background: isFullScreen ? "#f8fafc" : "transparent",
         overflowY: isFullScreen ? "auto" : "visible",
-        padding: isFullScreen ? "12px" : undefined
+        WebkitOverflowScrolling: "touch",
+        padding: isFullScreen ? (isMobile ? "8px" : "12px") : undefined,
       }}
     >
       {/* Sleek Compact Executive Top Bar */}
@@ -731,15 +741,24 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         className="card"
         style={{
           marginBottom: 10,
-          padding: "10px 16px",
+          padding: isMobile ? "10px 12px" : "10px 16px",
           background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
           border: "1px solid #e2e8f0",
           boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
         }}
       >
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            flexDirection: isMobile ? "column" : "row",
+            justifyContent: "space-between",
+            alignItems: isMobile ? "stretch" : "center",
+            gap: 10,
+          }}
+        >
           {/* Left Title & Live Metric Badges in 1 Line */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: isMobile ? "100%" : undefined }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 18 }}>🧠</span>
               <span style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", letterSpacing: -0.2 }}>
@@ -764,10 +783,20 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               </span>
             </div>
 
-            <div style={{ height: 16, width: 1, backgroundColor: "#cbd5e1" }} />
+            {!isMobile && <div style={{ height: 16, width: 1, backgroundColor: "#cbd5e1" }} />}
 
             {/* Quick KPI Inline Badges */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: 11 }}>
+            <div
+              style={{
+                display: isMobile ? "grid" : "flex",
+                gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : undefined,
+                alignItems: "center",
+                gap: 6,
+                flexWrap: "wrap",
+                fontSize: 11,
+                width: isMobile ? "100%" : undefined,
+              }}
+            >
               <span style={{ background: "#f1f5f9", padding: "2px 8px", borderRadius: 6, color: "#334155", fontWeight: 600 }}>
                 👥 <strong>{data.stats.totalParticipants}</strong> Enrolled
               </span>
@@ -784,12 +813,21 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           </div>
 
           {/* Right Action Buttons */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+          <div
+            style={{
+              display: isMobile ? "grid" : "flex",
+              gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : undefined,
+              flexWrap: "wrap",
+              gap: 6,
+              alignItems: "center",
+              width: isMobile ? "100%" : undefined,
+            }}
+          >
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
               className="btn btn-outline"
-              style={{ padding: "5px 10px", fontSize: 11, borderRadius: 6 }}
+              style={actionBtnStyle}
               title="Pull newest records from PostgreSQL"
             >
               <span style={{ transform: isRefreshing ? "rotate(180deg)" : "none", transition: "transform 0.5s" }}>🔄</span>
@@ -799,7 +837,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <a
               href="/api/admin/export-data"
               className="btn btn-outline"
-              style={{ padding: "5px 10px", fontSize: 11, borderRadius: 6 }}
+              style={actionBtnStyle}
               download
               title="Download 12-sheet Questionnaires Excel (.xlsx)"
             >
@@ -809,7 +847,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <a
               href="/api/admin/export-cognitive-data"
               className="btn btn-outline"
-              style={{ padding: "5px 10px", fontSize: 11, borderRadius: 6, borderColor: "#a7f3d0", color: "#047857", backgroundColor: "#f0fdf4" }}
+              style={{ ...actionBtnStyle, borderColor: "#a7f3d0", color: "#047857", backgroundColor: "#f0fdf4" }}
               download
               title="Download Cognitive Metrics Battery Excel (.xlsx)"
             >
@@ -820,16 +858,20 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               onClick={handleSyncGoogleSheets}
               disabled={syncStatus === "loading"}
               className="btn"
-              style={{
-                padding: "5px 10px",
-                fontSize: 11,
-                borderRadius: 6,
-                backgroundColor: syncStatus === "success" ? "#10b981" : "#1e40af",
-              }}
+              style={{ ...actionBtnStyle, backgroundColor: syncStatus === "success" ? "#10b981" : "#1e40af" }}
               title="Send batch sync to connected Google Sheets"
             >
               <span>☁️</span>
               {syncStatus === "loading" ? "Syncing..." : syncStatus === "success" ? "Synced!" : "Sync Sheets"}
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="btn btn-outline"
+              style={{ ...actionBtnStyle, borderColor: "#fecaca", color: "#dc2626", backgroundColor: "#fff5f5" }}
+              title="Lock and Log Out of Admin Portal"
+            >
+              <span>🔒</span> Lock Portal
             </button>
           </div>
         </div>
@@ -846,12 +888,13 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              gap: 8,
               backgroundColor: syncStatus === "success" ? "#ecfdf5" : syncStatus === "error" ? "#fef2f2" : "#eff6ff",
               color: syncStatus === "success" ? "#065f46" : syncStatus === "error" ? "#991b1b" : "#1e40af",
               border: `1px solid ${syncStatus === "success" ? "#a7f3d0" : syncStatus === "error" ? "#fecaca" : "#bfdbfe"}`
             }}
           >
-            <span>{syncMessage}</span>
+            <span style={{ wordBreak: "break-word" }}>{syncMessage}</span>
             <button
               onClick={() => setSyncStatus("idle")}
               style={{ background: "none", border: "none", cursor: "pointer", fontWeight: "bold" }}
@@ -869,20 +912,23 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           style={{
             display: "flex",
             flexWrap: "wrap",
+            flexDirection: isMobile ? "column" : "row",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: isMobile ? "stretch" : "center",
             backgroundColor: "#f8fafc",
             borderBottom: "1px solid #cbd5e1",
-            padding: "4px 10px 0 10px",
-            gap: 8
+            padding: isMobile ? "4px 6px 6px 6px" : "4px 10px 0 10px",
+            gap: 8,
           }}
         >
           {/* Tab Buttons */}
-          <div style={{ display: "flex", gap: 2, overflowX: "auto" }}>
+          <div className="admin-scroll-x" style={{ display: "flex", gap: 2, overflowX: "auto", minWidth: 0, maxWidth: "100%" }}>
             <button
               onClick={() => setActiveTab("cognitive")}
               style={{
-                padding: "8px 14px",
+                padding: isMobile ? "9px 11px" : "8px 14px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
                 border: "none",
                 borderBottom: activeTab === "cognitive" ? "2px solid #1e40af" : "2px solid transparent",
                 backgroundColor: activeTab === "cognitive" ? "#ffffff" : "transparent",
@@ -905,7 +951,9 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <button
               onClick={() => setActiveTab("questionnaires")}
               style={{
-                padding: "8px 14px",
+                padding: isMobile ? "9px 11px" : "8px 14px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
                 border: "none",
                 borderBottom: activeTab === "questionnaires" ? "2px solid #1e40af" : "2px solid transparent",
                 backgroundColor: activeTab === "questionnaires" ? "#ffffff" : "transparent",
@@ -928,7 +976,9 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <button
               onClick={() => setActiveTab("participants")}
               style={{
-                padding: "8px 14px",
+                padding: isMobile ? "9px 11px" : "8px 14px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
                 border: "none",
                 borderBottom: activeTab === "participants" ? "2px solid #1e40af" : "2px solid transparent",
                 backgroundColor: activeTab === "participants" ? "#ffffff" : "transparent",
@@ -951,7 +1001,9 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <button
               onClick={() => setActiveTab("raw")}
               style={{
-                padding: "8px 14px",
+                padding: isMobile ? "9px 11px" : "8px 14px",
+                whiteSpace: "nowrap",
+                flex: "0 0 auto",
                 border: "none",
                 borderBottom: activeTab === "raw" ? "2px solid #1e40af" : "2px solid transparent",
                 backgroundColor: activeTab === "raw" ? "#ffffff" : "transparent",
@@ -972,173 +1024,216 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             </button>
           </div>
 
-          {/* Quick Toolbar (Right) */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", paddingBottom: 4 }}>
-            {/* Filter Preset Pills */}
-            <div style={{ display: "flex", backgroundColor: "#e2e8f0", padding: 2, borderRadius: 6, gap: 1 }}>
-              <button
-                onClick={() => setFilterPreset("all")}
-                style={{
-                  padding: "3px 6px",
-                  border: "none",
-                  borderRadius: 4,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  backgroundColor: filterPreset === "all" ? "white" : "transparent",
-                  color: filterPreset === "all" ? "#0f172a" : "#64748b",
-                }}
-              >
-                All ({currentRows.length})
-              </button>
-              <button
-                onClick={() => setFilterPreset("completed")}
-                style={{
-                  padding: "3px 6px",
-                  border: "none",
-                  borderRadius: 4,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  backgroundColor: filterPreset === "completed" ? "white" : "transparent",
-                  color: filterPreset === "completed" ? "#059669" : "#64748b",
-                }}
-              >
-                Completed
-              </button>
-              <button
-                onClick={() => setFilterPreset("severe")}
-                style={{
-                  padding: "3px 6px",
-                  border: "none",
-                  borderRadius: 4,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  backgroundColor: filterPreset === "severe" ? "white" : "transparent",
-                  color: filterPreset === "severe" ? "#dc2626" : "#64748b",
-                }}
-              >
-                Severe
-              </button>
-            </div>
+          {/* Quick Toolbar - search stays visible, the rest collapses on phones */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              flexWrap: "wrap",
+              alignItems: isMobile ? "stretch" : "center",
+              gap: 6,
+              paddingBottom: 4,
+              width: isMobile ? "100%" : undefined,
+            }}
+          >
+            {/* Search + (phones) the Tools drawer toggle */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, width: isMobile ? "100%" : undefined }}>
+              <div style={{ position: "relative", flex: isMobile ? 1 : undefined, minWidth: 0 }}>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    padding: isMobile ? "6px 26px 6px 26px" : "4px 8px 4px 22px",
+                    fontSize: isMobile ? 13 : 11,
+                    border: "1px solid #cbd5e1",
+                    borderRadius: 6,
+                    width: isMobile ? "100%" : 140,
+                    outline: "none",
+                    height: isMobile ? 34 : 26,
+                    boxSizing: "border-box",
+                  }}
+                />
+                <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", fontSize: isMobile ? 12 : 10, color: "#94a3b8" }}>🔍</span>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Clear search"
+                    style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: "#94a3b8", cursor: "pointer", fontSize: isMobile ? 12 : 10, padding: 2 }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
 
-            {/* Search Input */}
-            <div style={{ position: "relative" }}>
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  padding: "4px 8px 4px 22px",
-                  fontSize: 11,
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 6,
-                  width: 140,
-                  outline: "none",
-                  height: 26
-                }}
-              />
-              <span style={{ position: "absolute", left: 6, top: 4, fontSize: 10, color: "#94a3b8" }}>🔍</span>
-              {searchTerm && (
+              {isMobile && (
                 <button
-                  onClick={() => setSearchTerm("")}
-                  style={{ position: "absolute", right: 6, top: 3, border: "none", background: "none", color: "#94a3b8", cursor: "pointer", fontSize: 10 }}
+                  onClick={() => setShowMobileTools((v) => !v)}
+                  className="btn btn-outline"
+                  style={{ ...toolBtnStyle, height: 34, whiteSpace: "nowrap", flex: "0 0 auto" }}
+                  aria-expanded={showMobileTools}
+                  title="Show filters, export and view options"
                 >
-                  ✕
+                  ⚙️ Tools {showMobileTools ? "▲" : "▼"}
                 </button>
               )}
             </div>
 
-            {/* Density Toggle */}
-            <button
-              onClick={() => setDensity(d => d === "compact" ? "comfortable" : "compact")}
-              className="btn btn-outline"
-              style={{ padding: "4px 7px", fontSize: 11, borderRadius: 6, height: 26 }}
-              title="Toggle Compact/Comfortable row height"
-            >
-              {density === "compact" ? "📏 Compact" : "📐 Spaced"}
-            </button>
+            {(!isMobile || showMobileTools) && (
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6,
+                  alignItems: "center",
+                  width: isMobile ? "100%" : undefined,
+                }}
+              >
+                {/* Filter Preset Pills */}
+                <div style={{ display: "flex", backgroundColor: "#e2e8f0", padding: 2, borderRadius: 6, gap: 1, flex: isMobile ? "1 1 100%" : undefined }}>
+                  <button
+                    onClick={() => setFilterPreset("all")}
+                    style={{
+                      padding: isMobile ? "6px 8px" : "3px 6px",
+                      border: "none",
+                      borderRadius: 4,
+                      fontSize: isMobile ? 11 : 10,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      flex: isMobile ? 1 : undefined,
+                      backgroundColor: filterPreset === "all" ? "white" : "transparent",
+                      color: filterPreset === "all" ? "#0f172a" : "#64748b",
+                    }}
+                  >
+                    All ({currentRows.length})
+                  </button>
+                  <button
+                    onClick={() => setFilterPreset("completed")}
+                    style={{
+                      padding: isMobile ? "6px 8px" : "3px 6px",
+                      border: "none",
+                      borderRadius: 4,
+                      fontSize: isMobile ? 11 : 10,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      flex: isMobile ? 1 : undefined,
+                      backgroundColor: filterPreset === "completed" ? "white" : "transparent",
+                      color: filterPreset === "completed" ? "#059669" : "#64748b",
+                    }}
+                  >
+                    Completed
+                  </button>
+                  <button
+                    onClick={() => setFilterPreset("severe")}
+                    style={{
+                      padding: isMobile ? "6px 8px" : "3px 6px",
+                      border: "none",
+                      borderRadius: 4,
+                      fontSize: isMobile ? 11 : 10,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      flex: isMobile ? 1 : undefined,
+                      backgroundColor: filterPreset === "severe" ? "white" : "transparent",
+                      color: filterPreset === "severe" ? "#dc2626" : "#64748b",
+                    }}
+                  >
+                    Severe
+                  </button>
+                </div>
 
-            {/* Stats Toggle */}
-            <button
-              onClick={() => setShowStatsBar(s => !s)}
-              className="btn btn-outline"
-              style={{ padding: "4px 7px", fontSize: 11, borderRadius: 6, height: 26 }}
-              title="Toggle summary metrics"
-            >
-              📊 Stats
-            </button>
+                {/* Density Toggle */}
+                <button
+                  onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
+                  className="btn btn-outline"
+                  style={toolBtnStyle}
+                  title="Toggle Compact/Comfortable row height"
+                >
+                  {density === "compact" ? "📏 Compact" : "📐 Spaced"}
+                </button>
 
-            {/* Copy TSV */}
-            <button
-              onClick={handleCopyTSV}
-              className="btn btn-outline"
-              style={{ padding: "4px 8px", fontSize: 11, borderRadius: 6, height: 26 }}
-              title="Copy active sheet for Excel"
-            >
-              <span>📋</span> {copyFeedback ? "Copied!" : "Copy"}
-            </button>
+                {/* Stats Toggle */}
+                <button
+                  onClick={() => setShowStatsBar((v) => !v)}
+                  className="btn btn-outline"
+                  style={toolBtnStyle}
+                  title="Toggle summary metrics"
+                >
+                  📊 Stats
+                </button>
 
-            {/* Download CSV */}
-            <button
-              onClick={handleDownloadCSV}
-              className="btn btn-outline"
-              style={{ padding: "4px 8px", fontSize: 11, borderRadius: 6, height: 26 }}
-              title="Download CSV"
-            >
-              <span>💾</span> CSV
-            </button>
+                {/* Copy TSV */}
+                <button
+                  onClick={handleCopyTSV}
+                  className="btn btn-outline"
+                  style={toolBtnStyle}
+                  title="Copy active sheet for Excel"
+                >
+                  <span>📋</span> {copyFeedback ? "Copied!" : "Copy"}
+                </button>
 
-            {/* Full Screen Toggle */}
-            <button
-              onClick={() => setIsFullScreen(f => !f)}
-              className="btn btn-outline"
-              style={{ padding: "4px 7px", fontSize: 11, borderRadius: 6, height: 26 }}
-              title="Fullscreen"
-            >
-              {isFullScreen ? "🗗" : "⛶"}
-            </button>
+                {/* Download CSV */}
+                <button
+                  onClick={handleDownloadCSV}
+                  className="btn btn-outline"
+                  style={toolBtnStyle}
+                  title="Download CSV"
+                >
+                  <span>💾</span> CSV
+                </button>
 
-            {/* Rows Per Page */}
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              style={{
-                padding: "2px 4px",
-                fontSize: 11,
-                border: "1px solid #cbd5e1",
-                borderRadius: 6,
-                backgroundColor: "white",
-                color: "#334155",
-                outline: "none",
-                cursor: "pointer",
-                height: 26
-              }}
-            >
-              <option value={15}>15</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={-1}>All</option>
-            </select>
+                {/* Full Screen Toggle */}
+                <button
+                  onClick={() => setIsFullScreen((f) => !f)}
+                  className="btn btn-outline"
+                  style={toolBtnStyle}
+                  title="Fullscreen"
+                >
+                  {isFullScreen ? "🗗 Exit" : "⛶ Full"}
+                </button>
+
+                {/* Rows Per Page */}
+                <select
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setRowsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  aria-label="Rows per page"
+                  style={{
+                    padding: isMobile ? "4px 6px" : "2px 4px",
+                    fontSize: isMobile ? 12 : 11,
+                    border: "1px solid #cbd5e1",
+                    borderRadius: 6,
+                    backgroundColor: "white",
+                    color: "#334155",
+                    outline: "none",
+                    cursor: "pointer",
+                    height: isMobile ? 32 : 26,
+                  }}
+                >
+                  <option value={15}>15</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={-1}>All</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Sub-Bar: Quick Task Jump (Cognitive) OR Questionnaire Sheet Chips */}
         {activeTab === "cognitive" ? (
           <div
+            className="admin-scroll-x"
             style={{
               display: "flex",
               alignItems: "center",
               gap: 4,
-              padding: "5px 10px",
+              padding: isMobile ? "6px 8px" : "5px 10px",
               backgroundColor: "#ffffff",
               borderBottom: "1px solid #e2e8f0",
-              overflowX: "auto"
+              overflowX: "auto",
             }}
           >
             <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4 }}>
@@ -1153,9 +1248,10 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                   border: `1px solid ${g.meta?.borderColor || "#cbd5e1"}`,
                   background: g.meta?.headerBg || "#ffffff",
                   color: g.meta?.pillColor || "#334155",
-                  padding: "2px 6px",
+                  padding: isMobile ? "6px 9px" : "2px 6px",
                   borderRadius: 4,
-                  fontSize: 10,
+                  fontSize: isMobile ? 11 : 10,
+                  flex: "0 0 auto",
                   fontWeight: 600,
                   cursor: "pointer",
                   display: "flex",
@@ -1175,18 +1271,18 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: 4,
-              padding: "5px 10px",
+              gap: isMobile ? 6 : 4,
+              padding: isMobile ? "8px 8px" : "5px 10px",
               backgroundColor: "#ffffff",
               borderBottom: "1px solid #e2e8f0",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <button
               onClick={() => setActiveQuestionnaire("overview")}
               style={{
-                padding: "3px 8px",
-                fontSize: 11,
+                padding: isMobile ? "7px 11px" : "3px 8px",
+                fontSize: isMobile ? 12 : 11,
                 borderRadius: 4,
                 border: activeQuestionnaire === "overview" ? "1px solid #1e40af" : "1px solid #cbd5e1",
                 backgroundColor: activeQuestionnaire === "overview" ? "#1e40af" : "#ffffff",
@@ -1205,8 +1301,8 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                   key={id}
                   onClick={() => setActiveQuestionnaire(id)}
                   style={{
-                    padding: "3px 6px",
-                    fontSize: 10,
+                    padding: isMobile ? "7px 10px" : "3px 6px",
+                    fontSize: isMobile ? 11 : 10,
                     borderRadius: 4,
                     border: isSelected ? `1px solid ${conf.color}` : "1px solid #cbd5e1",
                     backgroundColor: isSelected ? conf.color : "#ffffff",
@@ -1228,15 +1324,16 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         {/* Statistical Aggregate Summary Strip (when enabled) */}
         {showStatsBar && Object.keys(sheetStats).length > 0 && (
           <div
+            className="admin-scroll-x"
             style={{
               display: "flex",
               gap: 6,
-              padding: "4px 10px",
+              padding: isMobile ? "6px 8px" : "4px 10px",
               backgroundColor: "#f8fafc",
               borderBottom: "1px solid #e2e8f0",
               overflowX: "auto",
-              fontSize: 10,
-              alignItems: "center"
+              fontSize: isMobile ? 11 : 10,
+              alignItems: "center",
             }}
           >
             <span style={{ fontWeight: 700, color: "#1e40af", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
@@ -1265,6 +1362,26 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           </div>
         )}
 
+        {/* Horizontal-scroll affordance (phones only) */}
+        {isMobile && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              padding: "5px 10px",
+              fontSize: 10,
+              color: "#64748b",
+              backgroundColor: "#f8fafc",
+              borderBottom: "1px solid #e2e8f0",
+            }}
+          >
+            <span>↔ Swipe the grid for more columns</span>
+            <span style={{ whiteSpace: "nowrap" }}>Tap a row for full details</span>
+          </div>
+        )}
+
         {/* Data Grid Table Wrapper */}
         <div
           ref={tableWrapperRef}
@@ -1272,8 +1389,10 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           style={{
             width: "100%",
             overflowX: "auto",
-            maxHeight: isFullScreen ? "86vh" : "75vh",
             overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehaviorX: "contain",
+            maxHeight: isFullScreen ? (isMobile ? "80vh" : "86vh") : isMobile ? "62vh" : "75vh",
             position: "relative",
             backgroundColor: "#ffffff",
           }}
@@ -1284,7 +1403,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               minWidth: "100%",
               borderCollapse: "separate",
               borderSpacing: 0,
-              fontSize: density === "compact" ? 12 : 13,
+              fontSize: cellFont,
               fontFamily: "inherit",
             }}
           >
@@ -1301,8 +1420,9 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                         background: g.meta?.bgGradient || "#1e40af",
                         color: "white",
                         padding: "6px 8px",
+                        height: GROUP_HEADER_H,
                         textAlign: "center",
-                        fontSize: 11,
+                        fontSize: isMobile ? 10 : 11,
                         fontWeight: 700,
                         letterSpacing: 0.3,
                         borderRight: "2px solid rgba(255,255,255,0.35)",
@@ -1320,7 +1440,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               )}
 
               {/* Column Headers */}
-              <tr style={{ position: "sticky", top: groupHeaders ? 29 : 0, zIndex: 19 }}>
+              <tr style={{ position: "sticky", top: groupHeaders ? GROUP_HEADER_H : 0, zIndex: 19 }}>
                 {columns.map((col, idx) => {
                   const isSorted = sortKey === col.key;
                   const groupMeta = col.group ? TASK_GROUP_META[col.group] : null;
@@ -1333,20 +1453,21 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                       style={{
                         backgroundColor: groupMeta ? groupMeta.headerBg : "#f8fafc",
                         color: groupMeta ? groupMeta.pillColor : "#1e293b",
-                        padding: density === "compact" ? "6px 8px" : "8px 10px",
+                        padding: headerPad,
                         textAlign: col.isNumeric ? "right" : "left",
-                        fontSize: density === "compact" ? 11 : 12,
+                        fontSize: headerFont,
                         fontWeight: 700,
                         borderBottom: "2px solid #cbd5e1",
                         borderRight: isLastCol ? "2px solid #94a3b8" : "1px solid #e2e8f0",
-                        width: col.width,
-                        minWidth: col.width,
+                        width: colWidth(col),
+                        minWidth: colWidth(col),
+                        whiteSpace: "nowrap",
                         cursor: "pointer",
                         userSelect: "none",
-                        position: col.sticky ? "sticky" : "static",
-                        left: col.sticky ? (idx === 0 ? 0 : columns[0].width) : undefined,
-                        zIndex: col.sticky ? 25 : undefined,
-                        boxShadow: col.sticky && idx === 1 ? "3px 0 6px -2px rgba(0,0,0,0.12)" : undefined,
+                        position: isColSticky(col, idx) ? "sticky" : "static",
+                        left: stickyLeft(col, idx),
+                        zIndex: isColSticky(col, idx) ? 25 : undefined,
+                        boxShadow: isLastSticky(col, idx) ? "3px 0 6px -2px rgba(0,0,0,0.12)" : undefined,
                         transition: "background 0.15s",
                       }}
                       title={`Click to sort by ${col.label}`}
@@ -1412,19 +1533,20 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                           <td
                             key={col.key}
                             style={{
-                              padding: density === "compact" ? "5px 8px" : "8px 10px",
+                              padding: cellPad,
                               textAlign: col.isNumeric ? "right" : "left",
                               borderBottom: "1px solid #e2e8f0",
                               borderRight: isLastCol ? "2px solid #cbd5e1" : "1px solid #f1f5f9",
-                              fontSize: density === "compact" ? 11 : 12,
+                              fontSize: cellFont,
                               fontVariantNumeric: "tabular-nums",
                               fontWeight: col.bold ? 700 : 400,
                               color: col.bold ? "#0f172a" : "#334155",
-                              position: col.sticky ? "sticky" : "static",
-                              left: col.sticky ? (cIdx === 0 ? 0 : columns[0].width) : undefined,
-                              backgroundColor: col.sticky ? (isEven ? "#ffffff" : "#f8fafc") : "inherit",
-                              zIndex: col.sticky ? 10 : undefined,
-                              boxShadow: col.sticky && cIdx === 1 ? "3px 0 6px -2px rgba(0,0,0,0.1)" : undefined,
+                              whiteSpace: isMobile ? "nowrap" : undefined,
+                              position: isColSticky(col, cIdx) ? "sticky" : "static",
+                              left: stickyLeft(col, cIdx),
+                              backgroundColor: isColSticky(col, cIdx) ? (isEven ? "#ffffff" : "#f8fafc") : "inherit",
+                              zIndex: isColSticky(col, cIdx) ? 10 : undefined,
+                              boxShadow: isLastSticky(col, cIdx) ? "3px 0 6px -2px rgba(0,0,0,0.1)" : undefined,
                             }}
                           >
                             {col.badgeKey ? (
@@ -1485,19 +1607,19 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         </div>
 
         {/* Table Footer & Pagination */}
-        <div style={{ padding: "8px 12px", borderTop: "1px solid #e2e8f0", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 11, color: "#64748b" }}>
+        <div style={{ padding: "8px 12px", borderTop: "1px solid #e2e8f0", display: "flex", flexWrap: "wrap", justifyContent: isMobile ? "center" : "space-between", alignItems: "center", gap: 8, fontSize: 11, color: "#64748b", textAlign: "center" }}>
           <div>
             Showing <strong>{paginatedRows.length}</strong> of <strong>{totalRowsCount}</strong> entries
             {searchTerm && ` (filtered)`}
           </div>
 
           {totalPages > 1 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 4, width: isMobile ? "100%" : undefined }}>
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
                 className="btn btn-outline"
-                style={{ padding: "3px 6px", fontSize: 10 }}
+                style={pagerBtnStyle}
               >
                 ⏮ First
               </button>
@@ -1505,7 +1627,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 className="btn btn-outline"
-                style={{ padding: "3px 6px", fontSize: 10 }}
+                style={pagerBtnStyle}
               >
                 ◀ Prev
               </button>
@@ -1516,7 +1638,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 className="btn btn-outline"
-                style={{ padding: "3px 6px", fontSize: 10 }}
+                style={pagerBtnStyle}
               >
                 Next ▶
               </button>
@@ -1524,7 +1646,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={currentPage === totalPages}
                 className="btn btn-outline"
-                style={{ padding: "3px 6px", fontSize: 10 }}
+                style={pagerBtnStyle}
               >
                 Last ⏭
               </button>
@@ -1546,9 +1668,11 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             backdropFilter: "blur(4px)",
             display: "flex",
             justifyContent: "center",
-            alignItems: "center",
+            alignItems: isMobile ? "flex-start" : "center",
             zIndex: 1000,
-            padding: 16,
+            padding: isMobile ? 8 : 16,
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
           onClick={() => setSelectedParticipantId(null)}
         >
@@ -1557,9 +1681,10 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             style={{
               maxWidth: 860,
               width: "100%",
-              maxHeight: "92vh",
+              maxHeight: isMobile ? "94vh" : "92vh",
               overflowY: "auto",
-              padding: "24px 28px",
+              WebkitOverflowScrolling: "touch",
+              padding: isMobile ? "16px 14px" : "24px 28px",
               backgroundColor: "white",
               borderRadius: 12,
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
@@ -1567,19 +1692,19 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             onClick={(e) => e.stopPropagation()}
           >
             {/* Dossier Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid #e2e8f0", paddingBottom: 16, marginBottom: 16 }}>
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: "flex-start", gap: 10, borderBottom: "1px solid #e2e8f0", paddingBottom: 16, marginBottom: 16 }}>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#1e40af", textTransform: "uppercase", letterSpacing: 0.5 }}>
                   Clinical & Cognitive Dossier
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 700, margin: "2px 0 0 0", color: "#0f172a" }}>
+                <h2 style={{ fontSize: isMobile ? 17 : 22, fontWeight: 700, margin: "2px 0 0 0", color: "#0f172a", wordBreak: "break-word" }}>
                   {selectedParticipant.name} ({selectedParticipant.idNumber || "No ID"})
                 </h2>
                 <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
-                  Session ID: <code style={{ background: "#f1f5f9", padding: "2px 6px", borderRadius: 4 }}>{selectedParticipant.sessionId}</code>
+                  Session ID: <code style={{ background: "#f1f5f9", padding: "2px 6px", borderRadius: 4, wordBreak: "break-all" }}>{selectedParticipant.sessionId}</code>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", width: isMobile ? "100%" : undefined, justifyContent: isMobile ? "flex-end" : undefined }}>
                 <button
                   onClick={() => window.print()}
                   className="btn btn-outline"
@@ -1594,8 +1719,9 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                     border: "none",
                     background: "#f1f5f9",
                     borderRadius: "50%",
-                    width: 32,
-                    height: 32,
+                    width: isMobile ? 36 : 32,
+                    height: isMobile ? 36 : 32,
+                    flex: "0 0 auto",
                     fontSize: 16,
                     cursor: "pointer",
                     color: "#64748b",
@@ -1610,7 +1736,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             </div>
 
             {/* Demographics Strip */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 18, backgroundColor: "#f8fafc", padding: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 18, backgroundColor: "#f8fafc", padding: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}>
               <div>
                 <span style={{ fontSize: 10, color: "#64748b", display: "block", textTransform: "uppercase", fontWeight: 600 }}>Age / Gender</span>
                 <strong style={{ fontSize: 13, color: "#0f172a" }}>{selectedParticipant.age || "-"} yrs / {selectedParticipant.gender || "-"}</strong>
@@ -1630,18 +1756,20 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             </div>
 
             {/* Dossier Tabs */}
-            <div style={{ display: "flex", borderBottom: "1px solid #e2e8f0", gap: 8, marginBottom: 16 }}>
+            <div className="admin-scroll-x" style={{ display: "flex", borderBottom: "1px solid #e2e8f0", gap: 8, marginBottom: 16, overflowX: "auto" }}>
               <button
                 onClick={() => setDossierTab("clinical")}
                 style={{
-                  padding: "8px 14px",
+                  padding: isMobile ? "9px 10px" : "8px 14px",
+                  whiteSpace: "nowrap",
+                  flex: "0 0 auto",
                   border: "none",
                   borderBottom: dossierTab === "clinical" ? "2px solid #1e40af" : "2px solid transparent",
                   backgroundColor: "transparent",
                   color: dossierTab === "clinical" ? "#1e40af" : "#64748b",
                   fontWeight: dossierTab === "clinical" ? 700 : 500,
-                  fontSize: 13,
-                  cursor: "pointer"
+                  fontSize: isMobile ? 12 : 13,
+                  cursor: "pointer",
                 }}
               >
                 📋 Clinical Scales
@@ -1649,14 +1777,16 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               <button
                 onClick={() => setDossierTab("cognitive")}
                 style={{
-                  padding: "8px 14px",
+                  padding: isMobile ? "9px 10px" : "8px 14px",
+                  whiteSpace: "nowrap",
+                  flex: "0 0 auto",
                   border: "none",
                   borderBottom: dossierTab === "cognitive" ? "2px solid #1e40af" : "2px solid transparent",
                   backgroundColor: "transparent",
                   color: dossierTab === "cognitive" ? "#1e40af" : "#64748b",
                   fontWeight: dossierTab === "cognitive" ? 700 : 500,
-                  fontSize: 13,
-                  cursor: "pointer"
+                  fontSize: isMobile ? 12 : 13,
+                  cursor: "pointer",
                 }}
               >
                 🧠 Cognitive Battery
@@ -1664,14 +1794,16 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
               <button
                 onClick={() => setDossierTab("raw")}
                 style={{
-                  padding: "8px 14px",
+                  padding: isMobile ? "9px 10px" : "8px 14px",
+                  whiteSpace: "nowrap",
+                  flex: "0 0 auto",
                   border: "none",
                   borderBottom: dossierTab === "raw" ? "2px solid #1e40af" : "2px solid transparent",
                   backgroundColor: "transparent",
                   color: dossierTab === "raw" ? "#1e40af" : "#64748b",
                   fontWeight: dossierTab === "raw" ? 700 : 500,
-                  fontSize: 13,
-                  cursor: "pointer"
+                  fontSize: isMobile ? 12 : 13,
+                  cursor: "pointer",
                 }}
               >
                 🔬 Raw Trial Logs ({selectedParticipantRawTrials.length})
@@ -1680,7 +1812,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
 
             {/* Clinical Tab Content */}
             {dossierTab === "clinical" && selectedParticipantQuestionnaires && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(1, minmax(0, 1fr))" : "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
                 <div style={{ padding: 12, border: "1px solid #e2e8f0", borderRadius: 8, background: "white" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: "#334155" }}>DASS-21 Depression</div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
@@ -1728,7 +1860,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
 
             {/* Cognitive Tab Content */}
             {dossierTab === "cognitive" && selectedParticipantCognitive && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
                 <div style={{ padding: 10, background: "#eff6ff", borderRadius: 8, border: "1px solid #bfdbfe" }}>
                   <div style={{ fontSize: 11, color: "#1e40af", fontWeight: 700 }}>Stroop Effect</div>
                   <div style={{ fontSize: 16, fontWeight: 700, marginTop: 4 }}>{selectedParticipantCognitive.stroopEffect ?? "-"} ms</div>
@@ -1777,48 +1909,71 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                   value={rawTrialSearch}
                   onChange={(e) => setRawTrialSearch(e.target.value)}
                   style={{
-                    padding: "6px 12px",
-                    fontSize: 12,
+                    padding: isMobile ? "8px 12px" : "6px 12px",
+                    fontSize: isMobile ? 13 : 12,
                     border: "1px solid #cbd5e1",
                     borderRadius: 6,
-                    width: 240,
+                    width: isMobile ? "100%" : 240,
+                    boxSizing: "border-box",
                     outline: "none",
                   }}
                 />
-                <div style={{ maxHeight: 300, overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: 6 }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-                    <thead>
-                      <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                        <th style={{ padding: "6px 10px", textAlign: "left" }}>Task</th>
-                        <th style={{ padding: "6px 10px", textAlign: "left" }}>Param 1</th>
-                        <th style={{ padding: "6px 10px", textAlign: "left" }}>Param 2</th>
-                        <th style={{ padding: "6px 10px", textAlign: "left" }}>Param 3</th>
-                        <th style={{ padding: "6px 10px", textAlign: "left" }}>Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedParticipantRawTrials
-                        .filter(t => t.specificTest.toLowerCase().includes(rawTrialSearch.toLowerCase()))
-                        .map(t => (
-                          <tr key={t.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                            <td style={{ padding: "6px 10px", fontWeight: 600, color: "#0f172a" }}>{t.specificTest}</td>
-                            <td style={{ padding: "6px 10px" }}>{t.param1Name}: <strong>{t.param1Value}</strong></td>
-                            <td style={{ padding: "6px 10px" }}>{t.param2Name}: <strong>{t.param2Value}</strong></td>
-                            <td style={{ padding: "6px 10px" }}>{t.param3Name}: <strong>{t.param3Value}</strong></td>
-                            <td style={{ padding: "6px 10px", color: "#64748b" }}>{new Date(t.createdAt).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
+                {isMobile ? (
+                  <div style={{ maxHeight: 340, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {selectedParticipantRawTrials
+                      .filter((t) => t.specificTest.toLowerCase().includes(rawTrialSearch.toLowerCase()))
+                      .map((t) => (
+                        <div key={t.id} style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: 10, background: "#ffffff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+                            <strong style={{ fontSize: 12, color: "#0f172a" }}>{t.specificTest}</strong>
+                            <span style={{ fontSize: 10, color: "#64748b", whiteSpace: "nowrap" }}>
+                              {new Date(t.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 6, fontSize: 11, color: "#475569" }}>
+                            <div>{t.param1Name}: <strong style={{ color: "#0f172a" }}>{t.param1Value}</strong></div>
+                            <div>{t.param2Name}: <strong style={{ color: "#0f172a" }}>{t.param2Value}</strong></div>
+                            <div>{t.param3Name}: <strong style={{ color: "#0f172a" }}>{t.param3Value}</strong></div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div style={{ maxHeight: 300, overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: 6 }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                      <thead>
+                        <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>Task</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>Param 1</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>Param 2</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>Param 3</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedParticipantRawTrials
+                          .filter(t => t.specificTest.toLowerCase().includes(rawTrialSearch.toLowerCase()))
+                          .map(t => (
+                            <tr key={t.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                              <td style={{ padding: "6px 10px", fontWeight: 600, color: "#0f172a" }}>{t.specificTest}</td>
+                              <td style={{ padding: "6px 10px" }}>{t.param1Name}: <strong>{t.param1Value}</strong></td>
+                              <td style={{ padding: "6px 10px" }}>{t.param2Name}: <strong>{t.param2Value}</strong></td>
+                              <td style={{ padding: "6px 10px" }}>{t.param3Name}: <strong>{t.param3Value}</strong></td>
+                              <td style={{ padding: "6px 10px", color: "#64748b" }}>{new Date(t.createdAt).toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
+            <div style={{ display: "flex", justifyContent: isMobile ? "stretch" : "flex-end", marginTop: 20 }}>
               <button
                 onClick={() => setSelectedParticipantId(null)}
                 className="btn"
-                style={{ padding: "8px 20px" }}
+                style={{ padding: isMobile ? "12px 20px" : "8px 20px", width: isMobile ? "100%" : undefined }}
               >
                 Close Dossier
               </button>

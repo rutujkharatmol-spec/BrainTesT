@@ -348,3 +348,80 @@ main:has(.admin-portal-wrapper) {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-md);
 }
+
+/* =========================================================================
+   ADMIN PORTAL — MOBILE / TABLET RESPONSIVE LAYER
+   ========================================================================= */
+
+/* Horizontally scrollable strips (tab bar, task-jump bar, stats bar, dossier tabs) */
+.admin-scroll-x {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+.admin-scroll-x::-webkit-scrollbar {
+  height: 4px;
+}
+
+.admin-scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-scroll-x::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* No grey tap flash when touching rows / chips / buttons */
+.admin-portal-wrapper * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tablets: reclaim the generous desktop gutters */
+@media (max-width: 1024px) {
+  main:has(.admin-portal-wrapper) {
+    padding: 14px 16px !important;
+  }
+}
+
+/* Phones: edge-to-edge grid, thinner scrollbars, tighter cards */
+@media (max-width: 640px) {
+  main:has(.admin-portal-wrapper) {
+    padding: 8px 8px 20px !important;
+  }
+
+  .admin-portal-wrapper .card {
+    border-radius: 10px;
+  }
+
+  .admin-portal-wrapper .sheet-table-wrapper::-webkit-scrollbar {
+    height: 6px !important;
+    width: 6px !important;
+  }
+
+  /* Buttons inside the portal should never overflow their grid cell */
+  .admin-portal-wrapper .btn {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Navbar compaction on small screens */
+@media (max-width: 640px) {
+  .app-navbar {
+    padding: 8px 12px !important;
+  }
+
+  .nav-brand-sub,
+  .nav-hide-sm {
+    display: none !important;
+  }
+}
+
+/* Admin login card breathes a little tighter on small screens */
+@media (max-width: 480px) {
+  .admin-login-card {
+    padding: 24px 18px !important;
+  }
+}

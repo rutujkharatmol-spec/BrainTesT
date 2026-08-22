@@ -18,6 +18,7 @@ export default function Navbar() {
 
   return (
     <header
+      className="app-navbar"
       style={{
         background: "rgba(255, 255, 255, 0.95)",
         backdropFilter: "blur(10px)",
@@ -29,7 +30,7 @@ export default function Navbar() {
         boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.04)"
       }}
     >
-      <div style={{ maxWidth: 1600, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+      <div style={{ maxWidth: 1600, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         {/* Lab Branding */}
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
           <div
@@ -53,7 +54,7 @@ export default function Navbar() {
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.2, lineHeight: 1.2 }}>
               AIIMS Kalyani
             </div>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "var(--text-secondary)", lineHeight: 1 }}>
+            <div className="nav-brand-sub" style={{ fontSize: 11, fontWeight: 500, color: "var(--text-secondary)", lineHeight: 1 }}>
               Physiology & Cognitive Lab
             </div>
           </div>
@@ -133,7 +134,7 @@ export default function Navbar() {
               }}
               title="Sign Out / Switch Participant"
             >
-              <span>🚪</span> {state.language === 'bn' ? 'প্রস্থান' : 'Sign Out'}
+              <span>🚪</span> <span className="nav-hide-sm">{state.language === 'bn' ? 'প্রস্থান' : 'Sign Out'}</span>
             </button>
           )}
 
@@ -152,7 +153,7 @@ export default function Navbar() {
               boxShadow: "none",
             }}
           >
-            <span>🔒</span> {isAdmin ? "Admin Active" : "Admin Portal"}
+            <span>🔒</span> <span className="nav-hide-sm">{isAdmin ? "Admin Active" : "Admin Portal"}</span>
           </Link>
         </div>
       </div>

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { verifyAdminSession } from "@/lib/auth";
 import { syncCognitiveToGoogleSheets, syncQuestionnairesToGoogleSheets } from "@/lib/googleSheetsSync";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
-  const session = await getServerSession(authOptions);
+  const session = await verifyAdminSession();
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
   }

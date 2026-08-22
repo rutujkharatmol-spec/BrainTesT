@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 function AdminLoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin/export";
 
@@ -23,21 +21,23 @@ function AdminLoginForm() {
     setError(null);
 
     try {
-      const res = await signIn("credentials", {
-        password: password.trim(),
-        redirect: false,
+      const res = await fetch("/api/auth/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: password.trim() }),
       });
 
-      if (res?.error) {
-        setError("Invalid admin password. Please try again.");
-      } else if (res?.ok) {
-        // Successful login, navigate to the target admin page
-        router.push(callbackUrl);
-        router.refresh();
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.success) {
+        // Successful login, navigate to target admin page with fresh reload
+        window.location.href = callbackUrl;
+      } else {
+        setError(data?.error || "Invalid admin password. Please try again.");
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError("Unable to connect to server. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -50,11 +50,11 @@ function AdminLoginForm() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px 16px",
+        padding: "20px 12px",
       }}
     >
       <div
-        className="card"
+        className="card admin-login-card"
         style={{
           maxWidth: 420,
           width: "100%",
@@ -160,7 +160,8 @@ function AdminLoginForm() {
                   cursor: "pointer",
                   fontSize: 16,
                   color: "#64748b",
-                  padding: 0,
+                  padding: "6px",
+                  lineHeight: 1,
                 }}
                 title={showPassword ? "Hide password" : "Show password"}
               >
@@ -175,7 +176,8 @@ function AdminLoginForm() {
             disabled={!password.trim() || loading}
             style={{
               width: "100%",
-              padding: "13px",
+              padding: "14px",
+              minHeight: 46,
               fontSize: 14,
               fontWeight: 700,
               backgroundColor: "#0f172a",

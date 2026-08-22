@@ -35,5 +35,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# pwa build artifacts
+public/sw*
+public/workbox*
+public/swe-worker*
+
 .vercel
 .env*
