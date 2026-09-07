@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Phase = "instructions" | "presentation" | "recall" | "completed";
 
@@ -184,15 +186,50 @@ Please tell the study coordinator before continuing.`);
   };
 
   if (phase === "instructions") {
+    const isBn = state.language === "bn";
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "কোর্সি ব্লক টেস্ট" : "Corsi Block Test"}</h2>
-        <p>{state.language === 'bn' ? "আপনি স্ক্রিনে কিছু বর্গক্ষেত্র দেখতে পাবেন।" : "You will see a set of squares on the screen."}</p>
-        <p>{state.language === 'bn' ? "বর্গক্ষেত্রগুলো একটি নির্দিষ্ট ক্রমে একে একে আলোকিত হবে।" : "The squares will light up one by one in a specific sequence."}</p>
-        <p>{state.language === 'bn' ? "ক্রমটি শেষ হলে, " : "When the sequence finishes, "}<strong>{state.language === 'bn' ? "যে ক্রমে তারা আলোকিত হয়েছিল ঠিক সেই ক্রমেই বর্গক্ষেত্রগুলোতে ক্লিক করুন।" : "click the squares in the exact same order"}</strong>{state.language === 'bn' ? "" : " they lit up."}</p>
-        <p>{state.language === 'bn' ? "আপনি সঠিক উত্তর দেওয়ার সাথে সাথে ক্রমটি দীর্ঘ হতে থাকবে।" : "The sequence will get longer as you get them right."}</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "কোর্সি ব্লক — টাইল হপার" : "Corsi Block — Tile Hopper"}
+        subtitle={isBn ? "ভিজ্যুওস্প্যাশিয়াল স্মৃতির (Spatial Memory) পরীক্ষা" : "Test your visuospatial memory span"}
+        icon="🧱"
+        category={isBn ? "স্থানিক স্মৃতি" : "Spatial Memory"}
+        language={state.language}
+        mission={
+          isBn
+            ? "স্ক্রিনের বর্গাকার ব্লকগুলো একটি নির্দিষ্ট ক্রমে একে একে নীল রঙে জ্বলে উঠবে। আলো শেষ হলে, ঠিক একই ক্রমে ব্লকগুলোতে ক্লিক বা ট্যাপ করুন!"
+            : "Squares will light up in a specific sequence. Watch carefully, then click or tap the squares in the EXACT same order!"
+        }
+        visualExample={
+          <div style={{ background: "#F8FAFC", padding: "16px", borderRadius: 12, border: "1px solid #E2E8F0", textAlign: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", marginBottom: 10, textTransform: "uppercase" }}>
+              {isBn ? "কীভাবে কাজ করে:" : "HOW IT WORKS:"}
+            </div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+              <div style={{ padding: "8px 12px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#1E40AF" }}>
+                1. 💡 {isBn ? "ব্লক ১ জ্বলে উঠল" : "Block 1 flashes"}
+              </div>
+              <span style={{ color: "#94A3B8" }}>➔</span>
+              <div style={{ padding: "8px 12px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#1E40AF" }}>
+                2. 💡 {isBn ? "ব্লক ২ জ্বলে উঠল" : "Block 2 flashes"}
+              </div>
+              <span style={{ color: "#94A3B8" }}>➔</span>
+              <div style={{ padding: "8px 14px", background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 8, fontSize: 13, fontWeight: 800, color: "#059669" }}>
+                3. 👉 {isBn ? "আপনার পালা: ১ তারপর ২ ক্লিক করুন!" : "Your turn: Click 1 then 2!"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "প্রতিবার সঠিক উত্তর দিলে ক্রমটি আরও ১টি ব্লক করে দীর্ঘ হতে থাকবে।" : "Each correct sequence makes the next pattern 1 block longer.", icon: "📈" },
+          { text: isBn ? "ভুল হলে পুনরায় একই দৈর্ঘ্যের আরেকটি ক্রম দেওয়া হবে।" : "If you make a mistake, you'll get one more chance at that level.", icon: "🔄" },
+          { text: isBn ? "পরপর দুইবার ভুল করলে পরীক্ষা সম্পন্ন হবে।" : "Two consecutive mistakes end the test.", icon: "🎯" },
+        ]}
+        controls={[
+          { key: "MOUSE / TAP", action: isBn ? "ব্লকে ক্লিক বা স্পর্শ করুন" : "Click or tap blocks in order", color: "#7C3AED" },
+        ]}
+        tip={isBn ? "স্ক্রিনের পুরো গ্রিডে চোখ রাখুন, শুধু একটি ব্লকে আটকে থাকবেন না।" : "Keep your eyes focused on the center to catch the full sequence path!"}
+        onStart={startTask}
+      />
     );
   }
 
@@ -208,43 +245,93 @@ Please tell the study coordinator before continuing.`);
     );
   }
 
+  const isRecall = phase === "recall";
+
   return (
     <div className="task-view-container">
-      <div className="task-stimulus" style={{ flexDirection: "column" }}>
-        {phase === "recall" ? (
-          <h3 style={{ marginBottom: 16, color: "var(--text-primary)" }}>{state.language === 'bn' ? "আপনার পালা! ক্রমানুসারে ব্লকগুলিতে ক্লিক করুন।" : "Your turn! Click the blocks in order."}</h3>
-        ) : (
-          <h3 style={{ marginBottom: 16, opacity: 0 }}>Placeholder</h3>
-        )}
+      <TaskHUD
+        title={state.language === "bn" ? "কোর্সি ব্লক" : "Corsi Block Task"}
+        icon="🧱"
+        category={state.language === "bn" ? "স্থানিক স্মৃতি" : "Spatial Memory"}
+        currentTrial={spanLength}
+        totalTrials={9}
+        language={state.language}
+      />
+
+      <div className="task-stimulus" style={{ flexDirection: "column", gap: 12 }}>
+        {/* Play / Recall Interactive Guidance */}
+        <div
+          style={{
+            padding: "8px 16px",
+            borderRadius: 20,
+            fontSize: 13,
+            fontWeight: 800,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            backgroundColor: isRecall ? "#ECFDF5" : "#EFF6FF",
+            color: isRecall ? "#047857" : "#1E40AF",
+            border: `1px solid ${isRecall ? "#A7F3D0" : "#BFDBFE"}`,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+          }}
+        >
+          {isRecall ? (
+            <>
+              <span>👉</span>
+              <span>
+                {state.language === "bn"
+                  ? `আপনার পালা! ক্রমানুসারে ব্লকে ক্লিক করুন (${userSequence.length}/${sequence.length})`
+                  : `Your turn! Tap the blocks in order (${userSequence.length}/${sequence.length})`}
+              </span>
+            </>
+          ) : (
+            <>
+              <span style={{ animation: "stimulus-pop 1s infinite" }}>💡</span>
+              <span>
+                {state.language === "bn" ? "মনোযোগ দিয়ে লক্ষ্য করুন..." : "Watch the flashing sequence closely..."}
+              </span>
+            </>
+          )}
+        </div>
         
         <div style={{ 
           position: "relative", 
           width: "100%",
-          minWidth: 320,
-          maxWidth: 500, 
+          minWidth: 300,
+          maxWidth: 480, 
           aspectRatio: "1/1",
-          background: "#F9FAFB",
-          border: "1px solid var(--card-border)",
-          borderRadius: 16
+          background: "#FFFFFF",
+          border: "2px solid #E2E8F0",
+          borderRadius: 20,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
         }}>
-          {BLOCK_POSITIONS.map((pos) => (
-            <div
-              key={pos.id}
-              onClick={() => handleBlockClick(pos.id)}
-              style={{
-                position: "absolute",
-                left: pos.left,
-                top: pos.top,
-                width: "15%",
-                height: "15%",
-                background: activeBlock === pos.id ? "var(--accent-color)" : "#D1D5DB",
-                boxShadow: activeBlock === pos.id ? "0 0 15px var(--accent-color)" : "0 1px 2px rgba(0,0,0,0.1)",
-                borderRadius: 8,
-                cursor: phase === "recall" ? "pointer" : "default",
-                transition: "background 0.1s, box-shadow 0.1s"
-              }}
-            />
-          ))}
+          {BLOCK_POSITIONS.map((pos) => {
+            const isLit = activeBlock === pos.id;
+            return (
+              <div
+                key={pos.id}
+                onClick={() => handleBlockClick(pos.id)}
+                style={{
+                  position: "absolute",
+                  left: pos.left,
+                  top: pos.top,
+                  width: "16%",
+                  height: "16%",
+                  background: isLit
+                    ? "linear-gradient(135deg, #2563EB, #3B82F6)"
+                    : "#E2E8F0",
+                  boxShadow: isLit
+                    ? "0 0 20px #2563EB, 0 4px 10px rgba(37, 99, 235, 0.4)"
+                    : "0 2px 4px rgba(0,0,0,0.06)",
+                  borderRadius: 10,
+                  cursor: isRecall ? "pointer" : "default",
+                  transition: "all 0.12s ease",
+                  transform: isLit ? "scale(1.08)" : "scale(1)",
+                  border: isLit ? "2px solid #93C5FD" : "1px solid #CBD5E1",
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

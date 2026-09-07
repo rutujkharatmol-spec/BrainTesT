@@ -217,60 +217,173 @@ input:focus, textarea:focus, select:focus {
   font-size: clamp(3rem, 10vw, 8rem) !important;
 }
 
-/* Minimal Mobile Controls for Cognitive Tasks */
+/* Universal Interactive Controls for Cognitive Tasks (Mobile & Laptop) */
 .mobile-controls-container {
   width: 100%;
-  padding: 20px;
+  padding: 16px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: auto;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
   border-top: 1px solid #E2E8F0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .mobile-controls {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
-  max-width: 600px;
+  max-width: 680px;
+  flex-wrap: wrap;
 }
 
 .mobile-btn {
   flex: 1;
-  padding: 18px 10px;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  border-radius: var(--border-radius-sm);
+  min-width: 110px;
+  padding: 14px 12px;
+  font-size: var(--text-base);
+  font-weight: 700;
+  border-radius: var(--border-radius);
   background: #FFFFFF;
-  border: 1px solid #CBD5E1;
+  border: 2px solid #CBD5E1;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 150ms ease;
+  box-shadow: 0 3px 0 #94A3B8, 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.mobile-btn:hover {
+  border-color: var(--accent-color);
+  background: #F8FAFC;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #94A3B8, 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
 .mobile-btn:active {
-  transform: translateY(2px);
-  box-shadow: none;
-  background: #F1F5F9;
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #94A3B8, inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #E2E8F0;
 }
 
 .mobile-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-@media (min-width: 768px) {
-  .mobile-controls-container {
-    display: none !important;
+/* Tactile Keycap for keyboard shortcut hints */
+.keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+  font-weight: 800;
+  color: #334155;
+  background: linear-gradient(180deg, #FFFFFF, #E2E8F0);
+  border: 1px solid #94A3B8;
+  border-bottom: 2px solid #64748B;
+  border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  line-height: 1.4;
+  margin: 0 2px;
+}
+
+/* Cognitive Task Heads-Up Display (HUD) */
+.task-hud-container {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto 20px auto;
+  padding: 10px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.task-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #F1F5F9;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.task-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #10B981);
+  border-radius: 6px;
+  transition: width 0.25s ease;
+}
+
+/* Gamified Confetti Animation */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(120vh) rotate(720deg) scale(0.6);
+    opacity: 0;
   }
 }
+
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  animation: confetti-fall 3.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Pulse highlight for current stimulus */
+@keyframes stimulus-pop {
+  0% { transform: scale(0.92); opacity: 0.8; }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.stimulus-animate {
+  animation: stimulus-pop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 
 /* Error validation styling */
 .error-text {

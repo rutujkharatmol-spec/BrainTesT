@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Phase = "instructions" | "presentation" | "recall" | "completed";
 
@@ -170,26 +172,94 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const isBn = state.language === "bn";
+
   if (phase === "instructions") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "ডিজিট স্প্যান টেস্ট" : "Digit Span Test"}</h2>
-        <p>{state.language === 'bn' ? "স্ক্রিনে একে একে সংখ্যার একটি ক্রম উপস্থিত হবে।" : "A sequence of numbers will appear on the screen, one at a time."}</p>
-        <p>{state.language === 'bn' ? "ক্রমটি শেষ হলে, আপনার কীবোর্ড বা স্ক্রিনের বোতামগুলি ব্যবহার করে সংখ্যাগুলি " : "When the sequence finishes, type the numbers in the "}<strong>{state.language === 'bn' ? "ঠিক যে ক্রমে উপস্থিত হয়েছিল" : "exact order"}</strong>{state.language === 'bn' ? " সেই ক্রমেই টাইপ করুন।" : " they appeared using your keyboard or the on-screen buttons."}</p>
-        <p>{state.language === 'bn' ? "আপনি সঠিক উত্তর দেওয়ার সাথে সাথে ক্রমটি দীর্ঘ হতে থাকবে।" : "The sequence will get longer as you get them right."}</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "ডিজিট স্প্যান টেস্ট — নম্বর মেমরি" : "Digit Span Test — Number Recall"}
+        subtitle={isBn ? "সংখ্যাগুলির ক্রম মনে রাখুন" : "Memorize the sequence of digits"}
+        icon="🔢"
+        category={isBn ? "স্মৃতিশক্তি (Memory)" : "Working Memory"}
+        language={state.language}
+        mission={
+          isBn
+            ? "স্ক্রিনে একে একে কয়েকটি সংখ্যা দেখা যাবে। সমস্ত সংখ্যা দেখানো শেষ হলে, সংখ্যাগুলি ঠিক যে ক্রমে দেখা গিয়েছিল সেই ক্রমানুসারে আপনার কীবোর্ড বা স্ক্রিনের নম্বর প্যাড ব্যবহার করে প্রবেশ করান!"
+            : "Numbers will appear on screen one by one. Once the sequence ends, recall and enter the numbers in the EXACT SAME order using your keyboard or on-screen keypad!"
+        }
+        visualExample={
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
+                {isBn ? "ধাপ ১: সংখ্যা প্রদর্শিত হবে" : "STEP 1: NUMBERS FLASH"}
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: 8, alignItems: "center", padding: "6px 0" }}>
+                <span style={{ fontSize: 22, fontWeight: 900, background: "#DBEAFE", color: "#1E40AF", width: 34, height: 34, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>4</span>
+                <span style={{ color: "#94A3B8" }}>➔</span>
+                <span style={{ fontSize: 22, fontWeight: 900, background: "#DBEAFE", color: "#1E40AF", width: 34, height: 34, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>9</span>
+                <span style={{ color: "#94A3B8" }}>➔</span>
+                <span style={{ fontSize: 22, fontWeight: 900, background: "#DBEAFE", color: "#1E40AF", width: 34, height: 34, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>2</span>
+              </div>
+            </div>
+            <div style={{ padding: 14, background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#065F46", marginBottom: 6 }}>
+                {isBn ? "ধাপ ২: একই ক্রমে উত্তর দিন" : "STEP 2: ENTER SAME ORDER"}
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#059669", letterSpacing: 4 }}>
+                4 - 9 - 2
+              </div>
+              <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
+                {isBn ? "কীবোর্ডে [ 4 ][ 9 ][ 2 ] টাইপ করুন" : "Type [ 4 ][ 9 ][ 2 ] on keyboard"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "সংখ্যাগুলি মনোযোগ দিয়ে দেখুন — প্রতিটি সংখ্যা মাত্র একবার দেখানো হবে।" : "Watch carefully — each number is flashed once.", icon: "👁️" },
+          { text: isBn ? "সঠিক উত্তর দিলে ক্রমটি ধাপে ধাপে দীর্ঘতর হবে।" : "With each correct recall, the digit sequence gets longer.", icon: "📈" },
+          { text: isBn ? "একই দৈর্ঘ্যে ২ বার ভুল হলে টেস্ট সম্পন্ন হবে।" : "Making 2 mistakes at the same span length completes the test.", icon: "⚠️" },
+        ]}
+        controls={[
+          { key: "0 - 9", action: isBn ? "সংখ্যা কী বা অন-স্ক্রিন কিপ্যাড" : "Number keys or Keypad", color: "#2563EB" },
+        ]}
+        tip={isBn ? "ল্যাপটপের কীবোর্ডের নম্বর কী বা স্ক্রিনের কিপ্যাড স্পর্শ করে উত্তর দিতে পারেন।" : "You can use laptop number keys (0-9) or tap/click the on-screen keypad."}
+        onStart={startTask}
+      />
     );
   }
 
   if (phase === "presentation") {
     return (
       <div className="task-view-container">
-        <div className="task-stimulus">
+        <TaskHUD
+          title={isBn ? "ডিজিট স্প্যান" : "Digit Span"}
+          icon="🔢"
+          category={isBn ? "স্মৃতিশক্তি" : "Working Memory"}
+          currentTrial={spanLength}
+          totalTrials={MAX_SPAN}
+          customProgressLabel={isBn ? `দৈর্ঘ্য: ${spanLength} টি সংখ্যা` : `Span: ${spanLength} digits`}
+          language={state.language}
+        />
+        <div className="task-stimulus" style={{ flexDirection: "column", gap: 16 }}>
           {activeDigit !== null ? (
-            <h1 style={{ fontSize: "8rem", fontWeight: "bold", color: "var(--text-primary)" }}>{activeDigit}</h1>
+            <div className="stimulus-animate" style={{ textAlign: "center" }}>
+              <div style={{
+                fontSize: "clamp(5rem, 15vw, 9rem)",
+                fontWeight: 900,
+                color: "var(--accent-color, #2563EB)",
+                lineHeight: 1,
+                textShadow: "0 4px 20px rgba(37, 99, 235, 0.2)"
+              }}>
+                {activeDigit}
+              </div>
+              <div style={{ marginTop: 12, fontSize: 14, color: "var(--text-secondary)", fontWeight: 600 }}>
+                {isBn ? "সংখ্যাটি মনে রাখুন..." : "Memorize the number..."}
+              </div>
+            </div>
           ) : (
-            <div style={{ width: 10, height: 10 }} />
+            <div style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#CBD5E1" }} />
+            </div>
           )}
         </div>
       </div>
@@ -199,38 +269,103 @@ Please tell the study coordinator before continuing.`);
   if (phase === "recall") {
     return (
       <div className="task-view-container">
-        <div className="task-stimulus" style={{ flexDirection: "column" }}>
-          <div style={{ maxWidth: 400, width: "100%", textAlign: "center" }}>
-            <h3 style={{ color: "var(--text-primary)" }}>{state.language === 'bn' ? "ক্রমটি কী ছিল?" : "What was the sequence?"}</h3>
+        <TaskHUD
+          title={isBn ? "ডিজিট স্প্যান" : "Digit Span"}
+          icon="🔢"
+          category={isBn ? "স্মৃতিশক্তি" : "Working Memory"}
+          currentTrial={spanLength}
+          totalTrials={MAX_SPAN}
+          customProgressLabel={isBn ? `দৈর্ঘ্য: ${spanLength} টি সংখ্যা` : `Span: ${spanLength} digits`}
+          language={state.language}
+        />
+
+        <div className="task-stimulus" style={{ flexDirection: "column", padding: "16px 20px" }}>
+          <div style={{ maxWidth: 380, width: "100%", textAlign: "center" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
+              {isBn ? "সংখ্যাগুলির ক্রম কী ছিল?" : "What was the sequence?"}
+            </div>
             
+            {/* Visual Slots Display */}
             <div style={{ 
-              minHeight: 60, 
-              fontSize: "2rem", 
-              margin: "20px 0", 
-              borderBottom: "2px solid var(--text-primary)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              letterSpacing: "8px",
-              color: "var(--accent-color)",
-              fontWeight: "bold",
-              wordBreak: "break-all",
-              flexWrap: "wrap",
-              padding: "10px"
+              display: "flex", 
+              justifyContent: "center", 
+              gap: 8, 
+              margin: "12px 0 20px 0",
+              flexWrap: "wrap"
             }}>
-              {userSequence.join("")}
+              {Array.from({ length: spanLength }).map((_, idx) => {
+                const filled = userSequence[idx] !== undefined;
+                const isCurrent = idx === userSequence.length;
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      width: 44,
+                      height: 52,
+                      borderRadius: 10,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.8rem",
+                      fontWeight: 800,
+                      background: filled ? "var(--accent-color, #2563EB)" : isCurrent ? "#EFF6FF" : "#F8FAFC",
+                      color: filled ? "#FFFFFF" : "#64748B",
+                      border: isCurrent ? "2px solid #3B82F6" : filled ? "2px solid #1D4ED8" : "2px dashed #CBD5E1",
+                      boxShadow: filled ? "0 2px 8px rgba(37, 99, 235, 0.25)" : "none",
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    {filled ? userSequence[idx] : isCurrent ? "•" : ""}
+                  </div>
+                );
+              })}
             </div>
 
+            {/* Modern Keypad */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                <button key={num} onClick={() => handleDigitClick(num)} style={{ padding: "20px", fontSize: "1.5rem", borderRadius: "8px", background: "#FFFFFF", border: "1px solid #D1D5DB", color: "var(--text-primary)", cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                <button
+                  key={num}
+                  onClick={() => handleDigitClick(num)}
+                  style={{
+                    padding: "16px 0",
+                    fontSize: "1.5rem",
+                    fontWeight: 700,
+                    borderRadius: "12px",
+                    background: "#FFFFFF",
+                    border: "1px solid #E2E8F0",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                    transition: "transform 0.1s, box-shadow 0.1s",
+                  }}
+                  onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"}
+                  onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
+                >
                   {num}
                 </button>
               ))}
               <div />
-              <button onClick={() => handleDigitClick(0)} style={{ padding: "20px", fontSize: "1.5rem", borderRadius: "8px", background: "#FFFFFF", border: "1px solid #D1D5DB", color: "var(--text-primary)", cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+              <button
+                onClick={() => handleDigitClick(0)}
+                style={{
+                  padding: "16px 0",
+                  fontSize: "1.5rem",
+                  fontWeight: 700,
+                  borderRadius: "12px",
+                  background: "#FFFFFF",
+                  border: "1px solid #E2E8F0",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                  transition: "transform 0.1s, box-shadow 0.1s",
+                }}
+                onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"}
+                onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
+              >
                 0
               </button>
+              <div />
             </div>
           </div>
         </div>

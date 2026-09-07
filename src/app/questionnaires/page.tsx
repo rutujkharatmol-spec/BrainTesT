@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppContext } from "@/components/AppContext";
 import IntakeScreen from "@/components/IntakeScreen";
 import { QUESTIONNAIRES } from "@/config/questionnaires";
@@ -11,6 +11,14 @@ import Link from "next/link";
 export default function QuestionnairesPage() {
   const { state, markTestCompleted } = useAppContext();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("brainTestSplashSeen", "1");
+    } catch {
+      // ignore
+    }
+  }, []);
 
   if (!state.sessionId) {
     return (

@@ -6,6 +6,8 @@ import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Trial = {
   direction: "left" | "right"; // direction of the center arrow
@@ -175,19 +177,60 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const isBn = state.language === "bn";
+
   if (phase === "instructions") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "এরিকসেন ফ্ল্যাঙ্কার টাস্ক" : "Eriksen Flanker Task"}</h2>
-        <p>{state.language === 'bn' ? "আপনি স্ক্রিনে পাঁচটি তীরের একটি সারি দেখতে পাবেন।" : "You will see a row of five arrows on the screen."}</p>
-        <p>{state.language === 'bn' ? "আপনার লক্ষ্য হল চারপাশের তীরগুলিকে উপেক্ষা করে মাঝখানের তীরের দিক নির্দেশ করা।" : "Your goal is to indicate the direction of the CENTER arrow while ignoring the surrounding arrows."}</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: "16px", borderRadius: "8px", border: "1px solid var(--card-border)" }}>
-          <p>{state.language === 'bn' ? "মাঝখানের তীরটি যদি বাম দিকে (LEFT) নির্দেশ করে, তবে বাম তীর কী (LEFT ARROW KEY) চাপুন বা বাম (LEFT) এ ট্যাপ করুন।" : "If the center arrow points LEFT, press the LEFT ARROW KEY or tap LEFT."}</p>
-          <p style={{ marginTop: 8 }}>{state.language === 'bn' ? "মাঝখানের তীরটি যদি ডান দিকে (RIGHT) নির্দেশ করে, তবে ডান তীর কী (RIGHT ARROW KEY) চাপুন বা ডান (RIGHT) এ ট্যাপ করুন।" : "If the center arrow points RIGHT, press the RIGHT ARROW KEY or tap RIGHT."}</p>
-        </div>
-        <p>{state.language === 'bn' ? "যত দ্রুত এবং সঠিকভাবে সম্ভব উত্তর দিন।" : "Please respond as quickly and accurately as possible."}</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "এরিকসেন ফ্ল্যাঙ্কার টাস্ক — অ্যারো ফোকাস" : "Eriksen Flanker Task — Arrow Focus"}
+        subtitle={isBn ? "মাঝের তীরটি কোন দিকে নির্দেশ করছে?" : "Which way is the center arrow pointing?"}
+        icon="🏹"
+        category={isBn ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+        language={state.language}
+        mission={
+          isBn
+            ? "চারপাশের তীরগুলিকে উপেক্ষা করুন! শুধুমাত্র মাঝখানের তীরটির (CENTER arrow) দিকে ফোকাস করুন এবং সেটির দিক নির্দেশ করুন।"
+            : "Ignore the flanker arrows on the sides! Focus your eyes only on the CENTER arrow and indicate its direction."
+        }
+        visualExample={
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
+                {isBn ? "উদাহরণ ১: বামের তীর" : "EXAMPLE 1: CENTER POINTS LEFT"}
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "monospace", letterSpacing: 6, color: "#64748B" }}>
+                &gt;&gt;<span style={{ color: "#2563EB", background: "#DBEAFE", padding: "2px 6px", borderRadius: 6 }}>&lt;</span>&gt;&gt;
+              </div>
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#1D4ED8" }}>
+                {isBn ? "মাঝের তীরটি বামে ➔ [ ← ] LEFT চাপুন" : "Center is Left ➔ Press [ ← ] LEFT"}
+              </div>
+            </div>
+            <div style={{ padding: 14, background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", marginBottom: 6 }}>
+                {isBn ? "উদাহরণ ২: ডানের তীর" : "EXAMPLE 2: CENTER POINTS RIGHT"}
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "monospace", letterSpacing: 6, color: "#64748B" }}>
+                &lt;&lt;<span style={{ color: "#7C3AED", background: "#EDE9FE", padding: "2px 6px", borderRadius: 6 }}>&gt;</span>&lt;&lt;
+              </div>
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#6D28D9" }}>
+                {isBn ? "মাঝের তীরটি ডানে ➔ [ → ] RIGHT চাপুন" : "Center is Right ➔ Press [ → ] RIGHT"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "মাঝের তীরটি বামে নির্দেশ করলে [←] অথবা LEFT বাটন চাপুন।" : "If center arrow points LEFT, press [←] or tap LEFT.", icon: "⬅️" },
+          { text: isBn ? "মাঝের তীরটি ডানে নির্দেশ করলে [→] অথবা RIGHT বাটন চাপুন।" : "If center arrow points RIGHT, press [→] or tap RIGHT.", icon: "➡️" },
+          { text: isBn ? "চারপাশের বিপরীতমুখী তীরগুলিতে বিভ্রান্ত হবেন না!" : "Do NOT let the distractor arrows on the sides fool you!", icon: "🎯" },
+          { text: isBn ? "যত দ্রুত ও নির্ভুলভাবে সম্ভব উত্তর দিন।" : "Answer as fast and accurately as possible.", icon: "⚡" },
+        ]}
+        controls={[
+          { key: "←", action: isBn ? "বাম তীর (Left)" : "Left", color: "#2563EB" },
+          { key: "→", action: isBn ? "ডান তীর (Right)" : "Right", color: "#7C3AED" },
+        ]}
+        tip={isBn ? "কীবোর্ডের তীর কী (Arrow keys) বা নিচের বোতামগুলিতে ক্লিক করতে পারেন।" : "You can press keyboard arrow keys (← / →) or click the buttons below."}
+        onStart={startTask}
+      />
     );
   }
 
@@ -207,21 +250,56 @@ Please tell the study coordinator before continuing.`);
 
   return (
     <div className="task-view-container">
+      <TaskHUD
+        title={isBn ? "এরিকসেন ফ্ল্যাঙ্কার" : "Eriksen Flanker"}
+        icon="🏹"
+        category={isBn ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+        currentTrial={currentTrialIndex + 1}
+        totalTrials={TOTAL_TRIALS}
+        language={state.language}
+      />
+
       <div className="task-stimulus">
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
+        {phase === "fixation" && (
+          <h1 style={{ fontSize: "4.5rem", color: "#2563EB", fontWeight: 700 }}>+</h1>
+        )}
         
         {phase === "stimulus" && trial && (
-          <h1 style={{ fontSize: "6rem", letterSpacing: "10px", fontWeight: "bold", color: "var(--text-primary)" }}>
-            {trial.stimulusString}
-          </h1>
+          <div className="stimulus-animate" style={{ textAlign: "center" }}>
+            <h1 style={{ 
+              fontSize: "clamp(3.5rem, 8vw, 6rem)", 
+              letterSpacing: "14px", 
+              fontWeight: 900, 
+              color: "var(--text-primary)", 
+              fontFamily: "monospace",
+              userSelect: "none"
+            }}>
+              {trial.stimulusString}
+            </h1>
+            <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>
+              {isBn ? "মাঝখানের তীরটি লক্ষ্য করুন" : "Focus on the CENTER arrow"}
+            </div>
+          </div>
         )}
       </div>
 
       {phase === "stimulus" && (
         <div className="mobile-controls-container">
-          <div className="mobile-controls">
-            <button className="mobile-btn" onClick={() => handleResponse("left")}>{state.language === 'bn' ? "বাম (LEFT)" : "LEFT"}</button>
-            <button className="mobile-btn" onClick={() => handleResponse("right")}>{state.language === 'bn' ? "ডান (RIGHT)" : "RIGHT"}</button>
+          <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", maxWidth: 440, margin: "0 auto", gap: 14 }}>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("left")}
+              style={{ borderColor: "#BFDBFE", color: "#1D4ED8", padding: "14px 20px" }}
+            >
+              <span className="keycap">←</span> {isBn ? "বাম (LEFT)" : "LEFT"}
+            </button>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("right")}
+              style={{ borderColor: "#DDD6FE", color: "#6D28D9", padding: "14px 20px" }}
+            >
+              <span className="keycap">→</span> {isBn ? "ডান (RIGHT)" : "RIGHT"}
+            </button>
           </div>
         </div>
       )}

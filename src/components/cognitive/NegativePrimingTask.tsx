@@ -6,6 +6,8 @@ import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Category = "LIVING" | "NON_LIVING";
 
@@ -217,18 +219,70 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const isBn = state.language === "bn";
+
   if (phase === "instructions") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "নেগেটিভ প্রাইমিং টাস্ক" : "Negative Priming Task"}</h2>
-        <p>{state.language === 'bn' ? "আপনি দুটি ওভারল্যাপিং (একের ওপর অন্যটি) শব্দ দেখতে পাবেন। একটি " : "You will see two overlapping words. One will be "}<strong>{state.language === 'bn' ? "লাল (RED)" : "RED"}</strong>{state.language === 'bn' ? " হবে এবং একটি " : " and one will be "}<strong style={{color:"#00aaff"}}>{state.language === 'bn' ? "নীল (BLUE)" : "BLUE"}</strong>{state.language === 'bn' ? " হবে।" : "."}</p>
-        <p>{state.language === 'bn' ? "আপনার লক্ষ্য হল " : "Your goal is to categorize the "}<strong>{state.language === 'bn' ? "লাল শব্দটিকে (RED WORD)" : "RED WORD"}</strong>{state.language === 'bn' ? " শ্রেণিবদ্ধ করা এবং নীল শব্দটিকে সম্পূর্ণ উপেক্ষা করা।" : " and completely ignore the blue word."}</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>{state.language === 'bn' ? "লাল শব্দটি যদি জীবন্ত কিছু হয় তবে 'F' চাপুন বা LIVING এ ট্যাপ করুন (উদাঃ কুকুর, বিড়াল)।" : "Press 'F' or tap LIVING if the red word is a LIVING THING (e.g. DOG, CAT)."}</p>
-          <p style={{ marginTop: 8 }}>{state.language === 'bn' ? "লাল শব্দটি যদি জড় বস্তু হয় তবে 'J' চাপুন বা NON-LIVING এ ট্যাপ করুন (উদাঃ গাড়ি, জুতো)।" : "Press 'J' or tap NON-LIVING if the red word is a NON-LIVING THING (e.g. CAR, SHOE)."}</p>
-        </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "নেগেটিভ প্রাইমিং টাস্ক — ওভারল্যাপ ফোকাস" : "Negative Priming Task — Overlap Focus"}
+        subtitle={isBn ? "লাল রঙের শব্দটি জীবন্ত নাকি জড় বস্তু?" : "Is the RED word living or non-living?"}
+        icon="🧬"
+        category={isBn ? "জ্ঞানীয় নিয়ন্ত্রণ ও মনোযোগ" : "Cognitive Control & Attention"}
+        language={state.language}
+        mission={
+          isBn
+            ? "স্ক্রিনে দুটি ওভারল্যাপিং (একের ওপর অন্যটি) শব্দ দেখা যাবে — একটি লাল রঙে এবং একটি নীল রঙে। নীল শব্দটি সম্পূর্ণ উপেক্ষা করুন! শুধুমাত্র লাল রঙের শব্দটি দেখে বলুন সেটি কি জীবন্ত নাকি জড় বস্তু?"
+            : "You will see two overlapping words — one printed in RED and one in BLUE. Completely ignore the blue word! Focus only on the RED word: Is it LIVING or NON-LIVING?"
+        }
+        visualExample={
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
+                {isBn ? "উদাহরণ ১: লাল শব্দটি জীবন্ত" : "EXAMPLE 1: RED IS LIVING"}
+              </div>
+              <div style={{ position: "relative", height: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ position: "absolute", fontSize: 24, fontWeight: 700, color: "#38BDF8", opacity: 0.7, transform: "translate(12px, -8px)" }}>
+                  {isBn ? "গাড়ি" : "CAR"}
+                </span>
+                <span style={{ position: "relative", fontSize: 28, fontWeight: 900, color: "#DC2626", zIndex: 2 }}>
+                  {isBn ? "বিড়াল" : "CAT"}
+                </span>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#065F46" }}>
+                {isBn ? "বিড়াল জীবন্ত ➔ [ F ] LIVING" : "CAT is Living ➔ Press [ F ] LIVING"}
+              </div>
+            </div>
+            <div style={{ padding: 14, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#475569", marginBottom: 6 }}>
+                {isBn ? "উদাহরণ ২: লাল শব্দটি জড় বস্তু" : "EXAMPLE 2: RED IS NON-LIVING"}
+              </div>
+              <div style={{ position: "relative", height: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ position: "absolute", fontSize: 24, fontWeight: 700, color: "#38BDF8", opacity: 0.7, transform: "translate(12px, -8px)" }}>
+                  {isBn ? "কুকুর" : "DOG"}
+                </span>
+                <span style={{ position: "relative", fontSize: 28, fontWeight: 900, color: "#DC2626", zIndex: 2 }}>
+                  {isBn ? "বই" : "BOOK"}
+                </span>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#475569" }}>
+                {isBn ? "বই জড় বস্তু ➔ [ J ] NON-LIVING" : "BOOK is Non-Living ➔ Press [ J ] NON-LIVING"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "শুধুমাত্র লাল (RED) রঙের শব্দটির অর্থ বিবেচনা করুন।" : "Judge the category of the RED word only.", icon: "🔴" },
+          { text: isBn ? "নীল (BLUE) রঙের শব্দটিকে সম্পূর্ণ উপেক্ষা করুন।" : "Completely ignore the BLUE distractor word.", icon: "🔵" },
+          { text: isBn ? "জীবন্ত (প্রাণী/উদ্ভিদ) হলে [F] চাপুন, জড় বস্তু হলে [J] চাপুন।" : "Press [F] for LIVING, press [J] for NON-LIVING.", icon: "⚡" },
+          { text: isBn ? "মোট ৪০টি ট্রায়াল সম্পন্ন করতে হবে।" : "There are 40 quick trials in total.", icon: "🎯" },
+        ]}
+        controls={[
+          { key: "F", action: isBn ? "জীবন্ত (Living)" : "Living", color: "#059669" },
+          { key: "J", action: isBn ? "জড় বস্তু (Non-Living)" : "Non-Living", color: "#4B5563" },
+        ]}
+        tip={isBn ? "ল্যাপটপের কীবোর্ডের F এবং J কী বা স্ক্রিনের বোতামে ক্লিক করুন।" : "You can use keyboard keys (F and J) or click the buttons below."}
+        onStart={startTask}
+      />
     );
   }
 
@@ -248,46 +302,76 @@ Please tell the study coordinator before continuing.`);
 
   return (
     <div className="task-view-container">
+      <TaskHUD
+        title={isBn ? "নেগেটিভ প্রাইমিং" : "Negative Priming"}
+        icon="🧬"
+        category={isBn ? "জ্ঞানীয় নিয়ন্ত্রণ" : "Cognitive Control"}
+        currentTrial={currentTrialIndex + 1}
+        totalTrials={TOTAL_TRIALS}
+        language={state.language}
+      />
+
       <div className="task-stimulus" style={{ position: "relative" }}>
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
+        {phase === "fixation" && (
+          <h1 style={{ fontSize: "4.5rem", color: "#2563EB", fontWeight: 700 }}>+</h1>
+        )}
         
         {phase === "stimulus" && trial && (
-          <div style={{ position: "relative" }}>
+          <div className="stimulus-animate" style={{ position: "relative", textAlign: "center", display: "inline-block" }}>
             {/* Distractor word in Blue */}
             <h1 style={{ 
-              fontSize: "6rem", 
-              fontWeight: "bold", 
-              color: "#00aaff",
+              fontSize: "clamp(3.5rem, 8vw, 6rem)", 
+              fontWeight: 800, 
+              color: "#38BDF8",
               position: "absolute",
-              top: 20,
-              left: 10,
-              opacity: 0.8,
+              top: 14,
+              left: 14,
+              opacity: 0.75,
               pointerEvents: "none",
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
+              userSelect: "none"
             }}>
               {trial.distractor.text}
             </h1>
             
             {/* Target word in Red */}
             <h1 style={{ 
-              fontSize: "6rem", 
-              fontWeight: "bold", 
-              color: "#ff4444",
+              fontSize: "clamp(3.5rem, 8vw, 6rem)", 
+              fontWeight: 900, 
+              color: "#DC2626",
               position: "relative",
               zIndex: 10,
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
+              userSelect: "none",
+              textShadow: "0 2px 12px rgba(220, 38, 38, 0.15)"
             }}>
               {trial.target.text}
             </h1>
+
+            <div style={{ marginTop: 14, fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>
+              {isBn ? "শুধুমাত্র লাল শব্দের উত্তর দিন" : "Focus on the RED word"}
+            </div>
           </div>
         )}
       </div>
 
       {phase === "stimulus" && (
         <div className="mobile-controls-container">
-          <div className="mobile-controls">
-            <button className="mobile-btn" onClick={() => handleResponse("KeyF")}>{state.language === 'bn' ? "জীবন্ত (LIVING)" : "LIVING"}</button>
-            <button className="mobile-btn" onClick={() => handleResponse("KeyJ")}>{state.language === 'bn' ? "জড় বস্তু (NON-LIVING)" : "NON-LIVING"}</button>
+          <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", maxWidth: 460, margin: "0 auto", gap: 14 }}>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("KeyF")}
+              style={{ borderColor: "#A7F3D0", color: "#065F46", padding: "14px 18px" }}
+            >
+              <span className="keycap">F</span> {isBn ? "জীবন্ত (LIVING)" : "LIVING"}
+            </button>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("KeyJ")}
+              style={{ borderColor: "#E2E8F0", color: "#475569", padding: "14px 18px" }}
+            >
+              <span className="keycap">J</span> {isBn ? "জড় বস্তু (NON-LIVING)" : "NON-LIVING"}
+            </button>
           </div>
         </div>
       )}

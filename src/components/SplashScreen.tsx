@@ -5,7 +5,13 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Show splash screen for 2.5 seconds
+    // If on laptop or desktop screen, immediately complete without delay
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      onComplete();
+      return;
+    }
+
+    // Show splash screen for 2.5 seconds on mobile
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(onComplete, 500); // Wait for fade out animation
@@ -13,6 +19,11 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
 
     return () => clearTimeout(timer);
   }, [onComplete]);
+
+  // Don't render visually on laptop/desktop viewports
+  if (typeof window !== "undefined" && window.innerWidth >= 768) {
+    return null;
+  }
 
   return (
     <div

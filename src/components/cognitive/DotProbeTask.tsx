@@ -6,6 +6,8 @@ import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull, sampleWithoutReplacement } from "@/utils/trials";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Trial = {
   leftWord: string;
@@ -162,8 +164,8 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const key = e.code;
-    if (key === "KeyE") handleResponse("left");
-    if (key === "KeyI") handleResponse("right");
+    if (key === "KeyE" || key === "ArrowLeft") handleResponse("left");
+    if (key === "KeyI" || key === "ArrowRight") handleResponse("right");
   }, [handleResponse]);
 
   useEffect(() => {
@@ -245,19 +247,61 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const isBn = state.language === "bn";
+
   if (phase === "instructions") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "ডট প্রোব টাস্ক" : "Dot Probe Task"}</h2>
-        <p>{state.language === 'bn' ? "আপনি মাঝখানে একটি ক্রস দেখতে পাবেন, তারপরে দুটি শব্দ দ্রুত ফ্ল্যাশ করবে।" : "You will see a cross in the center, followed by two words flashing quickly."}</p>
-        <p>{state.language === 'bn' ? "শব্দগুলি অদৃশ্য হয়ে যাওয়ার পরে, যেখানে শব্দগুলির একটি ছিল সেখানে একটি ডট ( * ) উপস্থিত হবে।" : "After the words disappear, a dot ( * ) will appear where one of the words was."}</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>{state.language === 'bn' ? "যদি ডটটি বাম দিকে (LEFT) উপস্থিত হয়, তবে 'E' কী চাপুন বা বাম (LEFT) এ ট্যাপ করুন।" : "If the dot appears on the LEFT, press the 'E' key or tap LEFT."}</p>
-          <p>{state.language === 'bn' ? "যদি ডটটি ডান দিকে (RIGHT) উপস্থিত হয়, তবে 'I' কী চাপুন বা ডান (RIGHT) এ ট্যাপ করুন।" : "If the dot appears on the RIGHT, press the 'I' key or tap RIGHT."}</p>
-        </div>
-        <p>{state.language === 'bn' ? "যত দ্রুত এবং সঠিকভাবে সম্ভব উত্তর দিন।" : "Please respond as quickly and accurately as possible."}</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "ডট প্রোব টাস্ক — ভিজ্যুয়াল স্পটলাইট" : "Dot Probe Task — Visual Spotlight"}
+        subtitle={isBn ? "ডট বা লক্ষ্যবিন্দু কোন পাশে ফুটে উঠলো?" : "Where did the target dot appear?"}
+        icon="📍"
+        category={isBn ? "মনোযোগ (Attention)" : "Attention Bias"}
+        language={state.language}
+        mission={
+          isBn
+            ? "মাঝখানের ক্রসের পর ক্ষণিকের জন্য দুটি শব্দ দেখা যাবে। শব্দ দুটি মিলিয়ে যাওয়ার সাথে সাথেই বাম অথবা ডান পাশে একটি নীল ডট (●) জ্বলবে। ডটটি দেখার সাথে সাথে দ্রুত বোতাম চাপুন!"
+            : "After the center cross, two words flash briefly. As soon as they disappear, a glowing blue dot (●) appears on the LEFT or RIGHT. Detect its position as fast as possible!"
+        }
+        visualExample={
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ padding: 14, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", marginBottom: 6 }}>
+                {isBn ? "ধাপ ১: শব্দ দুটি ফ্ল্যাশ করবে" : "STEP 1: WORDS FLASH"}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "10px 0" }}>
+                <span style={{ fontWeight: 800, color: "#DC2626", fontSize: 16 }}>{isBn ? "রাগ" : "ANGER"}</span>
+                <span style={{ color: "#CBD5E1" }}>|</span>
+                <span style={{ fontWeight: 800, color: "#2563EB", fontSize: 16 }}>{isBn ? "নদী" : "RIVER"}</span>
+              </div>
+            </div>
+            <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
+                {isBn ? "ধাপ ২: ডট দেখা দিলে চাপুন" : "STEP 2: DOT APPEARS"}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "8px 0" }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#2563EB", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 900 }}>●</div>
+                <span style={{ color: "#CBD5E1" }}>|</span>
+                <div style={{ width: 28, height: 28 }}></div>
+              </div>
+              <div style={{ marginTop: 4, fontSize: 12, fontWeight: 800, color: "#1D4ED8" }}>
+                {isBn ? "বামে ডট ➔ [ E ] বা [ ← ] চাপুন" : "Dot on Left ➔ Press [ E ] or [ ← ]"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "ডটটি বাম পাশে দেখা দিলে [E] অথবা [←] চাপুন।" : "If dot appears on the LEFT, press [E] or [←].", icon: "👈" },
+          { text: isBn ? "ডটটি ডান পাশে দেখা দিলে [I] অথবা [→] চাপুন।" : "If dot appears on the RIGHT, press [I] or [→].", icon: "👉" },
+          { text: isBn ? "ডটটি খুব দ্রুত চলে যেতে পারে, তাই সবসময় প্রস্তুত থাকুন!" : "The dot appears quickly — keep your eyes sharp!", icon: "⚡" },
+          { text: isBn ? "মোট ৪০টি দ্রুত ট্রায়াল সম্পন্ন করতে হবে।" : "There are 40 quick trials in total.", icon: "🎯" },
+        ]}
+        controls={[
+          { key: "E / ←", action: isBn ? "বাম (Left)" : "Left", color: "#2563EB" },
+          { key: "I / →", action: isBn ? "ডান (Right)" : "Right", color: "#7C3AED" },
+        ]}
+        tip={isBn ? "ল্যাপটপের কীবোর্ড বা নিচের বোতামগুলিতে ক্লিক করতে পারেন।" : "You can use keyboard keys (E / I or Arrow keys) or click the buttons below."}
+        onStart={startTask}
+      />
     );
   }
 
@@ -277,34 +321,69 @@ Please tell the study coordinator before continuing.`);
 
   return (
     <div className="task-view-container">
+      <TaskHUD
+        title={isBn ? "ডট প্রোব" : "Dot Probe"}
+        icon="📍"
+        category={isBn ? "মনোযোগ" : "Attention"}
+        currentTrial={currentTrialIndex + 1}
+        totalTrials={TOTAL_TRIALS}
+        language={state.language}
+      />
+
       <div className="task-stimulus" style={{ flexDirection: "column" }}>
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
+        {phase === "fixation" && (
+          <h1 style={{ fontSize: "4.5rem", color: "#2563EB", fontWeight: 700 }}>+</h1>
+        )}
         
         {phase === "words" && trial && (
-          <div style={{ display: "flex", width: "100%", maxWidth: "600px", justifyContent: "space-between", padding: "0 20px" }}>
-            <h1 style={{ fontSize: "clamp(2rem, 8vw, 4rem)", margin: 0, textAlign: "left", width: "45%", color: "var(--text-primary)" }}>{trial.leftWord}</h1>
-            <h1 style={{ fontSize: "clamp(2rem, 8vw, 4rem)", margin: 0, textAlign: "right", width: "45%", color: "var(--text-primary)" }}>{trial.rightWord}</h1>
+          <div style={{ display: "flex", width: "100%", maxWidth: "680px", justifyContent: "space-between", padding: "0 24px" }} className="stimulus-animate">
+            <h1 style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", margin: 0, textAlign: "left", width: "45%", color: "var(--text-primary)", fontWeight: 800 }}>
+              {trial.leftWord}
+            </h1>
+            <h1 style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", margin: 0, textAlign: "right", width: "45%", color: "var(--text-primary)", fontWeight: 800 }}>
+              {trial.rightWord}
+            </h1>
           </div>
         )}
 
         {phase === "dot" && trial && (
-          <div style={{ display: "flex", width: "100%", maxWidth: "600px", justifyContent: trial.dotPosition === "left" ? "flex-start" : "flex-end", padding: "0 40px" }}>
-            <h1 style={{ 
-              fontSize: "clamp(3rem, 10vw, 5rem)",
-              color: "var(--text-primary)",
-              margin: 0
+          <div style={{ display: "flex", width: "100%", maxWidth: "680px", justifyContent: trial.dotPosition === "left" ? "flex-start" : "flex-end", padding: "0 60px" }} className="stimulus-animate">
+            <div style={{ 
+              width: 56, 
+              height: 56, 
+              borderRadius: "50%", 
+              background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+              boxShadow: "0 0 24px rgba(37, 99, 235, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "1.8rem",
+              fontWeight: 900
             }}>
-              *
-            </h1>
+              ●
+            </div>
           </div>
         )}
       </div>
 
       {phase === "dot" && (
         <div className="mobile-controls-container">
-          <div className="mobile-controls">
-            <button className="mobile-btn" onClick={() => handleResponse("left")}>{state.language === 'bn' ? "বাম (LEFT)" : "LEFT"}</button>
-            <button className="mobile-btn" onClick={() => handleResponse("right")}>{state.language === 'bn' ? "ডান (RIGHT)" : "RIGHT"}</button>
+          <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", maxWidth: 440, margin: "0 auto", gap: 14 }}>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("left")}
+              style={{ borderColor: "#BFDBFE", color: "#1D4ED8", padding: "14px 20px" }}
+            >
+              <span className="keycap">E / ←</span> {isBn ? "বাম (LEFT)" : "LEFT"}
+            </button>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("right")}
+              style={{ borderColor: "#DDD6FE", color: "#6D28D9", padding: "14px 20px" }}
+            >
+              <span className="keycap">I / →</span> {isBn ? "ডান (RIGHT)" : "RIGHT"}
+            </button>
           </div>
         </div>
       )}

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Trial = {
   digit: number;
@@ -206,19 +208,56 @@ Please tell the study coordinator before continuing.`);
   };
 
   if (phase === "instructions") {
+    const isBn = state.language === "bn";
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "এস.এ.আর.টি (SART - সাসটেইন্ড অ্যাটেনশন টু রেসপন্স টাস্ক)" : "SART (Sustained Attention to Response Task)"}</h2>
-        <p>{state.language === 'bn' ? "আপনি স্ক্রিনে দ্রুত একক সংখ্যাগুলি (১ থেকে ৯) ঝলকানি দেখতে পাবেন।" : "You will see single digits (1 through 9) flash rapidly on the screen."}</p>
-        <p style={{ marginTop: 16 }}>
-          <strong>{state.language === 'bn' ? "প্রতিটি সংখ্যার জন্য যত দ্রুত সম্ভব স্পেসবার (SPACEBAR) চাপুন বা PRESS এ ট্যাপ করুন..." : "Press the SPACEBAR or tap PRESS as quickly as possible for every digit..."}</strong>
-        </p>
-        <p style={{ margin: "16px 0", fontSize: "1.2rem", color: "var(--error-color)", fontWeight: "bold" }}>
-          {state.language === 'bn' ? "তবে ৩ সংখ্যাটির জন্য নয়!" : "EXCEPT for the number 3!"}
-        </p>
-        <p>{state.language === 'bn' ? "যদি আপনি একটি ৩ দেখতে পান, তবে " : "If you see a 3, "}<strong>{state.language === 'bn' ? "কিছু চাপবেন না।" : "DO NOT PRESS ANYTHING"}</strong>{state.language === 'bn' ? "" : "."}</p>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "এস.এ.আর.টি — স্পিড রিফ্লেক্স" : "SART — Speed Reflex & Attention"}
+        subtitle={isBn ? "সাসটেইন্ড অ্যাটেনশন ও আত্মনিয়ন্ত্রণের পরীক্ষা" : "Sustained Attention to Response Task"}
+        icon="⏱️"
+        category={isBn ? "মনোযোগ নিয়ন্ত্রণ" : "Sustained Attention"}
+        language={state.language}
+        mission={
+          isBn
+            ? "স্ক্রিনে দ্রুত সংখ্যা আসবে। যেকোনো সংখ্যা এলে দ্রুত স্পেসবার চাপুন — কিন্তু ৩ (THREE) সংখ্যাটি এলে কখনোই কিছু চাপবেন না!"
+            : "Press SPACEBAR as fast as you can for EVERY number (1, 2, 4, 5, 6, 7, 8, 9) — EXCEPT when you see the number 3!"
+        }
+        visualExample={
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ padding: 14, background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#065F46", marginBottom: 4 }}>
+                {isBn ? "যেকোনো সংখ্যা (১, ২, ৪... ৯)" : "ANY NUMBER (1, 2, 4... 9)"}
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "#059669" }}>
+                1, 2, 4, 5, 7, 8...
+              </div>
+              <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800, color: "#065F46" }}>
+                ✅ {isBn ? "দ্রুত স্পেসবার চাপুন!" : "PRESS SPACEBAR FAST!"}
+              </div>
+            </div>
+            <div style={{ padding: 14, background: "#FEF2F2", border: "2px solid #EF4444", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#991B1B", marginBottom: 4 }}>
+                {isBn ? "বিপদজনক ফাঁদ (TRAP)" : "THE TRAP"}
+              </div>
+              <div style={{ fontSize: 36, fontWeight: 900, color: "#DC2626" }}>
+                3
+              </div>
+              <div style={{ marginTop: 4, fontSize: 13, fontWeight: 800, color: "#DC2626" }}>
+                🛑 {isBn ? "কিছুই চাপবেন না!" : "STOP! DO NOT PRESS!"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "সংখ্যাগুলো স্ক্রিনে খুব দ্রুত ফ্ল্যাশ হবে।" : "Numbers flash very quickly — stay alert and focused!", icon: "⚡" },
+          { text: isBn ? "৩ দেখতে পেলেই হাত থামিয়ে রাখুন।" : "Train your brain to hold back when the number 3 appears.", icon: "🛑", highlight: true },
+          { text: isBn ? "মোট ৫০টি দ্রুত ট্রায়াল আছে।" : "50 quick trials total.", icon: "🎯" },
+        ]}
+        controls={[
+          { key: "SPACEBAR", action: isBn ? "যেকোনো সংখ্যার জন্য চাপুন (৩ বাদে)" : "PRESS for numbers (except 3)", color: "#059669" },
+        ]}
+        tip={isBn ? "আঙুল স্পেসবারের উপরে আলতো করে ধরে রাখুন।" : "Keep your finger resting gently on the SPACEBAR so you're ready to react!"}
+        onStart={startTask}
+      />
     );
   }
 
@@ -226,35 +265,59 @@ Please tell the study coordinator before continuing.`);
     const trial = trials[currentTrialIndex];
     return (
       <div className="task-view-container">
-        <div className="task-stimulus" style={{ position: "relative" }}>
+        <TaskHUD
+          title={state.language === "bn" ? "এস.এ.আর.টি" : "SART Attention"}
+          icon="⏱️"
+          category={state.language === "bn" ? "মনোযোগ" : "Attention"}
+          currentTrial={currentTrialIndex + 1}
+          totalTrials={TOTAL_TRIALS}
+          language={state.language}
+        />
+        <div className="task-stimulus stimulus-animate" style={{ position: "relative" }}>
           {showStimulus ? (
-            <h1 style={{ fontSize: "8rem", fontWeight: "bold", color: "var(--text-primary)" }}>{trial?.digit}</h1>
+            <h1 style={{ fontSize: "clamp(5rem, 12vw, 8rem)", fontWeight: 900, color: "#0F172A" }}>
+              {trial?.digit}
+            </h1>
           ) : (
-            <div style={{ fontSize: "6rem", opacity: 0.1, color: "var(--text-primary)" }}>⊗</div> // Mask symbol commonly used in SART
+            <div style={{ fontSize: "clamp(3rem, 8vw, 5rem)", opacity: 0.15, color: "#64748B" }}>⊗</div>
           )}
           
           <div style={{
             position: "absolute",
-            bottom: "-40px",
+            bottom: "-36px",
             left: "50%",
             transform: "translateX(-50%)",
             opacity: hasPressed ? 1 : 0,
-            transition: "opacity 0.1s",
-            color: "var(--success-color)",
-            fontWeight: "bold"
+            transition: "opacity 0.15s ease",
+            color: "#059669",
+            fontWeight: 800,
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            backgroundColor: "#ECFDF5",
+            padding: "3px 10px",
+            borderRadius: 12,
+            border: "1px solid #A7F3D0"
           }}>
-            {state.language === 'bn' ? "নিবন্ধিত" : "Registered"}
+            ✓ {state.language === 'bn' ? "প্রেস সম্পন্ন" : "Pressed!"}
           </div>
         </div>
 
         <div className="mobile-controls-container">
           <div className="mobile-controls">
             <button 
+              type="button"
               className="mobile-btn" 
               onClick={handleResponse} 
               disabled={hasPressed}
+              style={{
+                maxWidth: 340,
+                background: hasPressed ? "#E2E8F0" : "linear-gradient(135deg, #059669, #10B981)",
+                color: hasPressed ? "#64748B" : "#FFFFFF",
+                borderColor: hasPressed ? "#CBD5E1" : "#059669",
+                fontSize: 16,
+              }}
             >
-              {state.language === 'bn' ? "চাপুন (PRESS - GO)" : "PRESS (GO)"}
+              <span className="keycap">SPACE</span> {state.language === 'bn' ? "চাপুন (PRESS - GO)" : "PRESS (GO)"}
             </button>
           </div>
         </div>

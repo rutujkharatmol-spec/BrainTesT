@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Trial = {
   letter: string;
@@ -226,25 +228,68 @@ Please tell the study coordinator before continuing.`);
   };
 
   if (phase === "instructions") {
+    const isBn = state.language === "bn";
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "এন-ব্যাক টাস্ক (২-ব্যাক)" : "N-Back Task (2-Back)"}</h2>
-        <p>{state.language === 'bn' ? "আপনি একে একে অক্ষরের একটি ক্রম দেখতে পাবেন।" : "You will see a sequence of letters presented one by one."}</p>
-        <p style={{ marginTop: 16 }}>
-          <strong>{state.language === 'bn' ? "বর্তমান অক্ষরটি যদি ২ ধাপ আগে দেখা অক্ষরের হুবহু একই হয় তবে স্পেসবার (SPACEBAR) চাপুন বা MATCH এ ট্যাপ করুন।" : "Press the SPACEBAR or tap MATCH if the current letter is the exact same as the letter seen 2 steps ago."}</strong>
-        </p>
-        <div style={{ margin: "24px auto", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>{state.language === 'bn' ? "উদাহরণ ক্রম:" : "Example Sequence:"}</p>
-          <ul style={{ paddingLeft: 24, margin: "8px 0" }}>
-            <li>{state.language === 'bn' ? "A (কিছু করবেন না)" : "A (do nothing)"}</li>
-            <li>{state.language === 'bn' ? "B (কিছু করবেন না)" : "B (do nothing)"}</li>
-            <li><strong>{state.language === 'bn' ? "A (স্পেসবার চাপুন - ২ ধাপ আগের সাথে মিলে যায়)" : "A (PRESS SPACEBAR - matches 2 steps ago)"}</strong></li>
-            <li>{state.language === 'bn' ? "C (কিছু করবেন না)" : "C (do nothing)"}</li>
-            <li><strong>{state.language === 'bn' ? "A (স্পেসবার চাপুন - ২ ধাপ আগের সাথে মিলে যায়)" : "A (PRESS SPACEBAR - matches 2 steps ago)"}</strong></li>
-          </ul>
-        </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "এন-ব্যাক টাস্ক — স্মৃতি প্রতিধ্বনি" : "2-Back Task — Memory Echo"}
+        subtitle={isBn ? "কার্যকরী স্মৃতির (Working Memory) পরীক্ষা" : "Test your working memory and recall"}
+        icon="🧠"
+        category={isBn ? "ওয়ার্কিং মেমোরি" : "Working Memory"}
+        language={state.language}
+        mission={
+          isBn
+            ? "স্ক্রিনে একে একে অক্ষর আসবে। বর্তমান অক্ষরটি যদি ঠিক ২ ধাপ আগের অক্ষরের মতো একই হয়, তখনই স্পেসবার (SPACEBAR) চাপুন অথবা MATCH এ ট্যাপ করুন!"
+            : "Watch the letters appear one by one. If the current letter matches the one from EXACTLY 2 steps ago, press SPACEBAR or tap MATCH!"
+        }
+        visualExample={
+          <div style={{ background: "#F8FAFC", padding: "16px", borderRadius: 12, border: "1px solid #E2E8F0" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", marginBottom: 8, textTransform: "uppercase" }}>
+              {isBn ? "টাইমলাইন ডায়াগ্রাম:" : "TIMELINE WALKTHROUGH:"}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", paddingBottom: 6 }}>
+              <div style={{ textAlign: "center", padding: "8px 10px", background: "#FFFFFF", border: "1px solid #CBD5E1", borderRadius: 8, minWidth: 60 }}>
+                <div style={{ fontSize: 10, color: "#94A3B8" }}>Step 1</div>
+                <div style={{ fontSize: 20, fontWeight: 900, color: "#0F172A" }}>A</div>
+                <div style={{ fontSize: 10, color: "#64748B" }}>Wait</div>
+              </div>
+              <span style={{ color: "#94A3B8" }}>➔</span>
+              <div style={{ textAlign: "center", padding: "8px 10px", background: "#FFFFFF", border: "1px solid #CBD5E1", borderRadius: 8, minWidth: 60 }}>
+                <div style={{ fontSize: 10, color: "#94A3B8" }}>Step 2</div>
+                <div style={{ fontSize: 20, fontWeight: 900, color: "#0F172A" }}>B</div>
+                <div style={{ fontSize: 10, color: "#64748B" }}>Wait</div>
+              </div>
+              <span style={{ color: "#94A3B8" }}>➔</span>
+              <div style={{ textAlign: "center", padding: "8px 10px", background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 8, minWidth: 80 }}>
+                <div style={{ fontSize: 10, color: "#059669", fontWeight: 700 }}>Step 3</div>
+                <div style={{ fontSize: 20, fontWeight: 900, color: "#059669" }}>A</div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#047857" }}>MATCH! 🔥</div>
+              </div>
+              <span style={{ color: "#94A3B8" }}>➔</span>
+              <div style={{ textAlign: "center", padding: "8px 10px", background: "#FFFFFF", border: "1px solid #CBD5E1", borderRadius: 8, minWidth: 60 }}>
+                <div style={{ fontSize: 10, color: "#94A3B8" }}>Step 4</div>
+                <div style={{ fontSize: 20, fontWeight: 900, color: "#0F172A" }}>C</div>
+                <div style={{ fontSize: 10, color: "#64748B" }}>Wait</div>
+              </div>
+              <span style={{ color: "#94A3B8" }}>➔</span>
+              <div style={{ textAlign: "center", padding: "8px 10px", background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 8, minWidth: 80 }}>
+                <div style={{ fontSize: 10, color: "#059669", fontWeight: 700 }}>Step 5</div>
+                <div style={{ fontSize: 20, fontWeight: 900, color: "#059669" }}>A</div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#047857" }}>MATCH! 🔥</div>
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "প্রতিটি অক্ষর স্ক্রিনে ১.৫ সেকেন্ডের জন্য থাকে।" : "Each letter stays on screen briefly — keep your memory updated!", icon: "⏱️" },
+          { text: isBn ? "যদি ২ ধাপ আগের অক্ষরের সাথে না মিলে, তবে কোনো বাটন চাপবেন না।" : "If the letter is NOT a 2-step match, do not press anything.", icon: "🛑" },
+          { text: isBn ? "মোট ৩০টি অক্ষর দেখানো হবে।" : "There are 30 letters shown in sequence.", icon: "🎯" },
+        ]}
+        controls={[
+          { key: "SPACEBAR", action: isBn ? "ম্যাচ (MATCH)" : "MATCH (2 Steps Back)", color: "#10B981" },
+        ]}
+        tip={isBn ? "মনে মনে আগের দুটি অক্ষর উচ্চারণ করুন: যেমন 'A... B...'" : "Mental trick: Whisper the last 2 letters to yourself as each one appears!"}
+        onStart={startTask}
+      />
     );
   }
 
@@ -252,37 +297,60 @@ Please tell the study coordinator before continuing.`);
     const trial = trials[currentTrialIndex];
     return (
       <div className="task-view-container">
-        <div className="task-stimulus" style={{ position: "relative" }}>
+        <TaskHUD
+          title={state.language === "bn" ? "এন-ব্যাক টাস্ক" : "2-Back Task"}
+          icon="🧠"
+          category={state.language === "bn" ? "ওয়ার্কিং মেমোরি" : "Working Memory"}
+          currentTrial={currentTrialIndex + 1}
+          totalTrials={TOTAL_TRIALS}
+          language={state.language}
+        />
+        <div className="task-stimulus stimulus-animate" style={{ position: "relative" }}>
           {showStimulus ? (
-            <h1 style={{ fontSize: "6rem", fontWeight: "bold", color: "var(--text-primary)" }}>{trial?.letter}</h1>
+            <h1 style={{ fontSize: "clamp(4rem, 10vw, 7rem)", fontWeight: 900, color: "#0F172A", letterSpacing: 2 }}>
+              {trial?.letter}
+            </h1>
           ) : (
-            <div style={{ width: 10, height: 10, background: "transparent" }} /> // blank ISI
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#CBD5E1" }} />
           )}
           
           {/* Visual feedback indicator */}
           <div style={{
             position: "absolute",
-            bottom: "-40px",
+            bottom: "-36px",
             left: "50%",
             transform: "translateX(-50%)",
             opacity: hasPressed ? 1 : 0,
-            transition: "opacity 0.1s",
-            color: "var(--success-color)",
-            fontWeight: "bold",
-            whiteSpace: "nowrap"
+            transition: "opacity 0.15s ease",
+            color: "#059669",
+            fontWeight: 800,
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            backgroundColor: "#ECFDF5",
+            padding: "3px 10px",
+            borderRadius: 12,
+            border: "1px solid #A7F3D0"
           }}>
-            {state.language === 'bn' ? "প্রতিক্রিয়া নিবন্ধিত হয়েছে" : "Response Registered"}
+            ✓ {state.language === 'bn' ? "প্রতিক্রিয়া নিবন্ধিত হয়েছে" : "Match Pressed!"}
           </div>
         </div>
         
         <div className="mobile-controls-container">
           <div className="mobile-controls">
             <button 
+              type="button"
               className="mobile-btn" 
               onClick={handleResponse} 
               disabled={hasPressed}
+              style={{
+                maxWidth: 320,
+                background: hasPressed ? "#E2E8F0" : "linear-gradient(135deg, #059669, #10B981)",
+                color: hasPressed ? "#64748B" : "#FFFFFF",
+                borderColor: hasPressed ? "#CBD5E1" : "#059669",
+                fontSize: 16,
+              }}
             >
-              {state.language === 'bn' ? "ম্যাচ (MATCH)" : "MATCH"}
+              <span className="keycap">SPACE</span> {state.language === 'bn' ? "ম্যাচ (MATCH)" : "MATCH"}
             </button>
           </div>
         </div>

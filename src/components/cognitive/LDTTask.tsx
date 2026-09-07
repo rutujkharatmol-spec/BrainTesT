@@ -6,6 +6,8 @@ import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, sampleWithoutReplacement } from "@/utils/trials";
 import TaskCompleteScreen from "./TaskCompleteScreen";
+import TaskInstructionCard from "./TaskInstructionCard";
+import TaskHUD from "./TaskHUD";
 
 type Trial = {
   string: string;
@@ -200,18 +202,60 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const isBn = state.language === "bn";
+
   if (phase === "instructions") {
     return (
-      <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "লেক্সিক্যাল ডিসিশন টাস্ক (LDT)" : "Lexical Decision Task (LDT)"}</h2>
-        <p>{state.language === 'bn' ? "আপনি স্ক্রিনে অক্ষরের একটি স্ট্রিং দেখতে পাবেন।" : "You will see a string of letters appear on the screen."}</p>
-        <p>{state.language === 'bn' ? "আপনার লক্ষ্য হল স্ট্রিংটি একটি আসল শব্দ নাকি একটি বানানো অর্থহীন শব্দ তা সিদ্ধান্ত নেওয়া।" : "Your goal is to decide if the string is a real English word or a made-up non-word."}</p>
-        <div style={{ margin: "24px 0", textAlign: "left", display: "inline-block", background: "#F9FAFB", padding: 16, borderRadius: 8, border: "1px solid var(--card-border)" }}>
-          <p>{state.language === 'bn' ? "যদি এটি একটি আসল শব্দ হয় তবে 'F' চাপুন বা WORD এ ট্যাপ করুন (উদাঃ বাড়ি)।" : "Press 'F' or tap WORD if it is a REAL WORD (e.g. HOUSE)."}</p>
-          <p style={{ marginTop: 8 }}>{state.language === 'bn' ? "যদি এটি একটি অর্থহীন শব্দ হয় তবে 'J' চাপুন বা NON-WORD এ ট্যাপ করুন (উদাঃ ব্ল্যাপ)।" : "Press 'J' or tap NON-WORD if it is a NON-WORD (e.g. BLAP)."}</p>
-        </div>
-        <button className="btn" onClick={startTask} style={{ marginTop: 32, width: "100%", padding: "14px", fontSize: "1.1rem" }}>{state.language === 'bn' ? "টাস্ক শুরু করুন" : "Start Task"}</button>
-      </div>
+      <TaskInstructionCard
+        title={isBn ? "লেক্সিক্যাল ডিসিশন টাস্ক — আসল নাকি বানানো?" : "Lexical Decision Task — Real or Fake?"}
+        subtitle={isBn ? "শব্দটি আসল নাকি বানানো তা চিনুন" : "Identify real words vs made-up non-words"}
+        icon="📖"
+        category={isBn ? "ভাষাগত জ্ঞান (Language)" : "Language & Cognition"}
+        language={state.language}
+        mission={
+          isBn
+            ? "স্ক্রিনে একটি শব্দ ভেসে উঠবে। যদি এটি একটি আসল ও অর্থপূর্ণ শব্দ হয়, তবে 'F' বা WORD চাপুন। আর যদি এটি অর্থহীন বা বানানো শব্দ হয়, তবে 'J' বা NON-WORD চাপুন!"
+            : "A word will appear on screen. Decide as quickly as possible: Is it a REAL dictionary word (press [F]), or a MADE-UP non-word (press [J])?"
+        }
+        visualExample={
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ padding: 14, background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#065F46", marginBottom: 6 }}>
+                {isBn ? "উদাহরণ ১: আসল শব্দ" : "EXAMPLE 1: REAL WORD"}
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: "#047857" }}>
+                {isBn ? "বাড়ি" : "HOUSE"}
+              </div>
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#065F46" }}>
+                {isBn ? "আসল শব্দ ➔ [ F ] WORD চাপুন" : "Real Word ➔ Press [ F ] WORD"}
+              </div>
+            </div>
+            <div style={{ padding: 14, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, textAlign: "center" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#991B1B", marginBottom: 6 }}>
+                {isBn ? "উদাহরণ ২: বানানো/অর্থহীন শব্দ" : "EXAMPLE 2: FAKE WORD"}
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: "#DC2626" }}>
+                {isBn ? "ঝিকাত" : "BLAP"}
+              </div>
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#991B1B" }}>
+                {isBn ? "অর্থহীন শব্দ ➔ [ J ] NON-WORD চাপুন" : "Fake Word ➔ Press [ J ] NON-WORD"}
+              </div>
+            </div>
+          </div>
+        }
+        rules={[
+          { text: isBn ? "আসল অর্থপূর্ণ শব্দ হলে [F] বা WORD বাটন চাপুন।" : "If it is a REAL meaningful word, press [F] or tap WORD.", icon: "✅" },
+          { text: isBn ? "অর্থহীন বা বানানো শব্দ হলে [J] বা NON-WORD বাটন চাপুন।" : "If it is a MADE-UP non-word, press [J] or tap NON-WORD.", icon: "❌" },
+          { text: isBn ? "যত দ্রুত এবং সঠিকভাবে সম্ভব উত্তর দিন।" : "Answer as fast and accurately as possible.", icon: "⚡" },
+          { text: isBn ? "মোট ৪০টি ট্রায়াল সম্পন্ন করতে হবে।" : "There are 40 quick trials in total.", icon: "🎯" },
+        ]}
+        controls={[
+          { key: "F", action: isBn ? "আসল শব্দ (Word)" : "Real Word", color: "#059669" },
+          { key: "J", action: isBn ? "অর্থহীন শব্দ (Non-Word)" : "Non-Word", color: "#DC2626" },
+        ]}
+        tip={isBn ? "ল্যাপটপের কীবোর্ড (F / J) বা নিচের বোতামগুলিতে ক্লিক করতে পারেন।" : "You can use keyboard keys (F and J) or click the buttons below."}
+        onStart={startTask}
+      />
     );
   }
 
@@ -231,16 +275,52 @@ Please tell the study coordinator before continuing.`);
 
   return (
     <div className="task-view-container">
+      <TaskHUD
+        title={isBn ? "লেক্সিক্যাল ডিসিশন" : "Lexical Decision"}
+        icon="📖"
+        category={isBn ? "ভাষাগত জ্ঞান" : "Language & Cognition"}
+        currentTrial={currentTrialIndex + 1}
+        totalTrials={TOTAL_TRIALS}
+        language={state.language}
+      />
+
       <div className="task-stimulus">
-        {phase === "fixation" && <h1 style={{ fontSize: "4rem", color: "var(--text-primary)" }}>+</h1>}
-        {phase === "stimulus" && trial && <h1 style={{ fontSize: "6rem", fontWeight: "bold", textTransform: "uppercase", color: "var(--text-primary)" }}>{trial.string}</h1>}
+        {phase === "fixation" && (
+          <h1 style={{ fontSize: "4.5rem", color: "#2563EB", fontWeight: 700 }}>+</h1>
+        )}
+        
+        {phase === "stimulus" && trial && (
+          <div className="stimulus-animate" style={{ textAlign: "center" }}>
+            <h1 style={{ 
+              fontSize: "clamp(3rem, 8vw, 5.5rem)", 
+              fontWeight: 900, 
+              textTransform: "uppercase", 
+              color: "var(--text-primary)",
+              letterSpacing: "3px"
+            }}>
+              {trial.string}
+            </h1>
+          </div>
+        )}
       </div>
 
       {phase === "stimulus" && (
         <div className="mobile-controls-container">
-          <div className="mobile-controls">
-            <button className="mobile-btn" onClick={() => handleResponse("KeyF")}>{state.language === 'bn' ? "শব্দ (WORD)" : "WORD"}</button>
-            <button className="mobile-btn" onClick={() => handleResponse("KeyJ")}>{state.language === 'bn' ? "অর্থহীন শব্দ (NON-WORD)" : "NON-WORD"}</button>
+          <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", maxWidth: 460, margin: "0 auto", gap: 14 }}>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("KeyF")}
+              style={{ borderColor: "#A7F3D0", color: "#065F46", padding: "14px 18px" }}
+            >
+              <span className="keycap">F</span> {isBn ? "আসল শব্দ (WORD)" : "REAL WORD"}
+            </button>
+            <button 
+              className="mobile-btn" 
+              onClick={() => handleResponse("KeyJ")}
+              style={{ borderColor: "#FECACA", color: "#991B1B", padding: "14px 18px" }}
+            >
+              <span className="keycap">J</span> {isBn ? "অর্থহীন শব্দ (NON-WORD)" : "NON-WORD"}
+            </button>
           </div>
         </div>
       )}

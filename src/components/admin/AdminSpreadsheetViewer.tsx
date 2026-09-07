@@ -169,6 +169,18 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
 
+  // Participant deletion state
+  const [deletingParticipant, setDeletingParticipant] = useState<{
+    sessionId: string;
+    name: string;
+    idNumber?: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionNotification, setActionNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   // Viewport tracking drives the responsive layout below (phone / tablet / desktop)
   const [vw, setVw] = useState<number>(1280);
   useEffect(() => {
@@ -205,6 +217,72 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
       console.error("Refresh failed:", e);
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  // Delete participant handler
+  const handleDeleteParticipant = async () => {
+    if (!deletingParticipant) return;
+    const targetId = deletingParticipant.sessionId;
+    const targetName = deletingParticipant.name || deletingParticipant.idNumber || "Participant";
+
+    try {
+      setIsDeleting(true);
+      const res = await fetch("/api/admin/delete-participant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: targetId }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: "Failed to delete" }));
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+
+      // Update state locally
+      setData((prev) => {
+        const targetSession = prev.participants.find((p) => p.sessionId === targetId);
+        const wasCompleted = targetSession?.completed === "Completed";
+        const cognitiveCount = targetSession?.cognitiveTestsCount || 0;
+        const questionnaireAnswersCount = targetSession?.questionnairesAnsweredCount || 0;
+
+        return {
+          ...prev,
+          stats: {
+            ...prev.stats,
+            totalParticipants: Math.max(0, prev.stats.totalParticipants - 1),
+            completedSessions: wasCompleted ? Math.max(0, prev.stats.completedSessions - 1) : prev.stats.completedSessions,
+            totalCognitiveTests: Math.max(0, prev.stats.totalCognitiveTests - cognitiveCount),
+            totalQuestionnaireAnswers: Math.max(0, prev.stats.totalQuestionnaireAnswers - questionnaireAnswersCount),
+          },
+          participants: prev.participants.filter((p) => p.sessionId !== targetId),
+          cognitiveRows: prev.cognitiveRows.filter((r) => r.sessionId !== targetId),
+          questionnairesOverview: prev.questionnairesOverview.filter((q) => q.sessionId !== targetId),
+          rawTrials: prev.rawTrials.filter((t) => t.sessionId !== targetId),
+          individualSheets: Object.fromEntries(
+            Object.entries(prev.individualSheets).map(([k, v]) => [k, v.filter((r) => r.sessionId !== targetId)])
+          ),
+        };
+      });
+
+      // If dossier modal is open for this participant, close it
+      if (selectedParticipantId === targetId) {
+        setSelectedParticipantId(null);
+      }
+
+      setDeletingParticipant(null);
+      setActionNotification({
+        type: "success",
+        message: `Successfully deleted participant "${targetName}".`,
+      });
+      setTimeout(() => setActionNotification(null), 5000);
+    } catch (err: any) {
+      setActionNotification({
+        type: "error",
+        message: `Delete failed: ${err.message || "Unknown error"}`,
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -399,6 +477,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           { key: "cognitiveTestsCount", label: "Cognitive Tasks", width: 125, isNumeric: true },
           { key: "questionnairesAnsweredCount", label: "Surveys Done", width: 120, isNumeric: true },
           { key: "createdAt", label: "Enrolled Date", width: 135, isDate: true },
+          { key: "actions", label: "Actions", width: 105, isAction: true },
         ]
       };
     } else {
@@ -903,6 +982,35 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
             <span style={{ wordBreak: "break-word" }}>{syncMessage}</span>
             <button
               onClick={() => setSyncStatus("idle")}
+              style={{ background: "none", border: "none", cursor: "pointer", fontWeight: "bold", fontSize: 14 }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Action Notification (e.g. Delete participant) */}
+        {actionNotification && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: "9px 16px",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              backgroundColor: actionNotification.type === "success" ? "#ecfdf5" : "#fef2f2",
+              color: actionNotification.type === "success" ? "#065f46" : "#991b1b",
+              border: `1px solid ${actionNotification.type === "success" ? "#a7f3d0" : "#fecaca"}`,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}
+          >
+            <span>{actionNotification.type === "success" ? "✅" : "⚠️"} {actionNotification.message}</span>
+            <button
+              onClick={() => setActionNotification(null)}
               style={{ background: "none", border: "none", cursor: "pointer", fontWeight: "bold", fontSize: 14 }}
             >
               ✕
@@ -1708,7 +1816,44 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                               boxShadow: isLastSticky(col, cIdx) ? "3px 0 6px -2px rgba(0,0,0,0.1)" : undefined,
                             }}
                           >
-                            {col.badgeKey ? (
+                            {col.isAction ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeletingParticipant({
+                                    sessionId: row.sessionId || row.id,
+                                    name: row.name,
+                                    idNumber: row.idNumber,
+                                  });
+                                }}
+                                style={{
+                                  padding: "3px 8px",
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  color: "#dc2626",
+                                  backgroundColor: "#fef2f2",
+                                  border: "1px solid #fecaca",
+                                  borderRadius: 6,
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                  transition: "all 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = "#fee2e2";
+                                  e.currentTarget.style.borderColor = "#f87171";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "#fef2f2";
+                                  e.currentTarget.style.borderColor = "#fecaca";
+                                }}
+                                title="Delete participant and all records"
+                              >
+                                <span>🗑️</span> Delete
+                              </button>
+                            ) : col.badgeKey ? (
                               <div style={{ display: "flex", alignItems: "center", justifyContent: col.isNumeric ? "flex-end" : "flex-start", gap: 4 }}>
                                 {col.isNumeric && rawVal !== null && <span>{rawVal}</span>}
                                 {renderBadge(row[col.badgeKey] || rawVal)}
@@ -1871,6 +2016,32 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                   title="Print participant dossier"
                 >
                   🖨️ Print
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeletingParticipant({
+                      sessionId: selectedParticipant.sessionId,
+                      name: selectedParticipant.name,
+                      idNumber: selectedParticipant.idNumber,
+                    });
+                  }}
+                  className="btn btn-outline"
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    color: "#dc2626",
+                    borderColor: "#fecaca",
+                    backgroundColor: "#fff5f5",
+                    fontWeight: 600,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    cursor: "pointer",
+                  }}
+                  title="Delete participant and all records"
+                >
+                  <span>🗑️</span> Delete
                 </button>
                 <button
                   onClick={() => setSelectedParticipantId(null)}
@@ -2135,6 +2306,143 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
                 style={{ padding: isMobile ? "12px 20px" : "8px 20px", width: isMobile ? "100%" : undefined }}
               >
                 Close Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingParticipant && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.7)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1100,
+            padding: 16,
+          }}
+          onClick={() => !isDeleting && setDeletingParticipant(null)}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: 480,
+              width: "100%",
+              backgroundColor: "#ffffff",
+              borderRadius: 14,
+              padding: 24,
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.04)",
+              border: "1px solid #fee2e2",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  backgroundColor: "#fee2e2",
+                  color: "#dc2626",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 22,
+                  flexShrink: 0,
+                }}
+              >
+                ⚠️
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#991b1b" }}>
+                  Delete Participant?
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: 12, color: "#64748b" }}>
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            {/* Details Box */}
+            <div
+              style={{
+                backgroundColor: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 8,
+                padding: 12,
+                marginBottom: 16,
+                fontSize: 13,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ color: "#64748b" }}>Participant Name:</span>
+                <strong style={{ color: "#0f172a" }}>{deletingParticipant.name || "N/A"}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ color: "#64748b" }}>Aadhaar / ID:</span>
+                <code style={{ background: "#e2e8f0", padding: "1px 5px", borderRadius: 4, color: "#0f172a" }}>
+                  {deletingParticipant.idNumber || "N/A"}
+                </code>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#64748b" }}>Session ID:</span>
+                <code style={{ background: "#e2e8f0", padding: "1px 5px", borderRadius: 4, color: "#0f172a", fontSize: 11 }}>
+                  {deletingParticipant.sessionId.slice(0, 8)}...
+                </code>
+              </div>
+            </div>
+
+            <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.5, marginBottom: 20 }}>
+              Deleting this participant will permanently remove their enrollment record, all 12 questionnaire scale responses, normalized answers, and all cognitive test results from the database.
+            </p>
+
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setDeletingParticipant(null)}
+                disabled={isDeleting}
+                className="btn btn-outline"
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: isDeleting ? "not-allowed" : "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteParticipant}
+                disabled={isDeleting}
+                className="btn"
+                style={{
+                  padding: "8px 18px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  backgroundColor: "#dc2626",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: isDeleting ? "not-allowed" : "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  boxShadow: "0 2px 4px rgba(220, 38, 38, 0.3)",
+                }}
+              >
+                <span>{isDeleting ? "⏳" : "🗑️"}</span>
+                {isDeleting ? "Deleting..." : "Yes, Delete Participant"}
               </button>
             </div>
           </div>
