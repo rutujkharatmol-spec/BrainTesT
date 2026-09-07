@@ -10,14 +10,14 @@ export default function CognitiveLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     // If they bypass the intake screen and go directly to /cognitive/... 
-    // without a name/ID, send them back to the front door.
-    if (!state.participantName || !state.participantIdNumber) {
+    // without an active session, send them back to the front door.
+    if (!state.sessionId || !state.participantName) {
       router.push("/");
     }
-  }, [state.participantName, state.participantIdNumber, router]);
+  }, [state.sessionId, state.participantName, router]);
 
   // Don't render the tests if they don't have a session to avoid saving orphaned data
-  if (!state.participantName || !state.participantIdNumber) {
+  if (!state.sessionId || !state.participantName) {
     return <div style={{ textAlign: "center", marginTop: "100px" }}>Redirecting to Intake...</div>;
   }
 

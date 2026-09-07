@@ -22,18 +22,18 @@ const TEST_PATH_MAP: Record<string, string> = {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const rawAadhaar = (body.aadhaarNumber || body.identifier || "").replace(/\D/g, "");
+    const rawUsername = (body.username || body.identifier || body.aadhaarNumber || "").trim();
     const rawPhone = (body.phoneNo || body.passcode || "").replace(/\D/g, "");
 
-    if (!rawAadhaar || rawAadhaar.length !== 12) {
-      return NextResponse.json({ error: "Please enter a valid 12-digit Aadhaar Card Number." }, { status: 400 });
+    if (!rawUsername) {
+      return NextResponse.json({ error: "Please enter your Username." }, { status: 400 });
     }
     if (!rawPhone || rawPhone.length !== 10) {
       return NextResponse.json({ error: "Please enter a valid 10-digit Phone Number." }, { status: 400 });
     }
 
-    // Throttled per IP+Aadhaar to prevent enumeration.
-    const rateKey = `participant-signin:${clientIp(req)}:${rawAadhaar}`;
+    // Throttled per IP+Username to prevent enumeration.
+    const rateKey = `participant-signin:${clientIp(req)}:${rawUsername.toLowerCase()}`;
     const limit = checkRateLimit(rateKey, { limit: 8, windowMs: 15 * 60_000, blockMs: 10 * 60_000 });
     if (!limit.allowed) {
       return NextResponse.json(
@@ -42,15 +42,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // Look up participant by Aadhaar Number using raw SQL
+    // Look up participant by Username (case-insensitive) or participantIdNumber (fallback for legacy records)
     const sessions: any[] = await prisma.$queryRawUnsafe(
-      `SELECT * FROM "Session" WHERE "participantIdNumber" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
-      rawAadhaar
+      `SELECT * FROM "Session" 
+       WHERE LOWER("username") = LOWER($1) OR "participantIdNumber" = $1 
+       ORDER BY "createdAt" DESC LIMIT 1`,
+      rawUsername
     );
 
     if (!sessions || sessions.length === 0) {
       return NextResponse.json({ 
-        error: "No account found matching this Aadhaar Card Number. Please sign up." 
+        error: "No account found matching this Username. Please sign up." 
       }, { status: 404 });
     }
 
@@ -71,7 +73,7 @@ export async function POST(req: Request) {
     const isMatch = isPhoneDirectMatch || isPasscodeMatch;
 
     if (!isMatch) {
-      return NextResponse.json({ error: "Phone number does not match this Aadhaar record. Please check and try again." }, { status: 401 });
+      return NextResponse.json({ error: "Phone number does not match this account record. Please check and try again." }, { status: 401 });
     }
 
     // Seamlessly upgrade / ensure phoneNo and hashed passcode match the phone number
@@ -113,7 +115,8 @@ export async function POST(req: Request) {
       success: true,
       sessionId: session.id,
       participantName: session.participantName || "Participant",
-      participantIdNumber: session.participantIdNumber || rawAadhaar,
+      username: session.username || rawUsername,
+      participantIdNumber: session.participantIdNumber || null,
       completedTests: completedTestPaths,
       completed: session.completed,
       consentGiven: session.consentGiven,

@@ -153,7 +153,8 @@ export async function getAdminSpreadsheetData() {
     if (!cognitiveGrouped[r.sessionId]) {
       cognitiveGrouped[r.sessionId] = {
         sessionId: r.sessionId,
-        idNumber: r.session?.participantIdNumber || "N/A",
+        idNumber: r.session?.participantIdNumber || r.session?.username || "N/A",
+        username: r.session?.username || "-",
         name: r.session?.participantName || "N/A",
         age: r.session?.age ?? "-",
         gender: r.session?.gender || "-",
@@ -253,7 +254,8 @@ export async function getAdminSpreadsheetData() {
   // 4. Construct Questionnaires Overview
   const questionnairesOverview = sessions.map((s) => ({
     sessionId: s.id,
-    idNumber: s.participantIdNumber || "N/A",
+    idNumber: s.participantIdNumber || s.username || "N/A",
+    username: s.username || "-",
     name: s.participantName || "N/A",
     age: s.age ?? "-",
     gender: s.gender || "-",
@@ -317,7 +319,8 @@ export async function getAdminSpreadsheetData() {
       .map(s => {
         const row: Record<string, any> = {
           sessionId: s.id,
-          idNumber: s.participantIdNumber || "N/A",
+          idNumber: s.participantIdNumber || s.username || "N/A",
+          username: s.username || "-",
           name: s.participantName || "N/A",
           age: s.age ?? "-",
           gender: s.gender || "-",
@@ -367,7 +370,8 @@ export async function getAdminSpreadsheetData() {
   // 6. Participants Master Sheet
   const participants = sessions.map(s => ({
     sessionId: s.id,
-    idNumber: s.participantIdNumber || "N/A",
+    idNumber: s.participantIdNumber || s.username || "N/A",
+    username: s.username || "-",
     name: s.participantName || "N/A",
     age: s.age ?? "-",
     gender: s.gender || "-",
@@ -386,7 +390,8 @@ export async function getAdminSpreadsheetData() {
   const rawTrials = cognitiveResults.map(r => ({
     id: r.id,
     sessionId: r.sessionId,
-    idNumber: r.session?.participantIdNumber || "N/A",
+    idNumber: r.session?.participantIdNumber || r.session?.username || "N/A",
+    username: r.session?.username || "-",
     name: r.session?.participantName || "N/A",
     category: r.testCategory,
     specificTest: r.specificTest,

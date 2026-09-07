@@ -16,6 +16,7 @@ model AdminUser {
 model Session {
   id                  String   @id @default(uuid())
   participantName     String?
+  username            String?  @unique
   // Unique so the database — not a read-then-write check in the signup route —
   // enforces one record per participant. Without this, two concurrent signups
   // (a classroom registering at once) both passed the check and inserted, and

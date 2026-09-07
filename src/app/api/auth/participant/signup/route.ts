@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       participantName,
+      username,
       participantIdNumber,
       phoneNo,
       passcode,
@@ -23,10 +24,25 @@ export async function POST(req: Request) {
     if (!participantName?.trim()) {
       return NextResponse.json({ error: "Participant Name is required." }, { status: 400 });
     }
-    const cleanId = participantIdNumber?.replace(/\D/g, "") || "";
-    if (!cleanId || cleanId.length !== 12) {
-      return NextResponse.json({ error: "Please enter a valid 12-digit Aadhaar Card Number." }, { status: 400 });
+
+    const cleanUsername = username ? String(username).trim() : "";
+    if (!cleanUsername || cleanUsername.length < 3) {
+      return NextResponse.json({ error: "Username is required (minimum 3 characters)." }, { status: 400 });
     }
+    if (!/^[a-zA-Z0-9_-]+$/.test(cleanUsername)) {
+      return NextResponse.json({ error: "Username can only contain letters, numbers, underscores, and hyphens." }, { status: 400 });
+    }
+
+    // Aadhaar Card is optional. If provided, it must be 12 digits. If blank, stored as null.
+    let cleanId: string | null = null;
+    if (participantIdNumber && String(participantIdNumber).trim().length > 0) {
+      const digitsOnly = String(participantIdNumber).replace(/\D/g, "");
+      if (digitsOnly.length !== 12) {
+        return NextResponse.json({ error: "Aadhaar Card Number must be exactly 12 digits (or leave blank)." }, { status: 400 });
+      }
+      cleanId = digitsOnly;
+    }
+
     const cleanPhone = phoneNo?.replace(/\D/g, "") || "";
     if (!cleanPhone || cleanPhone.length !== 10) {
       return NextResponse.json({ error: "Please enter a valid 10-digit phone number." }, { status: 400 });
@@ -45,12 +61,13 @@ export async function POST(req: Request) {
     try {
       await prisma.$executeRawUnsafe(
         `INSERT INTO "Session" (
-          "id", "participantName", "participantIdNumber", "phoneNo", "passcode",
+          "id", "participantName", "username", "participantIdNumber", "phoneNo", "passcode",
           "age", "gender", "studentClass", "schoolName", "address",
           "consentGiven", "completed", "createdAt"
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`,
         newSessionId,
         participantName.trim(),
+        cleanUsername,
         cleanId,
         cleanPhone,
         hashedPasscode,
@@ -70,7 +87,7 @@ export async function POST(req: Request) {
 
       if (isDuplicate) {
         return NextResponse.json({
-          error: "A participant with this Aadhaar Card Number or Phone Number already exists. Please Sign In instead.",
+          error: "A participant with this Username, Aadhaar Number, or Phone Number already exists. Please Sign In instead.",
         }, { status: 409 });
       }
       throw insertErr;
@@ -80,6 +97,7 @@ export async function POST(req: Request) {
       success: true,
       sessionId: newSessionId,
       participantName: participantName.trim(),
+      username: cleanUsername,
       participantIdNumber: cleanId,
       phoneNo: cleanPhone,
       completedTests: [],

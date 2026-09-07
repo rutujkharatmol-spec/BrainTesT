@@ -7,7 +7,7 @@ import CognitiveHub from "./CognitiveHub";
 export default function MainAppFlow() {
   const { state } = useAppContext();
   
-  if (!state.participantName || !state.participantIdNumber) {
+  if (!state.sessionId || !state.participantName) {
     return (
       <div style={{ paddingTop: "50px" }}>
         <IntakeScreen />

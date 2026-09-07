@@ -44,7 +44,11 @@ export default function QuestionnairesPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "1px solid var(--card-border)" }}>
           <div>
             <h2>Questionnaires Hub</h2>
-            <p style={{ margin: 0 }}>Participant: <strong>{state.participantName}</strong> (Aadhaar: {state.participantIdNumber})</p>
+            <p style={{ margin: 0 }}>
+              Participant: <strong>{state.participantName}</strong>
+              {state.username && <span style={{ marginLeft: 6, color: "var(--text-secondary)" }}>(@{state.username})</span>}
+              {state.participantIdNumber && <span style={{ marginLeft: 6, color: "var(--text-secondary)" }}>• (Aadhaar: {state.participantIdNumber})</span>}
+            </p>
           </div>
           <Link href="/" style={{ textDecoration: "none" }}>
             <button className="btn btn-outline">

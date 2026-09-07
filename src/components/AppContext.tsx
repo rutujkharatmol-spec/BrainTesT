@@ -7,6 +7,7 @@ type AppState = {
   consentGiven: boolean;
   sessionId: string | null;
   participantName: string | null;
+  username: string | null;
   participantIdNumber: string | null;
   completedTests: string[];
   language: 'en' | 'bn';
@@ -14,8 +15,8 @@ type AppState = {
 
 type AppContextType = {
   state: AppState;
-  setSessionId: (id: string, name: string, idNum: string, completedTests?: string[]) => void;
-  loginParticipant: (id: string, name: string, idNum: string, completedTests?: string[]) => void;
+  setSessionId: (id: string, name: string, idNum?: string | null, completedTests?: string[], username?: string | null) => void;
+  loginParticipant: (id: string, name: string, idNum?: string | null, completedTests?: string[], username?: string | null) => void;
   setConsentGiven: (given: boolean) => void;
   markTestCompleted: (testId: string) => void;
   resetSession: () => void;
@@ -28,6 +29,7 @@ const initialState: AppState = {
   consentGiven: false,
   sessionId: null,
   participantName: null,
+  username: null,
   participantIdNumber: null,
   completedTests: [],
   language: 'en',
@@ -144,21 +146,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [isOffline]);
 
-  const setSessionId = (id: string, name: string, idNum: string, completedTests?: string[]) => setState(s => ({ 
+  const setSessionId = (id: string, name: string, idNum?: string | null, completedTests?: string[], username?: string | null) => setState(s => ({ 
     ...s, 
     sessionId: id,
     participantName: name,
-    participantIdNumber: idNum,
+    username: username !== undefined ? username : s.username,
+    participantIdNumber: idNum !== undefined ? idNum : s.participantIdNumber,
     completedTests: completedTests ? Array.from(new Set([...s.completedTests, ...completedTests])) : s.completedTests,
     consentGiven: true
   }));
 
-  const loginParticipant = (id: string, name: string, idNum: string, completedTests?: string[]) => {
+  const loginParticipant = (id: string, name: string, idNum?: string | null, completedTests?: string[], username?: string | null) => {
     setState(s => ({
       ...s,
       sessionId: id,
       participantName: name,
-      participantIdNumber: idNum,
+      username: username !== undefined ? username : null,
+      participantIdNumber: idNum !== undefined ? idNum : null,
       completedTests: completedTests || [],
       consentGiven: true
     }));
@@ -174,6 +178,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       sessionId: null, 
       consentGiven: false, 
       participantName: null, 
+      username: null,
       participantIdNumber: null, 
       completedTests: []
     };

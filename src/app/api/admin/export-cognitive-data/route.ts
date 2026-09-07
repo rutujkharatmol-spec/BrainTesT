@@ -25,7 +25,7 @@ export async function GET() {
     results.forEach((r) => {
       if (!groupedData[r.sessionId]) {
         groupedData[r.sessionId] = {
-          idNumber: r.session?.participantIdNumber || "N/A",
+          idNumber: r.session?.participantIdNumber || r.session?.username || "N/A",
           name: r.session?.participantName || "N/A",
           createdAt: r.session?.createdAt || r.createdAt
         };
