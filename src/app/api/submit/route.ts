@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * The questionnaire ids that have a submission table. Checked up front because
+ * the switch below only rejects an unknown id *after* the answer rows have
+ * been replaced, which would clear a valid previous submission.
+ */
+const VALID_TEST_IDS = new Set([
+  "cfs", "gaene", "mate", "sbs", "skep", "tsis",
+  "ncs6", "cfq", "dass21", "phq9", "gad7", "who5",
+]);
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -8,6 +18,21 @@ export async function POST(req: Request) {
 
     if (!sessionId || !testId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Validate the payload BEFORE touching stored data. This used to be read
+    // only at the Object.entries call below -- after the participant's previous
+    // answers had already been deleted -- so a malformed retake wiped the old
+    // submission and then threw, saving nothing in its place.
+    if (rawScores === null || typeof rawScores !== "object" || Array.isArray(rawScores)) {
+      return NextResponse.json(
+        { error: "rawScores must be an object of item id to score." },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_TEST_IDS.has(testId)) {
+      return NextResponse.json({ error: "Unknown test ID" }, { status: 400 });
     }
 
     // Verify session exists
@@ -19,15 +44,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid session" }, { status: 400 });
     }
 
-    // Delete old answers for this test and session to allow retakes
-    await prisma.answer.deleteMany({
-      where: {
-        sessionId,
-        testName: testId
-      }
-    });
-
-    // First save normalized answers
     const answersData = Object.entries(rawScores).map(([itemId, rawVal]) => {
       // Extract numeric index from id like "q1", "q12"
       const itemIndex = parseInt(itemId.replace('q', ''));
@@ -39,11 +55,13 @@ export async function POST(req: Request) {
       };
     });
 
-    if (answersData.length > 0) {
-      await prisma.answer.createMany({
-        data: answersData
-      });
-    }
+    // Replace the previous answers for this test in one transaction, so a
+    // failure half way through cannot leave the participant with neither the
+    // old submission nor the new one.
+    await prisma.$transaction([
+      prisma.answer.deleteMany({ where: { sessionId, testName: testId } }),
+      prisma.answer.createMany({ data: answersData }),
+    ]);
 
     // Now save to the specific model using upsert to allow retakes
     const commonData = {
@@ -89,6 +107,7 @@ export async function POST(req: Request) {
         await prisma.wHO5Submission.upsert({ where: { sessionId }, update: { rawScores, score }, create: { ...commonData, score } });
         break;
       default:
+        // Unreachable: VALID_TEST_IDS is checked before any write.
         return NextResponse.json({ error: "Unknown test ID" }, { status: 400 });
     }
 

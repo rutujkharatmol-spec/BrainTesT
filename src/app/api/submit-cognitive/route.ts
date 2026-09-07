@@ -27,28 +27,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid session" }, { status: 400 });
     }
 
-    // Delete old results for this test and session to allow retakes
-    await prisma.cognitiveTestResult.deleteMany({
-      where: {
-        sessionId,
-        specificTest
-      }
-    });
-
-    const result = await prisma.cognitiveTestResult.create({
-      data: {
-        sessionId,
-        testCategory,
-        specificTest,
-        param1Name,
-        param1Value,
-        param2Name,
-        param2Value,
-        param3Name,
-        param3Value,
-        rawTrialData
-      }
-    });
+    // Replace any previous run of this test in one transaction. Deleting
+    // first and creating second as two separate statements meant a failure in
+    // between destroyed the earlier result without storing the new one.
+    const [, result] = await prisma.$transaction([
+      prisma.cognitiveTestResult.deleteMany({
+        where: {
+          sessionId,
+          specificTest
+        }
+      }),
+      prisma.cognitiveTestResult.create({
+        data: {
+          sessionId,
+          testCategory,
+          specificTest,
+          param1Name,
+          param1Value,
+          param2Name,
+          param2Value,
+          param3Name,
+          param3Value,
+          rawTrialData
+        }
+      }),
+    ]);
 
     // ==========================================
     // DESTINATION B: LIVE GOOGLE SHEETS PIPELINE

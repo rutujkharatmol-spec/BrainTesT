@@ -101,16 +101,44 @@ export async function fetchWithOfflineSync(
   url: string,
   options: RequestInit
 ): Promise<Response> {
+  // A body still addressed to a placeholder session id must never reach the
+  // server as-is: the id was minted on this device, so the server rejects it
+  // with "Invalid session" and the result is lost. If a replayed signup has
+  // since taught us the real id, substitute it; if it has not, queue this
+  // request too so it replays behind the signup that will mint it.
+  let outgoing = options;
+  const bodyId = bodySessionId((options.body as string) || "");
+
+  if (isOfflineSessionId(bodyId)) {
+    const real = resolveOfflineSessionId(bodyId);
+    if (real) {
+      try {
+        const parsed = JSON.parse(options.body as string);
+        parsed.sessionId = real;
+        outgoing = { ...options, body: JSON.stringify(parsed) };
+      } catch {
+        /* not JSON; send unchanged */
+      }
+    } else {
+      return queueRequest(url, options);
+    }
+  }
+
   if (navigator.onLine) {
     try {
       // Return the real response (ok or not) so the UI can surface genuine
       // server-side errors instead of masking them.
-      return await fetch(url, options);
+      return await fetch(url, outgoing);
     } catch {
       // Network-layer failure (DNS, refused, timeout) — fall through to queue.
     }
   }
 
+  return queueRequest(url, outgoing);
+}
+
+/** Records a request for later replay and returns the synthetic offline response. */
+function queueRequest(url: string, options: RequestInit): Response {
   const body = (options.body as string) || "";
   const queued: QueuedRequest = {
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
@@ -147,6 +175,25 @@ export function mapOfflineSessionId(offlineId: string, realId: string): void {
   saveIdMap(map);
 }
 
+/** True for a placeholder id minted locally during an offline sign-up. */
+export function isOfflineSessionId(id: string | null | undefined): boolean {
+  return typeof id === "string" && id.startsWith(OFFLINE_SESSION_PREFIX);
+}
+
+/**
+ * The real server-issued id for a placeholder, once a replayed signup has
+ * taught us one. Returns null while the signup is still queued.
+ *
+ * The app holds the placeholder in its own state for the whole offline
+ * session, so something has to close that loop after the queue drains --
+ * otherwise every test taken after reconnecting is posted against an id the
+ * server has never seen and is rejected with "Invalid session".
+ */
+export function resolveOfflineSessionId(offlineId: string | null | undefined): string | null {
+  if (!isOfflineSessionId(offlineId)) return null;
+  return getIdMap()[offlineId as string] ?? null;
+}
+
 /** Rewrites a queued body's sessionId using the known mapping. */
 function rewriteBody(req: QueuedRequest, idMap: Record<string, string>): string {
   const current = bodySessionId(req.body);
@@ -166,6 +213,8 @@ export type SyncResult = {
   sent: number;
   failed: number;
   dropped: number;
+  /** Placeholder -> real session id learned by replaying signups this drain. */
+  resolved: Record<string, string>;
 };
 
 /**
@@ -179,7 +228,7 @@ export type SyncResult = {
  */
 export async function processOfflineQueue(): Promise<SyncResult> {
   const queue = getQueue();
-  if (queue.length === 0) return { sent: 0, failed: 0, dropped: 0 };
+  if (queue.length === 0) return { sent: 0, failed: 0, dropped: 0, resolved: {} };
 
   console.log(`[OfflineSync] Processing ${queue.length} queued request(s)...`);
 
@@ -191,6 +240,7 @@ export async function processOfflineQueue(): Promise<SyncResult> {
 
   const remaining: QueuedRequest[] = [];
   const dead: QueuedRequest[] = getDeadLetters();
+  const resolved: Record<string, string> = {};
   let sent = 0;
   let dropped = 0;
 
@@ -214,6 +264,7 @@ export async function processOfflineQueue(): Promise<SyncResult> {
             const data = await res.clone().json();
             if (data?.sessionId) {
               idMap[req.offlineSessionId] = data.sessionId;
+              resolved[req.offlineSessionId] = data.sessionId;
               saveIdMap(idMap);
             }
           } catch {
@@ -249,7 +300,7 @@ export async function processOfflineQueue(): Promise<SyncResult> {
   saveDeadLetters(dead);
 
   console.log(`[OfflineSync] Done. Sent: ${sent}, retrying: ${remaining.length}, dropped: ${dropped}`);
-  return { sent, failed: remaining.length, dropped };
+  return { sent, failed: remaining.length, dropped, resolved };
 }
 
 export function getOfflineQueueSize(): number {

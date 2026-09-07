@@ -32,6 +32,12 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   const [currentTrialIndex, setCurrentTrialIndex] = useState(0);
   const [results, setResults] = useState<TrialResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  // Latched synchronously the moment an upload starts. The `!submitting` check
+  // in the effect below could never do this job: `submitting` was read from a
+  // stale closure and was not in the dependency array, so under React's
+  // double-invoked effects the second call still saw `false` and uploaded the
+  // participant's run twice.
+  const submittedRef = useRef(false);
   const [calculatedParams, setCalculatedParams] = useState<any>(null);
   // True when the result was only queued locally (device offline).
   const [queuedOffline, setQueuedOffline] = useState(false);
@@ -113,17 +119,23 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
     };
   }, []);
 
+  // submitData is deliberately not a dependency: it is recreated on every
+  // render, so depending on it would re-fire this effect continuously.
+  // submittedRef above makes the upload idempotent instead.
   useEffect(() => {
-    if (phase === "completed" && !submitting && results.length === TOTAL_TRIALS) {
+    if (phase === "completed" && results.length === TOTAL_TRIALS) {
       submitData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, results]);
 
   const submitData = async () => {
+    if (submittedRef.current) return;
     if (!state.sessionId) {
       alert("No active session — please sign in again before submitting.");
       return;
     }
+    submittedRef.current = true;
     setSubmitting(true);
     
     // Parameters (only correct, RT > 100ms)
@@ -168,6 +180,8 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
       // Stay on the results screen; the Continue button navigates.
       if (onComplete) onComplete();
     } catch (e) {
+      // Failed: unlatch so the participant can retry.
+      submittedRef.current = false;
       console.error(e);
       alert(`Could not save your results: ${e instanceof Error ? e.message : e}
 

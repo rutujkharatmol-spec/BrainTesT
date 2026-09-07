@@ -1,13 +1,24 @@
 import { NextResponse } from "next/server";
-import { ADMIN_PASSWORD, ADMIN_COOKIE_NAME, generateAdminSessionToken } from "@/lib/auth";
+import { ADMIN_PASSWORD, ADMIN_COOKIE_NAME, generateAdminSessionToken, isAdminAuthConfigured, safeEquals } from "@/lib/auth";
 import { checkRateLimit, resetRateLimit, clientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    // The admin password is short by design decision, so unlimited guessing
-    // would fall in seconds. Rate limiting is the compensating control.
+    // Refuse rather than fall back to a default credential when the
+    // deployment has not been configured.
+    if (!isAdminAuthConfigured()) {
+      console.error("Admin login attempted but ADMIN_PASSWORD / NEXTAUTH_SECRET are not set.");
+      return NextResponse.json(
+        { success: false, error: "Admin access is not configured on this server." },
+        { status: 503 }
+      );
+    }
+
+    // Rate limiting remains a useful second line of defence against guessing,
+    // though it is per-process and therefore per-instance on serverless: the
+    // strength of ADMIN_PASSWORD is the control that actually matters.
     const key = `admin-login:${clientIp(req)}`;
     const limit = checkRateLimit(key, { limit: 5, windowMs: 15 * 60_000, blockMs: 15 * 60_000 });
     if (!limit.allowed) {
@@ -30,7 +41,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (password.trim() !== ADMIN_PASSWORD) {
+    if (!safeEquals(password.trim(), ADMIN_PASSWORD)) {
       return NextResponse.json(
         {
           success: false,

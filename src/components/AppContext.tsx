@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { processOfflineQueue, getOfflineQueueSize, getDeadLetterCount, clearDeadLetters } from '@/utils/offlineSync';
+import { processOfflineQueue, getOfflineQueueSize, getDeadLetterCount, clearDeadLetters, isOfflineSessionId, resolveOfflineSessionId } from '@/utils/offlineSync';
 
 type AppState = {
   consentGiven: boolean;
@@ -94,6 +94,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPendingCount(getOfflineQueueSize());
     setFailedCount(getDeadLetterCount());
 
+    /**
+     * After an offline sign-up the app holds a placeholder session id. Once the
+     * queued signup is replayed the server issues the real one, and state must
+     * adopt it -- otherwise every test taken from here on is posted against an
+     * id the server has never seen and is rejected as an invalid session.
+     * Functional setState so this never reads a stale closure.
+     */
+    const adoptRealSessionId = () => {
+      setState((s) => {
+        if (!isOfflineSessionId(s.sessionId)) return s;
+        const real = resolveOfflineSessionId(s.sessionId);
+        return real ? { ...s, sessionId: real } : s;
+      });
+    };
+
     const handleOnline = async () => {
       setIsOffline(false);
       const queueSize = getOfflineQueueSize();
@@ -110,6 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       // Surface permanent failures rather than letting data vanish quietly.
       setFailedCount(getDeadLetterCount());
+      adoptRealSessionId();
     };
 
     const handleOffline = () => {
@@ -122,6 +138,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Check queue on initial load too
     if (navigator.onLine && getOfflineQueueSize() > 0) {
       handleOnline();
+    } else {
+      // The queue may have drained during a previous page load, leaving the
+      // restored state still pointing at the placeholder id.
+      adoptRealSessionId();
     }
 
     return () => {

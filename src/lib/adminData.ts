@@ -67,8 +67,9 @@ function toSubmissionObject(row: SubmissionRow) {
  * serialize every query onto one connection — `Promise.all` measurably buys
  * nothing. With the database in ap-southeast-1 and users in West Bengal each
  * round trip costs ~305ms, so query *count* is the only lever that matters.
- * `rawTrialData` is excluded: it is the heaviest column and the UI never
- * renders it.
+ * `rawTrialData` is excluded: it is the heaviest column and the dashboard
+ * never renders it. It is not dropped from the dataset -- the "Raw Trial Data"
+ * sheet in /api/admin/export-cognitive-data queries and exports it in full.
  */
 const BUNDLE_SQL = `
 SELECT
@@ -142,7 +143,6 @@ export async function getAdminSpreadsheetData() {
 
   const cognitiveResults = cognitiveResultRows.map((r) => ({
     ...r,
-    rawTrialData: null,
     session: sessionById.get(r.sessionId) ?? null,
   }));
 
@@ -401,7 +401,6 @@ export async function getAdminSpreadsheetData() {
     param2Value: r.param2Value,
     param3Name: r.param3Name,
     param3Value: r.param3Value,
-    rawTrialData: r.rawTrialData,
     createdAt: r.createdAt.toISOString(),
   }));
 

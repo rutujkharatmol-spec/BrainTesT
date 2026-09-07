@@ -203,6 +203,49 @@ export async function GET() {
       worksheet.addRow(r);
     });
 
+    // ------------------------------------------------------------------
+    // Raw Trial Data sheet.
+    //
+    // Every task writes `rawTrialData` (per-trial reaction times, accuracy and
+    // condition) on submission, but until now nothing read it back: the
+    // dashboard hardcodes the field to null and neither export included it, so
+    // the trial-level record -- the part of this dataset that supports any
+    // reanalysis -- was reachable only by querying the database directly.
+    // ------------------------------------------------------------------
+    const rawSheet = workbook.addWorksheet("Raw Trial Data");
+    rawSheet.columns = [
+      { header: "Participant", key: "name", width: 24 },
+      { header: "ID / Username", key: "idNumber", width: 20 },
+      { header: "Test", key: "specificTest", width: 24 },
+      { header: "Category", key: "testCategory", width: 22 },
+      { header: "Recorded At", key: "createdAt", width: 22 },
+      { header: "Trial #", key: "trialIndex", width: 9 },
+      { header: "Trial Data (JSON)", key: "trial", width: 80 },
+    ];
+    rawSheet.getRow(1).font = { bold: true };
+
+    results.forEach((r) => {
+      const base = {
+        name: r.session?.participantName || "N/A",
+        idNumber: r.session?.participantIdNumber || r.session?.username || "N/A",
+        specificTest: r.specificTest,
+        testCategory: r.testCategory,
+        createdAt: new Date(r.createdAt).toISOString(),
+      };
+
+      const raw = r.rawTrialData as unknown;
+
+      if (Array.isArray(raw)) {
+        // Per-trial tasks: one spreadsheet row per trial.
+        raw.forEach((trial, i) => {
+          rawSheet.addRow({ ...base, trialIndex: i + 1, trial: JSON.stringify(trial) });
+        });
+      } else if (raw !== null && raw !== undefined) {
+        // Adaptive tasks (Corsi, Digit Span) store a summary object, not a list.
+        rawSheet.addRow({ ...base, trialIndex: "-", trial: JSON.stringify(raw) });
+      }
+    });
+
     const buffer = await workbook.xlsx.writeBuffer();
 
     return new NextResponse(buffer, {

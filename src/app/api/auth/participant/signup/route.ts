@@ -33,6 +33,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Username can only contain letters, numbers, underscores, and hyphens." }, { status: 400 });
     }
 
+    // Stored lowercased because sign-in looks the username up case-insensitively
+    // (LOWER(username) = LOWER($1)) while the database UNIQUE index is
+    // case-sensitive. That mismatch let "Rahul" and "rahul" both register, after
+    // which the sign-in query's LIMIT 1 could only ever return one of them and
+    // the other participant was permanently locked out of their own record.
+    const storedUsername = cleanUsername.toLowerCase();
+
     // Aadhaar Card is optional. If provided, it must be 12 digits. If blank, stored as null.
     let cleanId: string | null = null;
     if (participantIdNumber && String(participantIdNumber).trim().length > 0) {
@@ -67,7 +74,7 @@ export async function POST(req: Request) {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`,
         newSessionId,
         participantName.trim(),
-        cleanUsername,
+        storedUsername,
         cleanId,
         cleanPhone,
         hashedPasscode,
@@ -97,7 +104,7 @@ export async function POST(req: Request) {
       success: true,
       sessionId: newSessionId,
       participantName: participantName.trim(),
-      username: cleanUsername,
+      username: storedUsername,
       participantIdNumber: cleanId,
       phoneNo: cleanPhone,
       completedTests: [],

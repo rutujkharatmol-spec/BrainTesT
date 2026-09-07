@@ -4,14 +4,42 @@ import { getServerSession } from "next-auth/next";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "0907";
+/**
+ * Admin credentials come from the environment only.
+ *
+ * These used to fall back to literals committed in this file. That made the
+ * password readable by anyone with repo access, and made the session-token
+ * HMAC key guessable, so a token could be forged without knowing the password
+ * at all. Both now fail closed: if the environment is not configured, admin
+ * authentication is disabled rather than silently accepting a weak default.
+ */
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "";
 export const ADMIN_COOKIE_NAME = "admin_session_token";
-const AUTH_SECRET = process.env.NEXTAUTH_SECRET || "aiims-kalyani-cognitive-lab-admin-secret-2026";
+const AUTH_SECRET = process.env.NEXTAUTH_SECRET ?? "";
+
+/** True when the deployment has the secrets needed to authenticate an admin. */
+export function isAdminAuthConfigured(): boolean {
+  return ADMIN_PASSWORD.length > 0 && AUTH_SECRET.length > 0;
+}
+
+/**
+ * Constant-time string comparison, so a wrong password cannot be discovered
+ * one character at a time by measuring how long the comparison takes.
+ */
+export function safeEquals(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 /**
  * Creates a signed admin session token.
  */
 export function generateAdminSessionToken(): string {
+  if (!isAdminAuthConfigured()) {
+    throw new Error("ADMIN_PASSWORD and NEXTAUTH_SECRET must be set to issue an admin session.");
+  }
   const timestamp = Date.now().toString();
   const signature = crypto
     .createHmac("sha256", AUTH_SECRET)
@@ -24,6 +52,11 @@ export function generateAdminSessionToken(): string {
  * Validates an admin session token.
  */
 export function isValidAdminSessionToken(token: string | undefined | null): boolean {
+  // No secret configured means no token can be trusted -- an empty HMAC key
+  // would make every forged token verify.
+  if (!isAdminAuthConfigured()) {
+    return false;
+  }
   if (!token || typeof token !== "string" || !token.includes(".")) {
     return false;
   }
@@ -108,7 +141,8 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Admin Password", type: "password", placeholder: "Enter password" }
       },
       async authorize(credentials) {
-        if (credentials?.password === ADMIN_PASSWORD) {
+        if (!isAdminAuthConfigured()) return null;
+        if (typeof credentials?.password === "string" && safeEquals(credentials.password, ADMIN_PASSWORD)) {
           return { id: "admin", name: "Administrator", email: "admin@aiims-kalyani.local" };
         }
         return null;
