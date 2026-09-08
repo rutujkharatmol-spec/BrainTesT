@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ExcelJS from "exceljs";
+import { QUESTIONNAIRES } from "@/config/questionnaires";
 
 export const dynamic = "force-dynamic";
 
@@ -34,9 +35,26 @@ export async function GET() {
 
       // We need to structure it by Session (Row) and Question (Columns)
       // First, find all unique questions for this test to build headers
-      const questionIndexes = Array.from(new Set(answers.map(a => a.itemIndex))).sort((a, b) => a - b);
-      
+      // Use the questionnaire's declared item count rather than whatever
+      // happens to be present in the data, so every export has the same
+      // columns even when a participant skipped the tail of a form.
+      const definition = QUESTIONNAIRES.find(q => q.id === testName);
+      const questionIndexes = definition
+        ? definition.items.map((_, i) => i + 1)
+        : Array.from(new Set(answers.map(a => a.itemIndex))).sort((a, b) => a - b);
+
       const columns = [
+        // Identity first. This sheet previously carried only a raw session
+        // UUID, so results could not be tied to a participant without a
+        // separate lookup.
+        { header: "Username", key: "username", width: 18 },
+        { header: "Aadhaar Number", key: "idNumber", width: 18 },
+        { header: "Name", key: "name", width: 20 },
+        { header: "Phone", key: "phoneNo", width: 14 },
+        { header: "Age", key: "age", width: 7 },
+        { header: "Gender", key: "gender", width: 10 },
+        { header: "Class", key: "studentClass", width: 12 },
+        { header: "School", key: "schoolName", width: 22 },
         { header: "Session ID", key: "sessionId", width: 40 },
         { header: "Timestamp", key: "timestamp", width: 25 },
         ...questionIndexes.map(idx => ({ header: `Q${idx}`, key: `q${idx}`, width: 10 }))
@@ -64,9 +82,18 @@ export async function GET() {
       // Group answers by session
       const groupedBySession = answers.reduce((acc, curr) => {
         if (!acc[curr.sessionId]) {
-          acc[curr.sessionId] = { 
-            sessionId: curr.sessionId, 
-            timestamp: curr.session.createdAt.toISOString() 
+          acc[curr.sessionId] = {
+            // Aadhaar is optional; it is never back-filled from username.
+            username: curr.session.username || "—",
+            idNumber: curr.session.participantIdNumber || "—",
+            name: curr.session.participantName || "N/A",
+            phoneNo: curr.session.phoneNo || "—",
+            age: curr.session.age ?? "—",
+            gender: curr.session.gender || "—",
+            studentClass: curr.session.studentClass || "—",
+            schoolName: curr.session.schoolName || "—",
+            sessionId: curr.sessionId,
+            timestamp: curr.session.createdAt.toISOString()
           };
         }
         acc[curr.sessionId][`q${curr.itemIndex}`] = curr.rawScore;

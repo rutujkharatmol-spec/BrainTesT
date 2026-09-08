@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { roundedMeanOrNull } from "@/utils/trials";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -180,17 +181,19 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
     const totalTargets = results.filter(r => r.isTarget).length;
     const totalNonTargets = results.filter(r => !r.isTarget).length;
 
-    const hitRate = totalTargets > 0 ? (hits.length / totalTargets) * 100 : 0;
-    const falseAlarmRate = totalNonTargets > 0 ? (falseAlarms.length / totalNonTargets) * 100 : 0;
+    const hitRate = totalTargets > 0 ? (hits.length / totalTargets) * 100 : null;
+    const falseAlarmRate = totalNonTargets > 0 ? (falseAlarms.length / totalNonTargets) * 100 : null;
     
     const validRTs = hits.filter(r => r.rt !== null && r.rt > 150).map(r => r.rt as number);
-    const meanRTHits = validRTs.length ? validRTs.reduce((a, b) => a + b, 0) / validRTs.length : 0;
+    // null, not 0: "mean RT 0ms" is impossible and was being stored as a real
+    // measurement whenever a participant scored no hits.
+    const meanRTHits = roundedMeanOrNull(validRTs);
 
     
     setCalculatedParams({
-      param1Name: "Mean RT (Hits) (ms)", param1Value: Math.round(meanRTHits),
-      param2Name: "Hit Rate (%)", param2Value: Math.round(hitRate),
-      param3Name: "False Alarm Rate (%)", param3Value: Math.round(falseAlarmRate)
+      param1Name: "Mean RT (Hits) (ms)", param1Value: meanRTHits,
+      param2Name: "Hit Rate (%)", param2Value: hitRate === null ? null : Math.round(hitRate),
+      param3Name: "False Alarm Rate (%)", param3Value: falseAlarmRate === null ? null : Math.round(falseAlarmRate)
     });
     try {
       const res = await fetchWithOfflineSync("/api/submit-cognitive", {
@@ -201,11 +204,11 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
           testCategory: "Memory",
           specificTest: "2-Back Task",
           param1Name: "Mean RT (Hits) (ms)",
-          param1Value: Math.round(meanRTHits),
+          param1Value: meanRTHits,
           param2Name: "Hit Rate (%)",
-          param2Value: Math.round(hitRate),
+          param2Value: hitRate === null ? null : Math.round(hitRate),
           param3Name: "False Alarm Rate (%)",
-          param3Value: Math.round(falseAlarmRate),
+          param3Value: falseAlarmRate === null ? null : Math.round(falseAlarmRate),
           rawTrialData: results
         })
       });

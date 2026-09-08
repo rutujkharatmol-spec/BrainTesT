@@ -29,6 +29,10 @@ export async function syncCognitiveToGoogleSheets() {
     if (!groupedData[r.sessionId]) {
       groupedData[r.sessionId] = {
         sessionId: r.sessionId,
+        // Aadhaar became optional, so it is "N/A" for most participants now.
+        // Username is the reliable identifier and gets its own column rather
+        // than being back-filled into the Aadhaar one.
+        username: r.session?.username || "N/A",
         idNumber: r.session?.participantIdNumber || "N/A",
         name: r.session?.participantName || "N/A",
         age: r.session?.age ?? "",
@@ -90,7 +94,10 @@ export async function syncCognitiveToGoogleSheets() {
   });
 
   // Formatting rows for Google Sheets to match the Excel format exactly
+  // NOTE: column order must match the header row in the Google Sheet.
+  // "Username" was added as column A — update the sheet header to match.
   const rows = Object.values(groupedData).map((g: any) => [
+    g.username,
     g.idNumber,
     g.name,
     g.age,
@@ -170,7 +177,9 @@ export async function syncQuestionnairesToGoogleSheets() {
     }
   });
 
+  // NOTE: "Username" added as column A — update the sheet header to match.
   const rows = sessions.map(session => [
+    session.username || "N/A",
     session.participantIdNumber || "N/A",
     session.participantName || "N/A",
     session.age ?? "",

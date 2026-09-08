@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
+import { roundedMeanOrNull } from "@/utils/trials";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -161,14 +162,15 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
     
     // Parameters
     const goTrials = results.filter(r => !r.isNoGo && r.pressed && r.rt !== null && r.rt > 100);
-    const meanRTGo = goTrials.length ? goTrials.reduce((sum, r) => sum + (r.rt as number), 0) / goTrials.length : 0;
+    // null, not 0 — see NBackTask for the same reasoning.
+    const meanRTGo = roundedMeanOrNull(goTrials.map(r => r.rt as number));
     
     const commissionErrors = results.filter(r => r.errorType === "commission").length;
     const omissionErrors = results.filter(r => r.errorType === "omission").length;
 
     
     setCalculatedParams({
-      param1Name: "Mean RT Go Trials (ms)", param1Value: Math.round(meanRTGo),
+      param1Name: "Mean RT Go Trials (ms)", param1Value: meanRTGo,
       param2Name: "Commission Errors", param2Value: commissionErrors,
       param3Name: "Omission Errors", param3Value: omissionErrors
     });
@@ -181,7 +183,7 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
           testCategory: "Attention",
           specificTest: "SART (Basic)",
           param1Name: "Mean RT Go Trials (ms)",
-          param1Value: Math.round(meanRTGo),
+          param1Value: meanRTGo,
           param2Name: "Commission Errors",
           param2Value: commissionErrors,
           param3Name: "Omission Errors",

@@ -346,6 +346,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeColor: "#1e40af",
         columns: [
           { key: "idNumber", label: "Aadhaar / ID", group: "Participant", width: 145, sticky: true, isId: true },
+          { key: "username", group: "Participant", label: "Username", width: 135, sticky: true },
           { key: "name", label: "Participant Name", group: "Participant", width: 175, sticky: true, isName: true },
           { key: "schoolName", label: "School / Institution", group: "Participant", width: 160 },
           { key: "createdAt", label: "Date", group: "Participant", width: 120, isDate: true, isLastInGroup: true },
@@ -393,6 +394,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
           badgeColor: "#1e40af",
           columns: [
             { key: "idNumber", label: "Aadhaar / ID", width: 145, sticky: true, isId: true },
+            { key: "username", label: "Username", width: 135, sticky: true },
             { key: "name", label: "Participant Name", width: 175, sticky: true, isName: true },
             { key: "schoolName", label: "School", width: 150 },
             { key: "createdAt", label: "Date", width: 120, isDate: true, isLastInGroup: true },
@@ -420,6 +422,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         
         const qCols: any[] = [
           { key: "idNumber", label: "Aadhaar / ID", width: 145, sticky: true, isId: true },
+          { key: "username", label: "Username", width: 135, sticky: true },
           { key: "name", label: "Participant Name", width: 175, sticky: true, isName: true },
           { key: "schoolName", label: "School", width: 150 },
           { key: "createdAt", label: "Date", width: 120, isDate: true, isLastInGroup: true },
@@ -488,6 +491,7 @@ export default function AdminSpreadsheetViewer({ initialData }: { initialData: A
         badgeColor: "#7c3aed",
         columns: [
           { key: "idNumber", label: "Aadhaar / ID", width: 145, sticky: true, isId: true },
+          { key: "username", label: "Username", width: 135, sticky: true },
           { key: "name", label: "Participant Name", width: 165, sticky: true, isName: true },
           { key: "specificTest", label: "Test Name", width: 165, bold: true },
           { key: "category", label: "Category", width: 135 },

@@ -25,8 +25,16 @@ export async function GET() {
     results.forEach((r) => {
       if (!groupedData[r.sessionId]) {
         groupedData[r.sessionId] = {
-          idNumber: r.session?.participantIdNumber || r.session?.username || "N/A",
+          // Username and Aadhaar are distinct columns. Aadhaar is optional, so
+          // it must never be back-filled with the username.
+          username: r.session?.username || "—",
+          idNumber: r.session?.participantIdNumber || "—",
           name: r.session?.participantName || "N/A",
+          phoneNo: r.session?.phoneNo || "—",
+          age: r.session?.age ?? "—",
+          gender: r.session?.gender || "—",
+          studentClass: r.session?.studentClass || "—",
+          schoolName: r.session?.schoolName || "—",
           createdAt: r.session?.createdAt || r.createdAt
         };
       }
@@ -83,118 +91,137 @@ export async function GET() {
     workbook.creator = "Neurocognitive Testing Battery";
     const worksheet = workbook.addWorksheet("Participant Cognitive Metrics");
 
-    // Add grouped top headers for visual match
-    worksheet.mergeCells("A1:B1");
-    worksheet.getCell("A1").value = "";
-    worksheet.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF5B9BD5" } }; // generic blue
-    
-    worksheet.mergeCells("C1:E1");
-    worksheet.getCell("C1").value = "Stroop Task";
-    worksheet.getCell("C1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF5B9BD5" } };
-    
-    worksheet.mergeCells("F1:H1");
-    worksheet.getCell("F1").value = "SART (Sustained Attention to Response Task)";
-    worksheet.getCell("F1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF70AD47" } };
-    
-    worksheet.mergeCells("I1:K1");
-    worksheet.getCell("I1").value = "Dot Probe Task";
-    worksheet.getCell("I1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC00000" } };
-    
-    worksheet.mergeCells("L1:N1");
-    worksheet.getCell("L1").value = "N-Back Task (2-Back)";
-    worksheet.getCell("L1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFC000" } };
-    
-    worksheet.mergeCells("O1:P1");
-    worksheet.getCell("O1").value = "Corsi Block Task";
-    worksheet.getCell("O1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7030A0" } };
-    
-    worksheet.mergeCells("Q1:Q1");
-    worksheet.getCell("Q1").value = "Digit Span";
-    worksheet.getCell("Q1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF00B0F0" } };
-    
-    worksheet.mergeCells("R1:T1");
-    worksheet.getCell("R1").value = "Lexical Decision Task";
-    worksheet.getCell("R1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFA5A5A5" } };
-    
-    worksheet.mergeCells("U1:W1");
-    worksheet.getCell("U1").value = "Negative Priming";
-    worksheet.getCell("U1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD8337B" } };
+    // Group headers, row-2 headers and the colour band are all derived from a
+    // single definition below. They used to be three hand-maintained lists
+    // (hardcoded "A1:B1"/"C1:E1" merge ranges, a separate header array and a
+    // parallel colour array), so adding one participant column silently shifted
+    // every group banner out of alignment with the data underneath it.
+    const GROUPS: {
+      name: string;
+      band: string;      // row 1 fill
+      headerBand: string; // row 2 fill
+      cols: { header: string; key: string; width: number }[];
+    }[] = [
+      {
+        name: "",
+        band: "FF5B9BD5",
+        headerBand: "FF7F7F7F",
+        cols: [
+          // Aadhaar is optional, so username is the reliable identifier and
+          // gets its own column. Previously a missing Aadhaar silently fell
+          // back to the username, putting usernames under an "Aadhaar" header.
+          { header: "Username", key: "username", width: 18 },
+          { header: "Aadhaar Number", key: "idNumber", width: 18 },
+          { header: "Name", key: "name", width: 20 },
+          { header: "Phone", key: "phoneNo", width: 14 },
+          { header: "Age", key: "age", width: 7 },
+          { header: "Gender", key: "gender", width: 10 },
+          { header: "Class", key: "studentClass", width: 12 },
+          { header: "School", key: "schoolName", width: 22 },
+        ],
+      },
+      {
+        name: "Stroop Task", band: "FF5B9BD5", headerBand: "FF9BC2E6",
+        cols: [
+          { header: "Mean RT Congruent", key: "stroopCongruent", width: 20 },
+          { header: "Mean RT Incongruent", key: "stroopIncongruent", width: 20 },
+          { header: "Stroop Effect (ms)", key: "stroopEffect", width: 20 },
+        ],
+      },
+      {
+        name: "SART (Sustained Attention to Response Task)", band: "FF70AD47", headerBand: "FFA9D08E",
+        cols: [
+          { header: "Mean RT Go Trials", key: "sartRt", width: 20 },
+          { header: "Commission Errors", key: "sartCommission", width: 20 },
+          { header: "Omission Errors", key: "sartOmission", width: 20 },
+        ],
+      },
+      {
+        name: "Dot Probe Task", band: "FFC00000", headerBand: "FFE06666",
+        cols: [
+          { header: "Mean RT Congruent", key: "dotProbeCongruent", width: 20 },
+          { header: "Mean RT Incongruent", key: "dotProbeIncongruent", width: 20 },
+          { header: "Attentional Bias Score", key: "dotProbeBias", width: 20 },
+        ],
+      },
+      {
+        name: "N-Back Task (2-Back)", band: "FFFFC000", headerBand: "FFFFD966",
+        cols: [
+          { header: "Mean RT Hits (ms)", key: "nbackMeanRT", width: 20 },
+          { header: "Hit Rate (%)", key: "nbackHitRate", width: 15 },
+          { header: "False Alarm Rate (%)", key: "nbackFalseAlarmRate", width: 20 },
+        ],
+      },
+      {
+        name: "Corsi Block Task", band: "FF7030A0", headerBand: "FFB4A7D6",
+        cols: [
+          { header: "Max Block Span", key: "corsiMaxSpan", width: 15 },
+          { header: "Total Correct", key: "corsiTotalCorrect", width: 15 },
+        ],
+      },
+      {
+        name: "Digit Span", band: "FF00B0F0", headerBand: "FF9FC5E8",
+        cols: [{ header: "Max Span", key: "digitSpanMax", width: 15 }],
+      },
+      {
+        name: "Lexical Decision Task", band: "FFA5A5A5", headerBand: "FFCCCCCC",
+        cols: [
+          { header: "Mean RT Word", key: "ldtWord", width: 15 },
+          { header: "Mean RT Non-Word", key: "ldtNonWord", width: 20 },
+          { header: "Accuracy", key: "ldtAccuracy", width: 15 },
+        ],
+      },
+      {
+        name: "Negative Priming", band: "FFD8337B", headerBand: "FFEA9999",
+        cols: [
+          { header: "Mean RT Control", key: "npControl", width: 20 },
+          { header: "Mean RT Primed", key: "npPrimed", width: 20 },
+          { header: "Priming Effect (ms)", key: "npEffect", width: 20 },
+        ],
+      },
+      {
+        name: "Eriksen Flanker Task", band: "FF548235", headerBand: "FF92D050",
+        cols: [
+          { header: "Mean RT Congruent", key: "flankerCongruent", width: 20 },
+          { header: "Mean RT Incongruent", key: "flankerIncongruent", width: 20 },
+          { header: "Flanker Effect (ms)", key: "flankerEffect", width: 20 },
+        ],
+      },
+    ];
 
-    worksheet.mergeCells("X1:Z1");
-    worksheet.getCell("X1").value = "Eriksen Flanker Task";
-    worksheet.getCell("X1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF548235" } };
+    const columns = GROUPS.flatMap(g => g.cols);
 
-    // Set font style for super headers
+    // Columns must be registered before any header/merge work so addRow() can
+    // map row objects by key.
+    worksheet.columns = columns.map(c => ({ key: c.key, width: c.width }));
+
+    // Row 1: one merged banner per group, spans computed from the group itself.
+    let col = 1;
+    for (const g of GROUPS) {
+      const first = col;
+      const last = col + g.cols.length - 1;
+      if (last > first) worksheet.mergeCells(1, first, 1, last);
+      const cell = worksheet.getCell(1, first);
+      cell.value = g.name;
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: g.band } };
+      col = last + 1;
+    }
     worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
     worksheet.getRow(1).alignment = { horizontal: "center" };
 
-    // Define columns (row 2 headers)
-    const columns = [
-      { header: "Aadhaar Number", key: "idNumber", width: 18 },
-      { header: "Name", key: "name", width: 20 },
-      // Stroop
-      { header: "Mean RT Congruent", key: "stroopCongruent", width: 20 },
-      { header: "Mean RT Incongruent", key: "stroopIncongruent", width: 20 },
-      { header: "Stroop Effect (ms)", key: "stroopEffect", width: 20 },
-      // SART
-      { header: "Mean RT Go Trials", key: "sartRt", width: 20 },
-      { header: "Commission Errors", key: "sartCommission", width: 20 },
-      { header: "Omission Errors", key: "sartOmission", width: 20 },
-      // Dot Probe
-      { header: "Mean RT Congruent", key: "dotProbeCongruent", width: 20 },
-      { header: "Mean RT Incongruent", key: "dotProbeIncongruent", width: 20 },
-      { header: "Attentional Bias Score", key: "dotProbeBias", width: 20 },
-      // N-Back
-      { header: "Mean RT Hits (ms)", key: "nbackMeanRT", width: 20 },
-      { header: "Hit Rate (%)", key: "nbackHitRate", width: 15 },
-      { header: "False Alarm Rate (%)", key: "nbackFalseAlarmRate", width: 20 },
-      // Corsi
-      { header: "Max Block Span", key: "corsiMaxSpan", width: 15 },
-      { header: "Total Correct", key: "corsiTotalCorrect", width: 15 },
-      // Digit Span
-      { header: "Max Span", key: "digitSpanMax", width: 15 },
-      // LDT
-      { header: "Mean RT Word", key: "ldtWord", width: 15 },
-      { header: "Mean RT Non-Word", key: "ldtNonWord", width: 20 },
-      { header: "Accuracy", key: "ldtAccuracy", width: 15 },
-      // Negative Priming
-      { header: "Mean RT Control", key: "npControl", width: 20 },
-      { header: "Mean RT Primed", key: "npPrimed", width: 20 },
-      { header: "Priming Effect (ms)", key: "npEffect", width: 20 },
-      // Flanker
-      { header: "Mean RT Congruent", key: "flankerCongruent", width: 20 },
-      { header: "Mean RT Incongruent", key: "flankerIncongruent", width: 20 },
-      { header: "Flanker Effect (ms)", key: "flankerEffect", width: 20 },
-    ];
-
-    worksheet.getRow(2).values = columns.map(c => c.header);
-    worksheet.columns = columns.map(c => ({ key: c.key, width: c.width }));
-    
-    // Style the second row headers to match super header colors roughly
+    // Row 2: per-column headers, coloured to match their group.
+    col = 1;
+    for (const g of GROUPS) {
+      for (const c of g.cols) {
+        const cell = worksheet.getCell(2, col);
+        cell.value = c.header;
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: g.headerBand } };
+        col++;
+      }
+    }
     worksheet.getRow(2).font = { bold: true, color: { argb: "FFFFFFFF" } };
     worksheet.getRow(2).alignment = { horizontal: "center", wrapText: true };
     worksheet.getRow(2).height = 30;
-
-    worksheet.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7F7F7F" } };
-    worksheet.getCell("B2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7F7F7F" } };
-    // We will just style the rest of row 2 with gray background for simplicity, 
-    // or iterate through and set background color based on group.
-    const colors = [
-      "FF7F7F7F", "FF7F7F7F", // A, B
-      "FF9BC2E6", "FF9BC2E6", "FF9BC2E6", // Stroop
-      "FFA9D08E", "FFA9D08E", "FFA9D08E", // SART
-      "FFE06666", "FFE06666", "FFE06666", // Dot Probe
-      "FFFFD966", "FFFFD966", "FFFFD966", // N-Back
-      "FFB4A7D6", "FFB4A7D6", // Corsi
-      "FF9FC5E8", // Digit
-      "FFCCCCCC", "FFCCCCCC", "FFCCCCCC", // LDT
-      "FFEA9999", "FFEA9999", "FFEA9999", // NP
-      "FF92D050", "FF92D050", "FF92D050", // Flanker
-    ];
-    worksheet.getRow(2).eachCell((cell, colNumber) => {
-      const color = colors[colNumber - 1] || "FF888888";
-      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: color } };
-    });
 
     // Add rows
     const rows = Object.values(groupedData).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
