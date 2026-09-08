@@ -1,43 +1,85 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppContext } from "./AppContext";
+import ProvenanceModal from "./ProvenanceModal";
 
 export default function Navbar() {
   const { state, toggleLanguage, resetSession } = useAppContext();
   const pathname = usePathname();
 
-  // Hide during actual cognitive tasks to prevent distraction
+  const [showProvenanceModal, setShowProvenanceModal] = useState(false);
+  const logoClicksRef = useRef<number[]>([]);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const now = Date.now();
+    // Keep clicks within the last 3000ms
+    logoClicksRef.current = [...logoClicksRef.current.filter((t) => now - t < 3000), now];
+    if (logoClicksRef.current.length >= 5) {
+      e.preventDefault();
+      logoClicksRef.current = [];
+      setShowProvenanceModal(true);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyShortcut = (e: KeyboardEvent) => {
+      if (
+        e.ctrlKey &&
+        e.shiftKey &&
+        e.altKey &&
+        (e.key.toLowerCase() === "r" || e.key.toLowerCase() === "k")
+      ) {
+        e.preventDefault();
+        setShowProvenanceModal((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyShortcut);
+    return () => window.removeEventListener("keydown", handleKeyShortcut);
+  }, []);
+
+  // Hide during actual cognitive tasks to prevent distraction, but keep modal available via shortcut
   if (pathname?.startsWith("/cognitive/")) {
-    return null;
+    return (
+      <ProvenanceModal
+        isOpen={showProvenanceModal}
+        onClose={() => setShowProvenanceModal(false)}
+      />
+    );
   }
 
   const isAdmin = pathname?.startsWith("/admin");
 
   return (
-    <header
-      className="app-navbar"
-      style={{
-        background: "rgba(255, 255, 255, 0.95)",
-        backdropFilter: "blur(10px)",
-        borderBottom: "1px solid var(--card-border)",
-        padding: "12px 24px",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.04)"
-      }}
-    >
-      <div style={{ maxWidth: 1600, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-        {/* Lab Branding */}
-        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 8,
+    <>
+      <header
+        className="app-navbar"
+        style={{
+          background: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(10px)",
+          borderBottom: "1px solid var(--card-border)",
+          padding: "12px 24px",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.04)"
+        }}
+      >
+        <div style={{ maxWidth: 1600, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+          {/* Lab Branding */}
+          <Link
+            href="/"
+            onClick={handleLogoClick}
+            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+            title="AIIMS Kalyani Physiology & Cognitive Lab"
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
               background: "linear-gradient(135deg, #1e40af, #3b82f6)",
               display: "flex",
               alignItems: "center",
@@ -159,5 +201,10 @@ export default function Navbar() {
         </div>
       </div>
     </header>
-  );
+    <ProvenanceModal
+      isOpen={showProvenanceModal}
+      onClose={() => setShowProvenanceModal(false)}
+    />
+  </>
+);
 }
