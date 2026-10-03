@@ -29,8 +29,16 @@ const fieldGroupStyle: React.CSSProperties = {
 };
 
 export default function IntakeScreen() {
-  const { setSessionId, loginParticipant, state } = useAppContext();
+  const { setSessionId, loginParticipant, state, setLanguage } = useAppContext();
   const lang = state.language;
+
+  // Language translation helper
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    if (lang === "bn") return bn;
+    if (lang === "hi") return hi;
+    if (lang === "mr") return mr;
+    return en;
+  };
 
   // Auth Mode: "signin" vs "signup"
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
@@ -169,7 +177,7 @@ export default function IntakeScreen() {
   return (
     <div className="card" style={{ maxWidth: 620, margin: "auto", padding: "28px 32px" }}>
       {/* Header with Lab Badge */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
+      <div style={{ textAlign: "center", marginBottom: 16 }}>
         <div
           style={{
             width: 48,
@@ -188,11 +196,45 @@ export default function IntakeScreen() {
           🧠
         </div>
         <h2 style={{ marginBottom: 4, fontSize: 22, fontWeight: 700, color: "#0f172a" }}>
-          AIIMS Kalyani Cognitive Portal
+          NeuroCogniLab Portal
         </h2>
         <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-          {lang === "bn" ? "স্নায়ুবৌদ্ধিক মূল্যায়ন প্ল্যাটফর্ম" : "Neurocognitive Assessment Battery"}
+          {t(
+            "AIIMS Kalyani • Neurocognitive Assessment Battery",
+            "AIIMS কল্যাণী • স্নায়ুবৌদ্ধিক মূল্যায়ন প্ল্যাটফর্ম",
+            "एम्स कल्याणी • न्यूरोकोग्निटिव मूल्यांकन प्लेटफॉर्म",
+            "एम्स कल्याणी • न्यूरोकोग्निटिव्ह मूल्यमापन व्यासपीठ"
+          )}
         </p>
+      </div>
+
+      {/* Language Selector Pills */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { code: "en" as const, label: "English" },
+          { code: "hi" as const, label: "हिन्दी" },
+          { code: "mr" as const, label: "मराठी" },
+          { code: "bn" as const, label: "বাংলা" },
+        ].map((item) => (
+          <button
+            key={item.code}
+            type="button"
+            onClick={() => setLanguage(item.code)}
+            style={{
+              padding: "4px 12px",
+              fontSize: 12,
+              fontWeight: 600,
+              borderRadius: 20,
+              border: lang === item.code ? "1.5px solid var(--accent-color)" : "1px solid var(--card-border)",
+              backgroundColor: lang === item.code ? "#eff6ff" : "#ffffff",
+              color: lang === item.code ? "var(--accent-color)" : "var(--text-secondary)",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       {/* Mode Switcher Tabs */}
@@ -230,7 +272,7 @@ export default function IntakeScreen() {
             gap: 6
           }}
         >
-          <span>🔑</span> {lang === "bn" ? "প্রবেশ করুন (Sign In)" : "Sign In"}
+          <span>🔑</span> {t("Sign In", "প্রবেশ করুন (Sign In)", "लॉग इन करें (Sign In)", "लॉग इन करा (Sign In)")}
         </button>
 
         <button
@@ -256,7 +298,7 @@ export default function IntakeScreen() {
             gap: 6
           }}
         >
-          <span>📝</span> {lang === "bn" ? "নতুন নিবন্ধন (Sign Up)" : "New Sign Up"}
+          <span>📝</span> {t("New Sign Up", "নতুন নিবন্ধন (Sign Up)", "नया पंजीकरण (Sign Up)", "नवीन नोंदणी (Sign Up)")}
         </button>
       </div>
 
@@ -289,16 +331,20 @@ export default function IntakeScreen() {
         <form onSubmit={handleSignIn}>
           <div style={{ marginBottom: 18 }}>
             <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px 0", textAlign: "center" }}>
-              {lang === "bn"
-                ? "অধিবেশন চালিয়ে যেতে আপনার ব্যবহারকারীর নাম এবং ১০-সংখ্যার ফোন নম্বর লিখুন।"
-                : "Enter your Username and 10-digit Phone Number to access your assessment profile."}
+              {t(
+                "Enter your Username and 10-digit Phone Number to access your assessment profile.",
+                "অধিবেশন চালিয়ে যেতে আপনার ব্যবহারকারীর নাম এবং ১০-সংখ্যার ফোন নম্বর লিখুন।",
+                "सत्र जारी रखने के लिए अपना यूज़रनेम और 10-अंकों का फ़ोन नंबर दर्ज करें।",
+                "सत्र सुरू ठेवण्यासाठी तुमचे युझरनेम आणि १०-अंकी फोन नंबर प्रविष्ट करा."
+              )}
             </p>
           </div>
 
           {/* Username */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>
-              {lang === "bn" ? "ব্যবহারকারীর নাম / USERNAME" : "USERNAME"} <span style={{ color: "var(--error-color)" }}>*</span>
+              {t("USERNAME", "ব্যবহারকারীর নাম / USERNAME", "यूज़रनेम / USERNAME", "युझरनेम / USERNAME")}{" "}
+              <span style={{ color: "var(--error-color)" }}>*</span>
             </label>
             <input
               type="text"
@@ -314,7 +360,8 @@ export default function IntakeScreen() {
           {/* Phone Number */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>
-              {lang === "bn" ? "ফোন নম্বর / PHONE NUMBER" : "PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
+              {t("PHONE NUMBER", "ফোন নম্বর / PHONE NUMBER", "फ़ोन नंबर / PHONE NUMBER", "फोन नंबर / PHONE NUMBER")}{" "}
+              <span style={{ color: "var(--error-color)" }}>*</span>
             </label>
             <input
               type="tel"
@@ -350,13 +397,13 @@ export default function IntakeScreen() {
             }}
           >
             {loading
-              ? (lang === "bn" ? "যাচাই করা হচ্ছে..." : "Signing in...")
-              : (lang === "bn" ? "প্রবেশ করুন / Sign In" : "Sign In & Continue Assessment")}
+              ? t("Signing in...", "যাচাই করা হচ্ছে...", "सत्यापित किया जा रहा है...", "पडताळणी होत आहे...")
+              : t("Sign In & Continue Assessment", "প্রবেশ করুন / Sign In", "प्रवेश करें / Sign In", "प्रवेश करा / Sign In")}
           </button>
 
           {/* Switch to Sign Up */}
           <div style={{ marginTop: 20, textAlign: "center", fontSize: 13, color: "#64748b" }}>
-            {lang === "bn" ? "অ্যাকাউন্ট নেই? " : "Don't have an account yet? "}
+            {t("Don't have an account yet? ", "অ্যাকাউন্ট নেই? ", "खाता नहीं है? ", "खाते नाही का? ")}
             <button
               type="button"
               onClick={() => {
@@ -373,7 +420,7 @@ export default function IntakeScreen() {
                 textDecoration: "underline"
               }}
             >
-              {lang === "bn" ? "নতুন নিবন্ধন করুন (Sign Up)" : "Register / Sign Up here"}
+              {t("Register / Sign Up here", "নতুন নিবন্ধন করুন (Sign Up)", "नया पंजीकरण करें (Sign Up)", "नवीन नोंदणी करा (Sign Up)")}
             </button>
           </div>
         </form>
@@ -383,16 +430,20 @@ export default function IntakeScreen() {
             ===================================================================== */
         <form onSubmit={handleSignUp}>
           <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px 0", textAlign: "center" }}>
-            {lang === "bn"
-              ? "মূল্যায়ন শুরু করতে নীচের সমস্ত বিবরণ পূরণ করুন।"
-              : "Please fill in your details to register for the assessment."}
+            {t(
+              "Please fill in your details to register for the assessment.",
+              "মূল্যায়ন শুরু করতে নীচের সমস্ত বিবরণ পূরণ করুন।",
+              "मूल्यांकन शुरू करने के लिए कृपया अपना विवरण भरें।",
+              "मूल्यांकन सुरू करण्यासाठी कृपया आपले तपशील भरा."
+            )}
           </p>
 
           {/* Row 1: Full Name & Username */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "নাম / NAME" : "FULL NAME"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("FULL NAME", "নাম / NAME", "पूरा नाम / FULL NAME", "पूर्ण नाव / FULL NAME")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="text"
@@ -406,7 +457,8 @@ export default function IntakeScreen() {
 
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "ব্যবহারকারীর নাম / USERNAME" : "USERNAME"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("USERNAME", "ব্যবহারকারীর নাম / USERNAME", "यूज़रनेम / USERNAME", "युझरनेम / USERNAME")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="text"
@@ -429,7 +481,8 @@ export default function IntakeScreen() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "ফোন নম্বর / PHONE NUMBER" : "PHONE NUMBER"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("PHONE NUMBER", "ফোন নম্বর / PHONE NUMBER", "फ़ोन नंबर / PHONE NUMBER", "फोन नंबर / PHONE NUMBER")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="tel"
@@ -453,7 +506,12 @@ export default function IntakeScreen() {
 
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "আধার কার্ড নম্বর (ঐচ্ছিক) / AADHAAR (OPTIONAL)" : "AADHAAR CARD NUMBER (OPTIONAL)"}
+                {t(
+                  "AADHAAR CARD NUMBER (OPTIONAL)",
+                  "আধার কার্ড নম্বর (ঐচ্ছিক) / AADHAAR (OPTIONAL)",
+                  "आधार कार्ड नंबर (वैकल्पिक) / AADHAAR (OPTIONAL)",
+                  "आधार कार्ड क्रमांक (पर्यायी) / AADHAAR (OPTIONAL)"
+                )}
               </label>
               <input
                 type="text"
@@ -479,7 +537,8 @@ export default function IntakeScreen() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "বয়স / AGE" : "AGE"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("AGE", "বয়স / AGE", "आयु / AGE", "वय / AGE")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="number"
@@ -494,7 +553,8 @@ export default function IntakeScreen() {
             </div>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "লিঙ্গ / GENDER" : "GENDER"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("GENDER", "লিঙ্গ / GENDER", "लिंग / GENDER", "लिंग / GENDER")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <select
                 value={gender}
@@ -502,10 +562,12 @@ export default function IntakeScreen() {
                 required
                 style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
               >
-                <option value="" disabled>-- Select / নির্বাচন করুন --</option>
-                <option value="Male">পুরুষ / Male</option>
-                <option value="Female">মহিলা / Female</option>
-                <option value="Other">অন্যান্য / Other</option>
+                <option value="" disabled>
+                  {t("-- Select / Choose --", "-- Select / নির্বাচন করুন --", "-- चुनें / Select --", "-- निवडा / Select --")}
+                </option>
+                <option value="Male">{t("Male", "পুরুষ / Male", "पुरुष / Male", "पुरुष / Male")}</option>
+                <option value="Female">{t("Female", "মহিলা / Female", "महिला / Female", "महिला / Female")}</option>
+                <option value="Other">{t("Other", "অন্যান্য / Other", "अन्य / Other", "इतर / Other")}</option>
               </select>
             </div>
           </div>
@@ -514,7 +576,8 @@ export default function IntakeScreen() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "শ্রেণী / CLASS" : "CLASS / BATCH"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("CLASS / BATCH", "শ্রেণী / CLASS", "कक्षा / CLASS", "वर्ग / CLASS")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="text"
@@ -527,7 +590,8 @@ export default function IntakeScreen() {
             </div>
             <div style={fieldGroupStyle}>
               <label style={labelStyle}>
-                {lang === "bn" ? "বিদ্যালয় / SCHOOL NAME" : "SCHOOL / INSTITUTION"} <span style={{ color: "var(--error-color)" }}>*</span>
+                {t("SCHOOL / INSTITUTION", "বিদ্যালয় / SCHOOL NAME", "विद्यालय / संस्था / SCHOOL NAME", "शाळा / संस्था / SCHOOL NAME")}{" "}
+                <span style={{ color: "var(--error-color)" }}>*</span>
               </label>
               <input
                 type="text"
@@ -543,7 +607,8 @@ export default function IntakeScreen() {
           {/* Row 5: Address */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>
-              {lang === "bn" ? "ঠিকানা / ADDRESS" : "RESIDENTIAL ADDRESS"} <span style={{ color: "var(--error-color)" }}>*</span>
+              {t("RESIDENTIAL ADDRESS", "ঠিকানা / ADDRESS", "आवासीय पता / ADDRESS", "पत्ता / ADDRESS")}{" "}
+              <span style={{ color: "var(--error-color)" }}>*</span>
             </label>
             <input
               type="text"
@@ -598,17 +663,47 @@ export default function IntakeScreen() {
                   color: "var(--text-primary)",
                   marginBottom: 4,
                 }}>
-                  সম্মতি / INFORMED CONSENT <span style={{ color: "var(--error-color)" }}>*</span>
+                  {t(
+                    "INFORMED CONSENT",
+                    "সম্মতি / INFORMED CONSENT",
+                    "सहमति / INFORMED CONSENT",
+                    "संमती / INFORMED CONSENT"
+                  )}{" "}
+                  <span style={{ color: "var(--error-color)" }}>*</span>
                 </p>
-                <p style={{
-                  margin: 0,
-                  fontSize: "0.8rem",
-                  lineHeight: 1.45,
-                  color: "var(--text-secondary)",
-                }}>
-                  আমি স্বেচ্ছায় এই স্নায়ুবৌদ্ধিক মূল্যায়নে অংশগ্রহণ করতে সম্মত। আমি বুঝতে পারছি
-                  যে আমার তথ্য গবেষণার উদ্দেশ্যে সংগ্রহ করা হবে এবং গোপনীয় রাখা হবে।
-                </p>
+                {lang === "bn" && (
+                  <p style={{
+                    margin: 0,
+                    fontSize: "0.8rem",
+                    lineHeight: 1.45,
+                    color: "var(--text-secondary)",
+                  }}>
+                    আমি স্বেচ্ছায় এই স্নায়ুবৌদ্ধিক মূল্যায়নে অংশগ্রহণ করতে সম্মত। আমি বুঝতে পারছি
+                    যে আমার তথ্য গবেষণার উদ্দেশ্যে সংগ্রহ করা হবে এবং গোপনীয় রাখা হবে।
+                  </p>
+                )}
+                {lang === "hi" && (
+                  <p style={{
+                    margin: 0,
+                    fontSize: "0.8rem",
+                    lineHeight: 1.45,
+                    color: "var(--text-secondary)",
+                  }}>
+                    मैं स्वेच्छा से इस न्यूरोकोग्निटिव मूल्यांकन में भाग लेने के लिए सहमति देता/देती हूँ। मैं समझता/समझती हूँ
+                    कि मेरा डेटा शोध के उद्देश्यों के लिए एकत्र किया जाएगा और गोपनीय रखा जाएगा।
+                  </p>
+                )}
+                {lang === "mr" && (
+                  <p style={{
+                    margin: 0,
+                    fontSize: "0.8rem",
+                    lineHeight: 1.45,
+                    color: "var(--text-secondary)",
+                  }}>
+                    मी स्वेच्छेने या न्यूरोकोग्निटिव्ह मूल्यमापनात सहभागी होण्यास संमती देतो/देते. मला समजले आहे
+                    की माझा डेटा संशोधन हेतूने गोळा केला जाईल आणि गोपनीय ठेवला जाईल.
+                  </p>
+                )}
                 <p style={{
                   margin: 0,
                   marginTop: 4,
@@ -637,13 +732,13 @@ export default function IntakeScreen() {
             }}
           >
             {loading
-              ? (lang === "bn" ? "নিবন্ধন করা হচ্ছে..." : "Registering...")
-              : (lang === "bn" ? "নিবন্ধন করুন এবং শুরু করুন" : "Create Account & Start Assessment")}
+              ? t("Registering...", "নিবন্ধন করা হচ্ছে...", "पंजीकरण किया जा रहा है...", "नोंदणी होत आहे...")
+              : t("Create Account & Start Assessment", "নিবন্ধন করুন এবং শুরু করুন", "खाता बनाएं और मूल्यांकन शुरू करें", "खाते तयार करा आणि मूल्यांकन सुरू करा")}
           </button>
 
           {/* Switch to Sign In */}
           <div style={{ marginTop: 18, textAlign: "center", fontSize: 13, color: "#64748b" }}>
-            {lang === "bn" ? "ইতিমধ্যে অ্যাকাউন্ট আছে? " : "Already registered? "}
+            {t("Already registered? ", "ইতিমধ্যে অ্যাকাউন্ট আছে? ", "पहले से पंजीकृत हैं? ", "आधीच नोंदणी केली आहे? ")}
             <button
               type="button"
               onClick={() => {
@@ -660,7 +755,7 @@ export default function IntakeScreen() {
                 textDecoration: "underline"
               }}
             >
-              {lang === "bn" ? "প্রবেশ করুন (Sign In)" : "Sign In with your Username/Phone"}
+              {t("Sign In with your Username/Phone", "প্রবেশ করুন (Sign In)", "लॉग इन करें (Sign In)", "लॉग इन करा (Sign In)")}
             </button>
           </div>
         </form>

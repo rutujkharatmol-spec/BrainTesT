@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { processOfflineQueue, getOfflineQueueSize, getDeadLetterCount, clearDeadLetters } from '@/utils/offlineSync';
 
+export type Language = 'en' | 'bn' | 'hi' | 'mr';
+
 type AppState = {
   consentGiven: boolean;
   sessionId: string | null;
@@ -10,7 +12,7 @@ type AppState = {
   username: string | null;
   participantIdNumber: string | null;
   completedTests: string[];
-  language: 'en' | 'bn';
+  language: Language;
 };
 
 type AppContextType = {
@@ -21,6 +23,7 @@ type AppContextType = {
   markTestCompleted: (testId: string) => void;
   resetSession: () => void;
   toggleLanguage: () => void;
+  setLanguage: (lang: Language) => void;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -35,10 +38,11 @@ const initialState: AppState = {
   language: 'en',
 };
 
-const STATE_KEY = 'brainTestState';
+const STATE_KEY = 'neuroCogniLabState';
+const LEGACY_STATE_KEY = 'brainTestState';
 // Bump when the shape of AppState changes incompatibly; older blobs are discarded.
 const STATE_VERSION = 1;
-const STATE_VERSION_KEY = 'brainTestStateVersion';
+const STATE_VERSION_KEY = 'neuroCogniLabStateVersion';
 
 /**
  * Restores persisted state, tolerating blobs written by older builds.
@@ -47,14 +51,15 @@ const STATE_VERSION_KEY = 'brainTestStateVersion';
  */
 function loadPersistedState(): AppState {
   try {
-    const savedVersion = Number(localStorage.getItem(STATE_VERSION_KEY) || '0');
+    const savedVersion = Number(localStorage.getItem(STATE_VERSION_KEY) || localStorage.getItem('brainTestStateVersion') || '0');
     if (savedVersion !== STATE_VERSION) {
       localStorage.removeItem(STATE_KEY);
+      localStorage.removeItem(LEGACY_STATE_KEY);
       localStorage.setItem(STATE_VERSION_KEY, String(STATE_VERSION));
       return initialState;
     }
 
-    const saved = localStorage.getItem(STATE_KEY);
+    const saved = localStorage.getItem(STATE_KEY) || localStorage.getItem(LEGACY_STATE_KEY);
     if (!saved) return initialState;
 
     const parsed = JSON.parse(saved) as Partial<AppState>;
@@ -66,7 +71,7 @@ function loadPersistedState(): AppState {
       // Defend against these two specifically — consumers call array/string
       // methods on them directly.
       completedTests: Array.isArray(parsed.completedTests) ? parsed.completedTests : [],
-      language: parsed.language === 'bn' ? 'bn' : 'en',
+      language: (parsed.language && ['en', 'bn', 'hi', 'mr'].includes(parsed.language)) ? parsed.language as Language : 'en',
     };
   } catch (e) {
     console.error('Failed to restore saved state, starting fresh', e);
@@ -184,17 +189,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     setState(s => ({...s, ...newState}));
     localStorage.removeItem(STATE_KEY);
+    localStorage.removeItem(LEGACY_STATE_KEY);
   };
 
-  const toggleLanguage = () => setState(s => ({
-    ...s,
-    language: s.language === 'en' ? 'bn' : 'en'
-  }));
+  const LANGUAGES: Language[] = ['en', 'hi', 'mr', 'bn'];
+
+  const toggleLanguage = () => setState(s => {
+    const currentIndex = LANGUAGES.indexOf(s.language);
+    const nextIndex = (currentIndex + 1) % LANGUAGES.length;
+    return { ...s, language: LANGUAGES[nextIndex] };
+  });
+
+  const setLanguage = (lang: Language) => setState(s => ({ ...s, language: lang }));
 
   if (!loaded) return null; // Avoid hydration mismatch
 
   return (
-    <AppContext.Provider value={{ state, setSessionId, loginParticipant, setConsentGiven, markTestCompleted, resetSession, toggleLanguage }}>
+    <AppContext.Provider value={{ state, setSessionId, loginParticipant, setConsentGiven, markTestCompleted, resetSession, toggleLanguage, setLanguage }}>
       {/* Offline / Sync Status Banner */}
       {(isOffline || syncMessage) && (
         <div style={{

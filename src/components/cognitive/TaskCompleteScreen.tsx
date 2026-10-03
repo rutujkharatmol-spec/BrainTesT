@@ -22,11 +22,10 @@ export default function TaskCompleteScreen({
 }: {
   calculatedParams: CalculatedParams;
   submitting: boolean;
-  language: "en" | "bn";
+  language: "en" | "bn" | "hi" | "mr";
   onContinue: () => void;
   queuedOffline?: boolean;
 }) {
-  const isBn = language === "bn";
   const [showConfetti, setShowConfetti] = useState(true);
 
   useEffect(() => {
@@ -42,19 +41,28 @@ export default function TaskCompleteScreen({
       ] as const).filter(([name]) => Boolean(name))
     : [];
 
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
+
   // Generate dynamic celebration title based on result
-  let celebrationTitle = isBn ? "দারুণ কাজ! 🌟" : "Awesome Job! 🌟";
-  let achievementBadge = isBn ? "ব্রেন চ্যালেঞ্জ মাস্টার 🧠" : "Brain Quest Master 🧠";
+  const celebrationTitle = t("Awesome Job! 🌟", "দারুণ কাজ! 🌟", "शानदार काम! 🌟", "उत्कृष्ट कामगिरी! 🌟");
+  let achievementBadge = t("Brain Quest Master 🧠", "ব্রেন চ্যালেঞ্জ মাস্টার 🧠", "ब्रेन क्वेस्ट मास्टर 🧠", "ब्रेन क्वेस्ट मास्टर 🧠");
 
   if (rows.length > 0) {
     const firstVal = rows[0][1];
     if (typeof firstVal === "number") {
       if (firstVal < 450) {
-        achievementBadge = isBn ? "বিদ্যুৎ গতি রিফ্লেক্স ⚡" : "Lightning Reflexes ⚡";
+        achievementBadge = t("Lightning Reflexes ⚡", "বিদ্যুৎ গতি রিফ্লেক্স ⚡", "बिजली जैसी फुर्ती ⚡", "विजेसारखी चपळता ⚡");
       } else if (firstVal < 650) {
-        achievementBadge = isBn ? "সুপার ফোকাস চ্যাম্পিয়ন 🎯" : "Super Focus Champion 🎯";
+        achievementBadge = t("Super Focus Champion 🎯", "সুপার ফোকাস চ্যাম্পিয়ন 🎯", "सुपर फोकस चैंपियन 🎯", "सुपर फोकस चॅम्पियन 🎯");
       } else {
-        achievementBadge = isBn ? "সুনির্দিষ্ট মনোযোগ 🌟" : "Precision Mind 🌟";
+        achievementBadge = t("Precision Mind 🌟", "সুনির্দিষ্ট মনোযোগ 🌟", "सटीक एकाग्रता 🌟", "अचूक एकाग्रता 🌟");
       }
     }
   }
@@ -139,9 +147,12 @@ export default function TaskCompleteScreen({
         </div>
 
         <p style={{ color: "#64748B", fontSize: 14, margin: "0 0 20px 0" }}>
-          {isBn
-            ? "আপনি সফলভাবে এই কগনিটিভ পরীক্ষাটি শেষ করেছেন। আপনার ফলাফল রেকর্ড করা হয়েছে।"
-            : "You have successfully finished this challenge. Your reaction data is safely saved."}
+          {t(
+            "You have successfully finished this challenge. Your reaction data is safely saved.",
+            "আপনি সফলভাবে এই কগনিটিভ পরীক্ষাটি শেষ করেছেন। আপনার ফলাফল রেকর্ড করা হয়েছে।",
+            "आपने इस कार्य को सफलतापूर्वक पूरा कर लिया है। आपका डेटा सुरक्षित रूप से सहेजा गया है।",
+            "तुम्ही हे कार्य यशस्वीरित्या पूर्ण केले आहे. तुमचा डेटा सुरक्षितपणे सेव्ह झाला आहे."
+          )}
         </p>
 
         {/* Results Overview Cards */}
@@ -168,10 +179,10 @@ export default function TaskCompleteScreen({
               }}
             >
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#1E293B", display: "flex", alignItems: "center", gap: 6 }}>
-                <span>📊</span> {isBn ? "ফলাফল সংক্ষেপ" : "Performance Metrics"}
+                <span>📊</span> {t("Performance Metrics", "ফলাফল সংক্ষেপ", "प्रदर्शन मेट्रिक्स", "कामगिरी मेट्रिक्स")}
               </h3>
               <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", backgroundColor: "#ECFDF5", padding: "2px 8px", borderRadius: 10 }}>
-                {isBn ? "রেকর্ড সম্পন্ন" : "Recorded"}
+                {t("Recorded", "রেকর্ড সম্পন্ন", "दर्ज हुआ", "नोंदवले गेले")}
               </span>
             </div>
 
@@ -215,20 +226,33 @@ export default function TaskCompleteScreen({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "20px 0" }}>
             <span style={{ fontSize: 18 }}>⏳</span>
             <span style={{ color: "#1E40AF", fontWeight: 700, fontSize: 14 }}>
-              {isBn ? "ডেটা আপলোড করা হচ্ছে... অপেক্ষা করুন।" : "Saving your results..."}
+              {t(
+                "Saving your results...",
+                "ডেটা আপলোড করা হচ্ছে... অপেক্ষা করুন।",
+                "परिणाम सहेजे जा रहे हैं...",
+                "निकाल जतन करत आहे..."
+              )}
             </span>
           </div>
         ) : (
           <div>
             {queuedOffline ? (
               <p style={{ color: "#B45309", fontWeight: 700, fontSize: 13, marginBottom: 20 }}>
-                📡 {isBn
-                  ? "এই ডিভাইসে সংরক্ষিত হয়েছে। অনলাইন হলে আপলোড হবে।"
-                  : "Saved offline on this device. Will sync automatically once online."}
+                📡 {t(
+                  "Saved offline on this device. Will sync automatically once online.",
+                  "এই ডিভাইসে সংরক্ষিত হয়েছে। অনলাইন হলে আপলোড হবে।",
+                  "इस डिवाइस पर ऑफ़लाइन सहेजा गया। ऑनलाइन होने पर अपने आप सिंक होगा।",
+                  "या डिव्हाइसवर ऑफलाइन सेव्ह केले. ऑनलाइन झाल्यावर आपोआप सिंक होईल."
+                )}
               </p>
             ) : (
               <p style={{ color: "#059669", fontWeight: 700, fontSize: 13, marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                <span>✓</span> {isBn ? "সার্ভারে সফলভাবে সংরক্ষিত হয়েছে!" : "Safely uploaded to the database!"}
+                <span>✓</span> {t(
+                  "Safely uploaded to the database!",
+                  "সার্ভারে সফলভাবে সংরক্ষিত হয়েছে!",
+                  "डेटाबेस में सुरक्षित रूप से अपलोड हो गया!",
+                  "डेटाबेसमध्ये सुरक्षितपणे अपलोड झाले!"
+                )}
               </p>
             )}
 
@@ -257,7 +281,7 @@ export default function TaskCompleteScreen({
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
             >
-              <span>{isBn ? "পরবর্তী চ্যালেঞ্জে যান" : "Continue to Brain Hub"}</span>
+              <span>{t("Continue to Brain Hub", "পরবর্তী চ্যালেঞ্জে যান", "ब्रेन हब पर जारी रखें", "ब्रेन हबवर सुरू ठेवा")}</span>
               <span>🚀</span>
             </button>
           </div>

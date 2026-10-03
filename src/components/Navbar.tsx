@@ -7,7 +7,7 @@ import { useAppContext } from "./AppContext";
 import ProvenanceModal from "./ProvenanceModal";
 
 export default function Navbar() {
-  const { state, toggleLanguage, resetSession } = useAppContext();
+  const { state, toggleLanguage, setLanguage, resetSession } = useAppContext();
   const pathname = usePathname();
 
   const [showProvenanceModal, setShowProvenanceModal] = useState(false);
@@ -73,7 +73,7 @@ export default function Navbar() {
             href="/"
             onClick={handleLogoClick}
             style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
-            title="AIIMS Kalyani Physiology & Cognitive Lab"
+            title="NeuroCogniLab — AIIMS Kalyani Physiology & Cognitive Lab"
           >
             <div
               style={{
@@ -94,10 +94,10 @@ export default function Navbar() {
           </div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.2, lineHeight: 1.2 }}>
-              AIIMS Kalyani
+              NeuroCogniLab
             </div>
             <div className="nav-brand-sub" style={{ fontSize: 11, fontWeight: 500, color: "var(--text-secondary)", lineHeight: 1 }}>
-              Physiology & Cognitive Lab
+              AIIMS Kalyani Physiology Lab
             </div>
           </div>
         </Link>
@@ -117,7 +117,13 @@ export default function Navbar() {
                 transition: "color 0.15s"
               }}
             >
-              {state.language === "bn" ? "কগনিটিভ টেস্ট" : "Cognitive Tests"}
+              {state.language === "bn"
+                ? "কগনিটিভ টেস্ট"
+                : state.language === "hi"
+                ? "संज्ञानात्मक परीक्षण"
+                : state.language === "mr"
+                ? "संज्ञानात्मक चाचण्या"
+                : "Cognitive Tests"}
               {pathname === "/" && (
                 <span style={{ position: "absolute", bottom: -6, left: 0, right: 0, height: 2, backgroundColor: "var(--accent-color)", borderRadius: 2 }} />
               )}
@@ -135,7 +141,13 @@ export default function Navbar() {
                 transition: "color 0.15s"
               }}
             >
-              {state.language === "bn" ? "প্রশ্নাবলী" : "Questionnaires"}
+              {state.language === "bn"
+                ? "প্রশ্নাবলী"
+                : state.language === "hi"
+                ? "प्रश्नावली"
+                : state.language === "mr"
+                ? "प्रश्नावली"
+                : "Questionnaires"}
               {pathname === "/questionnaires" && (
                 <span style={{ position: "absolute", bottom: -6, left: 0, right: 0, height: 2, backgroundColor: "var(--accent-color)", borderRadius: 2 }} />
               )}
@@ -145,21 +157,33 @@ export default function Navbar() {
 
         {/* Right Action Tools */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* Language Switcher */}
-          <button 
-            onClick={toggleLanguage}
-            className="btn btn-outline"
-            style={{
-              padding: "6px 12px",
-              fontSize: 12,
-              fontWeight: 600,
-              gap: 6,
-              borderRadius: 6,
-            }}
-            title="Toggle Language"
-          >
-            <span>🌐</span> {state.language === 'bn' ? 'বাংলা' : 'English'}
-          </button>
+          {/* 4-Language Switcher */}
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+            <span style={{ position: "absolute", left: 10, pointerEvents: "none", fontSize: 13 }}>🌐</span>
+            <select
+              value={state.language}
+              onChange={(e) => setLanguage(e.target.value as any)}
+              className="btn-outline"
+              style={{
+                padding: "6px 12px 6px 30px",
+                fontSize: 12,
+                fontWeight: 600,
+                borderRadius: 6,
+                border: "1px solid var(--card-border)",
+                background: "#ffffff",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+                outline: "none",
+                appearance: "auto",
+              }}
+              title="Select Language / भाषा चुनें / भाषा निवडा / ভাষা নির্বাচন করুন"
+            >
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="mr">मराठी</option>
+              <option value="bn">বাংলা</option>
+            </select>
+          </div>
 
           {/* Participant Sign Out Button */}
           {!isAdmin && state.sessionId && (
@@ -176,7 +200,16 @@ export default function Navbar() {
               }}
               title="Sign Out / Switch Participant"
             >
-              <span>🚪</span> <span className="nav-hide-sm">{state.language === 'bn' ? 'প্রস্থান' : 'Sign Out'}</span>
+              <span>🚪</span>{" "}
+              <span className="nav-hide-sm">
+                {state.language === "bn"
+                  ? "প্রস্থান"
+                  : state.language === "hi"
+                  ? "साइन आउट"
+                  : state.language === "mr"
+                  ? "बाहेर पडा"
+                  : "Sign Out"}
+              </span>
             </button>
           )}
 

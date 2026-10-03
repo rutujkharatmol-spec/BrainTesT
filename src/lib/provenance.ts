@@ -13,14 +13,14 @@ export const RK_INVISIBLE_STEGANO_SIGNATURE =
 
 // Obfuscated provenance payload (XOR encrypted + Base64 encoded)
 const OBFUSCATED_MANIFEST =
-  "KWk+NyYpJjx2f3EGKjU8I20YN1NCU0I/JDNgfmM7ITggcW59DjsgKjoxU1wSdSAuPjY9M2lodAk2NTthGiYrJyhTQlcWEzk8Kjs1LC0gZ392LzMmIygwKxAKEHcbAhIRcgooIi0kPT1/ESEwPjowXl9VT3IIMCU8KD0nIiBzGD4jaWEPIT5bXmZTIR92YH5jICAnMTogKjUgJiNxZRBxXlpyAjEmOyBpBzo2Jz0rND0sbTw5En1XUjsoPi5yEionMSswMSxhYQgEGhJhGRJ9MycmIzwoa2J2PDY1LWNza39jbQYdAAZgfX1ucCImPi03OjM3NWtzbxAwQklAXzUjK2J6ImBuZnVhYHJzeXt7cw1HREdccgA3IyAgPSM7KX10Hi0laR86OFpEQRYALiwnIDcsKnpnf3YrICQ5KCEWVhIIFAAAcgMbCAQdeQYcE3J2fnp5fgl3YntwGw4bYC8=";
+  "KWk+OzE9PT1hdWUcPDg0KH8KISg/MitfX14UfmktISkwcHVhADUnLiUvIzNhCjsoMitdQhIQcgc6LyF1ASAlOzAvOylhAy0iISA5NjxGEh4UIjkwJCA2Jm15bQYHAAESYhQgJTAsPTYSYFpPISIwIioyK28AICAgIDgoNDphBSgvc3d8VUdEPQgwKSs8Hi4hZmViayUvMSsoPTw5OjBcEggUEyczbgw7NiYibw4gOjgoNio1LGkiNX9/VVZfMSozbhY2OyotLCI9aWQACxYMGmBtGD5eSVNYO2lzbDwwMz1hdWV8eX51b21xe39vf31RX0JPICI4JjF3aG0AIDc3OyUmKithYSpkc20CAgYbYHtteGUHJzs2JWcFIS0zIyssJiVjcx5eXBJkOyw3OjZ1ACowKjU4LChvYHNjPSggIzpAeVYUaGkNBWgUGwYOHGoNBgtsdWhyfWQbFg17dntzFmki";
 
 // SHA-256 Checksum of the canonical provenance manifest JSON
 export const PROVENANCE_SHA256 =
-  "561f8eae8037df9b042fc3a58c6f6538fc07e34e2fb3fce9e7d33653cc339223";
+  "82570bd93e92ad0c0fc7defa1e67646beca3e64f019a756c6100df984e55da82";
 
 // Key salt used for the reversible XOR codec
-const CODEC_SALT = "RK_BRAINTEST_AIIMS_2026";
+const CODEC_SALT = "RK_NEUROCOGNILAB_AIIMS_2026";
 
 export interface ProvenanceCertificate {
   author: string;
@@ -182,7 +182,7 @@ export function verifyOwnership(): VerificationResult {
   const cert: ProvenanceCertificate = {
     author: parsed.author || "Unknown",
     role: parsed.role || "Lead Software Architect",
-    project: parsed.project || "BrainTesT (AIIMS Kalyani)",
+    project: parsed.project || "NeuroCogniLab (AIIMS Kalyani)",
     institution: parsed.institution || "AIIMS Kalyani",
     year: parsed.year || "2024-2026",
     copyright: parsed.copyright || "",

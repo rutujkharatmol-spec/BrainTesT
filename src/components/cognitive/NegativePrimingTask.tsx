@@ -38,6 +38,28 @@ const WORDS_BN: WordData[] = [
   { text: "ডেস্ক", category: "NON_LIVING" }
 ];
 
+const WORDS_HI: WordData[] = [
+  { text: "कुत्ता", category: "LIVING" },
+  { text: "बिल्ली", category: "LIVING" },
+  { text: "पक्षी", category: "LIVING" },
+  { text: "मछली", category: "LIVING" },
+  { text: "गाड़ी", category: "NON_LIVING" },
+  { text: "किताब", category: "NON_LIVING" },
+  { text: "जूता", category: "NON_LIVING" },
+  { text: "मेज़", category: "NON_LIVING" }
+];
+
+const WORDS_MR: WordData[] = [
+  { text: "कुत्रा", category: "LIVING" },
+  { text: "मांजर", category: "LIVING" },
+  { text: "पक्षी", category: "LIVING" },
+  { text: "मासा", category: "LIVING" },
+  { text: "गाडी", category: "NON_LIVING" },
+  { text: "पुस्तक", category: "NON_LIVING" },
+  { text: "बूट", category: "NON_LIVING" },
+  { text: "टेबल", category: "NON_LIVING" }
+];
+
 type Trial = {
   target: WordData;     // Word in RED
   distractor: WordData; // Word in BLUE
@@ -72,7 +94,10 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   // Generate sequence
   useEffect(() => {
     const sequence: Trial[] = [];
-    const WORDS = state.language === 'bn' ? WORDS_BN : WORDS_EN;
+    const WORDS = state.language === 'bn' ? WORDS_BN :
+                  state.language === 'hi' ? WORDS_HI :
+                  state.language === 'mr' ? WORDS_MR :
+                  WORDS_EN;
     let previousDistractor: WordData | null = null;
     
     for (let i = 0; i < TOTAL_TRIALS; i++) {
@@ -219,68 +244,83 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
-  const isBn = state.language === "bn";
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
 
   if (phase === "instructions") {
     return (
       <TaskInstructionCard
-        title={isBn ? "নেগেটিভ প্রাইমিং টাস্ক — ওভারল্যাপ ফোকাস" : "Negative Priming Task — Overlap Focus"}
-        subtitle={isBn ? "লাল রঙের শব্দটি জীবন্ত নাকি জড় বস্তু?" : "Is the RED word living or non-living?"}
+        title={t("Negative Priming Task — Overlap Focus", "নেগেটিভ প্রাইমিং টাস্ক — ওভারল্যাপ ফোকাস", "नेगेटिव प्राइमिंग टास्क — ओवरलैप फोकस", "नेगेटिव्ह प्रायमिंग टास्क — ओव्हरलॅप फोकस")}
+        subtitle={t("Is the RED word living or non-living?", "লাল রঙের শব্দটি জীবন্ত নাকি জড় বস্তু?", "क्या लाल रंग का शब्द सजीव है या निर्जीव?", "लाल रंगाचा शब्द सजीव आहे की निर्जीव?")}
         icon="🧬"
-        category={isBn ? "জ্ঞানীয় নিয়ন্ত্রণ ও মনোযোগ" : "Cognitive Control & Attention"}
+        category={t("Cognitive Control & Attention", "জ্ঞানীয় নিয়ন্ত্রণ ও মনোযোগ", "संज्ञानात्मक नियंत्रण और ध्यान", "संज्ञानात्मक नियंत्रण आणि एकाग्रता")}
         language={state.language}
         mission={
-          isBn
-            ? "স্ক্রিনে দুটি ওভারল্যাপিং (একের ওপর অন্যটি) শব্দ দেখা যাবে — একটি লাল রঙে এবং একটি নীল রঙে। নীল শব্দটি সম্পূর্ণ উপেক্ষা করুন! শুধুমাত্র লাল রঙের শব্দটি দেখে বলুন সেটি কি জীবন্ত নাকি জড় বস্তু?"
-            : "You will see two overlapping words — one printed in RED and one in BLUE. Completely ignore the blue word! Focus only on the RED word: Is it LIVING or NON-LIVING?"
+          t(
+            "You will see two overlapping words — one printed in RED and one in BLUE. Completely ignore the blue word! Focus only on the RED word: Is it LIVING or NON-LIVING?",
+            "স্ক্রিনে দুটি ওভারল্যাপিং (একের ওপর অন্যটি) শব্দ দেখা যাবে — একটি লাল রঙে এবং একটি নীল রঙে। নীল শব্দটি সম্পূর্ণ উপেক্ষা করুন! শুধুমাত্র লাল রঙের শব্দটি দেখে বলুন সেটি কি জীবন্ত নাকি জড় বস্তু?",
+            "स्क्रीन पर दो परस्पर व्यापी (एक के ऊपर एक) शब्द दिखाई देंगे — एक लाल रंग में और एक नीले रंग में। नीले शब्द को पूरी तरह अनदेखा करें! केवल लाल शब्द पर ध्यान दें: क्या यह सजीव (LIVING) है या निर्जीव (NON-LIVING)?",
+            "स्क्रीनवर एकमेकांवर आच्छादित दोन शब्द दिसतील — एक लाल रंगात आणि एक निळ्या रंगात. निळ्या शब्दाकडे पूर्णपणे दुर्लक्ष करा! फक्त लाल रंगाच्या शब्दावर लक्ष केंद्रित करा: तो सजीव (LIVING) आहे की निर्जीव (NON-LIVING)?"
+          )
         }
         visualExample={
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
-                {isBn ? "উদাহরণ ১: লাল শব্দটি জীবন্ত" : "EXAMPLE 1: RED IS LIVING"}
+                {t("EXAMPLE 1: RED IS LIVING", "উদাহরণ ১: লাল শব্দটি জীবন্ত", "उदाहरण 1: लाल शब्द सजीव है", "उदाहरण 1: लाल शब्द सजीव आहे")}
               </div>
               <div style={{ position: "relative", height: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ position: "absolute", fontSize: 24, fontWeight: 700, color: "#38BDF8", opacity: 0.7, transform: "translate(12px, -8px)" }}>
-                  {isBn ? "গাড়ি" : "CAR"}
+                  {t("CAR", "গাড়ি", "गाड़ी", "गाडी")}
                 </span>
                 <span style={{ position: "relative", fontSize: 28, fontWeight: 900, color: "#DC2626", zIndex: 2 }}>
-                  {isBn ? "বিড়াল" : "CAT"}
+                  {t("CAT", "বিড়াল", "बिल्ली", "मांजर")}
                 </span>
               </div>
               <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#065F46" }}>
-                {isBn ? "বিড়াল জীবন্ত ➔ [ F ] LIVING" : "CAT is Living ➔ Press [ F ] LIVING"}
+                {t("CAT is Living ➔ Press [ F ] LIVING", "বিড়াল জীবন্ত ➔ [ F ] LIVING", "बिल्ली सजीव है ➔ [ F ] LIVING दबाएं", "मांजर सजीव आहे ➔ [ F ] LIVING दाबा")}
               </div>
             </div>
             <div style={{ padding: 14, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#475569", marginBottom: 6 }}>
-                {isBn ? "উদাহরণ ২: লাল শব্দটি জড় বস্তু" : "EXAMPLE 2: RED IS NON-LIVING"}
+                {t("EXAMPLE 2: RED IS NON-LIVING", "উদাহরণ ২: লাল শব্দটি জড় বস্তু", "उदाहरण 2: लाल शब्द निर्जीव है", "उदाहरण 2: लाल शब्द निर्जीव आहे")}
               </div>
               <div style={{ position: "relative", height: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ position: "absolute", fontSize: 24, fontWeight: 700, color: "#38BDF8", opacity: 0.7, transform: "translate(12px, -8px)" }}>
-                  {isBn ? "কুকুর" : "DOG"}
+                  {t("DOG", "কুকুর", "कुत्ता", "कुत्रा")}
                 </span>
                 <span style={{ position: "relative", fontSize: 28, fontWeight: 900, color: "#DC2626", zIndex: 2 }}>
-                  {isBn ? "বই" : "BOOK"}
+                  {t("BOOK", "বই", "किताब", "पुस्तक")}
                 </span>
               </div>
               <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#475569" }}>
-                {isBn ? "বই জড় বস্তু ➔ [ J ] NON-LIVING" : "BOOK is Non-Living ➔ Press [ J ] NON-LIVING"}
+                {t("BOOK is Non-Living ➔ Press [ J ] NON-LIVING", "বই জড় বস্তু ➔ [ J ] NON-LIVING", "किताब निर्जीव है ➔ [ J ] NON-LIVING दबाएं", "पुस्तक निर्जीव आहे ➔ [ J ] NON-LIVING दाबा")}
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "শুধুমাত্র লাল (RED) রঙের শব্দটির অর্থ বিবেচনা করুন।" : "Judge the category of the RED word only.", icon: "🔴" },
-          { text: isBn ? "নীল (BLUE) রঙের শব্দটিকে সম্পূর্ণ উপেক্ষা করুন।" : "Completely ignore the BLUE distractor word.", icon: "🔵" },
-          { text: isBn ? "জীবন্ত (প্রাণী/উদ্ভিদ) হলে [F] চাপুন, জড় বস্তু হলে [J] চাপুন।" : "Press [F] for LIVING, press [J] for NON-LIVING.", icon: "⚡" },
-          { text: isBn ? "মোট ৪০টি ট্রায়াল সম্পন্ন করতে হবে।" : "There are 40 quick trials in total.", icon: "🎯" },
+          { text: t("Judge the category of the RED word only.", "শুধুমাত্র লাল (RED) রঙের শব্দটির অর্থ বিবেচনা করুন।", "केवल लाल (RED) रंग के शब्द की श्रेणी तय करें।", "फक्त लाल (RED) रंगाच्या शब्दाचा प्रकार ठरवा."), icon: "🔴" },
+          { text: t("Completely ignore the BLUE distractor word.", "নীল (BLUE) রঙের শব্দটিকে সম্পূর্ণ উপেক্ষা করুন।", "नीले (BLUE) रंग के शब्द को पूरी तरह अनदेखा करें।", "निळ्या (BLUE) रंगाच्या शब्दाकडे पूर्णपणे दुर्लक्ष करा."), icon: "🔵" },
+          { text: t("Press [F] for LIVING, press [J] for NON-LIVING.", "জীবন্ত (প্রাণী/উদ্ভিদ) হলে [F] চাপুন, জড় বস্তু হলে [J] চাপুন।", "सजीव के लिए [F] दबाएं, निर्जीव के लिए [J] दबाएं।", "सजीवांसाठी [F] दाबा, निर्जीवांसाठी [J] दाबा."), icon: "⚡" },
+          { text: t("There are 40 quick trials in total.", "মোট ৪০টি ট্রায়াল সম্পন্ন করতে হবে।", "कुल 40 त्वरित परीक्षण हैं।", "एकूण 40 जलद चाचण्या आहेत."), icon: "🎯" },
         ]}
         controls={[
-          { key: "F", action: isBn ? "জীবন্ত (Living)" : "Living", color: "#059669" },
-          { key: "J", action: isBn ? "জড় বস্তু (Non-Living)" : "Non-Living", color: "#4B5563" },
+          { key: "F", action: t("Living", "জীবন্ত (Living)", "सजीव (Living)", "सजीव (Living)"), color: "#059669" },
+          { key: "J", action: t("Non-Living", "জড় বস্তু (Non-Living)", "निर्जीव (Non-Living)", "निर्जीव (Non-Living)"), color: "#4B5563" },
         ]}
-        tip={isBn ? "ল্যাপটপের কীবোর্ডের F এবং J কী বা স্ক্রিনের বোতামে ক্লিক করুন।" : "You can use keyboard keys (F and J) or click the buttons below."}
+        tip={t(
+          "You can use keyboard keys (F and J) or click the buttons below.",
+          "ল্যাপটপের কীবোর্ডের F এবং J কী বা স্ক্রিনের বোতামে ক্লিক করুন।",
+          "आप कीबोर्ड कुंजियों (F और J) का उपयोग कर सकते हैं या नीचे दिए गए बटनों पर क्लिक कर सकते हैं।",
+          "तुम्ही कीबोर्ड की (F आणि J) वापरू शकता किंवा खालील बटणांवर क्लिक करू शकता."
+        )}
         onStart={startTask}
       />
     );
@@ -303,9 +343,9 @@ Please tell the study coordinator before continuing.`);
   return (
     <div className="task-view-container">
       <TaskHUD
-        title={isBn ? "নেগেটিভ প্রাইমিং" : "Negative Priming"}
+        title={t("Negative Priming", "নেগেটিভ প্রাইমিং", "नेगेटिव प्राइमिंग", "नेगेटिव्ह प्रायमिंग")}
         icon="🧬"
-        category={isBn ? "জ্ঞানীয় নিয়ন্ত্রণ" : "Cognitive Control"}
+        category={t("Cognitive Control", "জ্ঞানীয় নিয়ন্ত্রণ", "संज्ञानात्मक नियंत्रण", "संज्ञानात्मक नियंत्रण")}
         currentTrial={currentTrialIndex + 1}
         totalTrials={TOTAL_TRIALS}
         language={state.language}
@@ -349,7 +389,7 @@ Please tell the study coordinator before continuing.`);
             </h1>
 
             <div style={{ marginTop: 14, fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>
-              {isBn ? "শুধুমাত্র লাল শব্দের উত্তর দিন" : "Focus on the RED word"}
+              {t("Focus on the RED word", "শুধুমাত্র লাল শব্দের উত্তর দিন", "केवल लाल शब्द पर ध्यान दें", "फक्त लाल शब्दावर लक्ष केंद्रित करा")}
             </div>
           </div>
         )}
@@ -363,14 +403,14 @@ Please tell the study coordinator before continuing.`);
               onClick={() => handleResponse("KeyF")}
               style={{ borderColor: "#A7F3D0", color: "#065F46", padding: "14px 18px" }}
             >
-              <span className="keycap">F</span> {isBn ? "জীবন্ত (LIVING)" : "LIVING"}
+              <span className="keycap">F</span> {t("LIVING", "জীবন্ত (LIVING)", "सजीव (LIVING)", "सजीव (LIVING)")}
             </button>
             <button 
               className="mobile-btn" 
               onClick={() => handleResponse("KeyJ")}
               style={{ borderColor: "#E2E8F0", color: "#475569", padding: "14px 18px" }}
             >
-              <span className="keycap">J</span> {isBn ? "জড় বস্তু (NON-LIVING)" : "NON-LIVING"}
+              <span className="keycap">J</span> {t("NON-LIVING", "জড় বস্তু (NON-LIVING)", "निर्जीव (NON-LIVING)", "निर्जीव (NON-LIVING)")}
             </button>
           </div>
         </div>

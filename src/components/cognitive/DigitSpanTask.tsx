@@ -172,26 +172,36 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
-  const isBn = state.language === "bn";
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
 
   if (phase === "instructions") {
     return (
       <TaskInstructionCard
-        title={isBn ? "ডিজিট স্প্যান টেস্ট — নম্বর মেমরি" : "Digit Span Test — Number Recall"}
-        subtitle={isBn ? "সংখ্যাগুলির ক্রম মনে রাখুন" : "Memorize the sequence of digits"}
+        title={t("Digit Span Test — Number Recall", "ডিজিট স্প্যান টেস্ট — নম্বর মেমরি", "डिजिट स्पैन टेस्ट — संख्या स्मरण", "डिजिट स्पॅन टेस्ट — संख्या स्मरण")}
+        subtitle={t("Memorize the sequence of digits", "সংখ্যাগুলির ক্রম মনে রাখুন", "अंकों के क्रम को याद रखें", "अंकांचा क्रम लक्षात ठेवा")}
         icon="🔢"
-        category={isBn ? "স্মৃতিশক্তি (Memory)" : "Working Memory"}
+        category={t("Working Memory", "স্মৃতিশক্তি (Memory)", "कार्यशील स्मृति", "कार्यशील स्मरणशक्ती")}
         language={state.language}
         mission={
-          isBn
-            ? "স্ক্রিনে একে একে কয়েকটি সংখ্যা দেখা যাবে। সমস্ত সংখ্যা দেখানো শেষ হলে, সংখ্যাগুলি ঠিক যে ক্রমে দেখা গিয়েছিল সেই ক্রমানুসারে আপনার কীবোর্ড বা স্ক্রিনের নম্বর প্যাড ব্যবহার করে প্রবেশ করান!"
-            : "Numbers will appear on screen one by one. Once the sequence ends, recall and enter the numbers in the EXACT SAME order using your keyboard or on-screen keypad!"
+          t(
+            "Numbers will appear on screen one by one. Once the sequence ends, recall and enter the numbers in the EXACT SAME order using your keyboard or on-screen keypad!",
+            "স্ক্রিনে একে একে কয়েকটি সংখ্যা দেখা যাবে। সমস্ত সংখ্যা দেখানো শেষ হলে, সংখ্যাগুলি ঠিক যে ক্রমে দেখা গিয়েছিল সেই ক্রমানুসারে আপনার কীবোর্ড বা স্ক্রিনের নম্বর প্যাড ব্যবহার করে প্রবেশ করান!",
+            "स्क्रीन पर एक-एक करके संख्याएं दिखाई देंगी। अनुक्रम समाप्त होने के बाद, अपने कीबोर्ड या ऑन-स्क्रीन कीपैड का उपयोग करके ठीक उसी क्रम में संख्याओं को दर्ज करें!",
+            "स्क्रीनवर एकापाठोपाठ एक संख्या दिसतील. क्रम संपल्यानंतर, आपल्या कीबोर्ड किंवा ऑन-स्क्रीन कीपॅडचा वापर करून अगदी त्याच क्रमाने संख्या प्रविष्ट करा!"
+          )
         }
         visualExample={
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
-                {isBn ? "ধাপ ১: সংখ্যা প্রদর্শিত হবে" : "STEP 1: NUMBERS FLASH"}
+                {t("STEP 1: NUMBERS FLASH", "ধাপ ১: সংখ্যা প্রদর্শিত হবে", "चरण 1: संख्याएं चमकेंगी", "पायरी 1: संख्या दिसतील")}
               </div>
               <div style={{ display: "flex", justifyContent: "center", gap: 8, alignItems: "center", padding: "6px 0" }}>
                 <span style={{ fontSize: 22, fontWeight: 900, background: "#DBEAFE", color: "#1E40AF", width: 34, height: 34, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>4</span>
@@ -203,26 +213,31 @@ Please tell the study coordinator before continuing.`);
             </div>
             <div style={{ padding: 14, background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#065F46", marginBottom: 6 }}>
-                {isBn ? "ধাপ ২: একই ক্রমে উত্তর দিন" : "STEP 2: ENTER SAME ORDER"}
+                {t("STEP 2: ENTER SAME ORDER", "ধাপ ২: একই ক্রমে উত্তর দিন", "चरण 2: उसी क्रम में दर्ज करें", "पायरी 2: त्याच क्रमाने प्रविष्ट करा")}
               </div>
               <div style={{ fontSize: 20, fontWeight: 900, color: "#059669", letterSpacing: 4 }}>
                 4 - 9 - 2
               </div>
               <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
-                {isBn ? "কীবোর্ডে [ 4 ][ 9 ][ 2 ] টাইপ করুন" : "Type [ 4 ][ 9 ][ 2 ] on keyboard"}
+                {t("Type [ 4 ][ 9 ][ 2 ] on keyboard", "কীবোর্ডে [ 4 ][ 9 ][ 2 ] টাইপ করুন", "कीबोर्ड पर [ 4 ][ 9 ][ 2 ] टाइप करें", "कीबोर्डवर [ 4 ][ 9 ][ 2 ] टाईप करा")}
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "সংখ্যাগুলি মনোযোগ দিয়ে দেখুন — প্রতিটি সংখ্যা মাত্র একবার দেখানো হবে।" : "Watch carefully — each number is flashed once.", icon: "👁️" },
-          { text: isBn ? "সঠিক উত্তর দিলে ক্রমটি ধাপে ধাপে দীর্ঘতর হবে।" : "With each correct recall, the digit sequence gets longer.", icon: "📈" },
-          { text: isBn ? "একই দৈর্ঘ্যে ২ বার ভুল হলে টেস্ট সম্পন্ন হবে।" : "Making 2 mistakes at the same span length completes the test.", icon: "⚠️" },
+          { text: t("Watch carefully — each number is flashed once.", "সংখ্যাগুলি মনোযোগ দিয়ে দেখুন — প্রতিটি সংখ্যা মাত্র একবার দেখানো হবে।", "ध्यान से देखें — प्रत्येक संख्या केवल एक बार दिखाई जाती है।", "काळजीपूर्वक पहा — प्रत्येक संख्या फक्त एकदाच दाखवली जाईल."), icon: "👁️" },
+          { text: t("With each correct recall, the digit sequence gets longer.", "সঠিক উত্তর দিলে ক্রমটি ধাপে ধাপে দীর্ঘতর হবে।", "प्रत्येक सही उत्तर के साथ अंकों का क्रम लंबा होता जाता है।", "प्रत्येक अचूक उत्तरासह अंकांचा क्रम लांब होत जातो."), icon: "📈" },
+          { text: t("Making 2 mistakes at the same span length completes the test.", "একই দৈর্ঘ্যে ২ বার ভুল হলে টেস্ট সম্পন্ন হবে।", "समान लंबाई पर 2 गलतियाँ करने से परीक्षण पूरा हो जाता है।", "समान लांबीवर 2 चुका केल्यास चाचणी पूर्ण होते."), icon: "⚠️" },
         ]}
         controls={[
-          { key: "0 - 9", action: isBn ? "সংখ্যা কী বা অন-স্ক্রিন কিপ্যাড" : "Number keys or Keypad", color: "#2563EB" },
+          { key: "0 - 9", action: t("Number keys or Keypad", "সংখ্যা কী বা অন-স্ক্রিন কিপ্যাড", "संख्या कुंजियाँ या कीपैड", "संख्या की किंवा कीपॅड"), color: "#2563EB" },
         ]}
-        tip={isBn ? "ল্যাপটপের কীবোর্ডের নম্বর কী বা স্ক্রিনের কিপ্যাড স্পর্শ করে উত্তর দিতে পারেন।" : "You can use laptop number keys (0-9) or tap/click the on-screen keypad."}
+        tip={t(
+          "You can use laptop number keys (0-9) or tap/click the on-screen keypad.",
+          "ল্যাপটপের কীবোর্ডের নম্বর কী বা স্ক্রিনের কিপ্যাড স্পর্শ করে উত্তর দিতে পারেন।",
+          "आप लैपटॉप नंबर कुंजियों (0-9) का उपयोग कर सकते हैं या ऑन-स्क्रीन कीपैड को टैप/क्लिक कर सकते हैं।",
+          "तुम्ही लॅपटॉप नंबर की (0-9) वापरू शकता किंवा ऑन-स्क्रीन कीपॅडवर टॅप/क्लिक करू शकता."
+        )}
         onStart={startTask}
       />
     );
@@ -232,12 +247,12 @@ Please tell the study coordinator before continuing.`);
     return (
       <div className="task-view-container">
         <TaskHUD
-          title={isBn ? "ডিজিট স্প্যান" : "Digit Span"}
+          title={t("Digit Span", "ডিজিট স্প্যান", "डिजिट स्पैन", "डिजिट स्पॅन")}
           icon="🔢"
-          category={isBn ? "স্মৃতিশক্তি" : "Working Memory"}
+          category={t("Working Memory", "স্মৃতিশক্তি", "कार्यशील स्मृति", "कार्यशील स्मरणशक्ती")}
           currentTrial={spanLength}
           totalTrials={MAX_SPAN}
-          customProgressLabel={isBn ? `দৈর্ঘ্য: ${spanLength} টি সংখ্যা` : `Span: ${spanLength} digits`}
+          customProgressLabel={t(`Span: ${spanLength} digits`, `দৈর্ঘ্য: ${spanLength} টি সংখ্যা`, `लंबाई: ${spanLength} अंक`, `लांबी: ${spanLength} अंक`)}
           language={state.language}
         />
         <div className="task-stimulus" style={{ flexDirection: "column", gap: 16 }}>
@@ -253,7 +268,7 @@ Please tell the study coordinator before continuing.`);
                 {activeDigit}
               </div>
               <div style={{ marginTop: 12, fontSize: 14, color: "var(--text-secondary)", fontWeight: 600 }}>
-                {isBn ? "সংখ্যাটি মনে রাখুন..." : "Memorize the number..."}
+                {t("Memorize the number...", "সংখ্যাটি মনে রাখুন...", "संख्या याद रखें...", "संख्या लक्षात ठेवा...")}
               </div>
             </div>
           ) : (
@@ -270,19 +285,19 @@ Please tell the study coordinator before continuing.`);
     return (
       <div className="task-view-container">
         <TaskHUD
-          title={isBn ? "ডিজিট স্প্যান" : "Digit Span"}
+          title={t("Digit Span", "ডিজিট স্প্যান", "डिजिट स्पैन", "डिजिट स्पॅन")}
           icon="🔢"
-          category={isBn ? "স্মৃতিশক্তি" : "Working Memory"}
+          category={t("Working Memory", "স্মৃতিশক্তি", "कार्यशील स्मृति", "कार्यशील स्मरणशक्ती")}
           currentTrial={spanLength}
           totalTrials={MAX_SPAN}
-          customProgressLabel={isBn ? `দৈর্ঘ্য: ${spanLength} টি সংখ্যা` : `Span: ${spanLength} digits`}
+          customProgressLabel={t(`Span: ${spanLength} digits`, `দৈর্ঘ্য: ${spanLength} টি সংখ্যা`, `लंबाई: ${spanLength} अंक`, `लांबी: ${spanLength} अंक`)}
           language={state.language}
         />
 
         <div className="task-stimulus" style={{ flexDirection: "column", padding: "16px 20px" }}>
           <div style={{ maxWidth: 380, width: "100%", textAlign: "center" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
-              {isBn ? "সংখ্যাগুলির ক্রম কী ছিল?" : "What was the sequence?"}
+              {t("What was the sequence?", "সংখ্যাগুলির ক্রম কী ছিল?", "संख्याओं का क्रम क्या था?", "संख्यांचा क्रम काय होता?")}
             </div>
             
             {/* Visual Slots Display */}

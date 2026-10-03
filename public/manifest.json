@@ -1,7 +1,7 @@
 {
-  "name": "AIIMS Kalyani Physiology Cognitive lab",
-  "short_name": "AIIMS Kalyani Physiology Cognitive lab",
-  "description": "A series of cognitive assessments and questionnaires.",
+  "name": "NeuroCogniLab - AIIMS Kalyani",
+  "short_name": "NeuroCogniLab",
+  "description": "High-Precision Neurocognitive Testing & Psychometric Assessment Battery.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

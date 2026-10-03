@@ -163,59 +163,82 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     }
   };
 
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
+
+  const WORD_LABELS: Record<string, { en: string; bn: string; hi: string; mr: string }> = {
+    RED: { en: "RED", bn: "লাল", hi: "लाल", mr: "लाल" },
+    BLUE: { en: "BLUE", bn: "नीল", hi: "नीला", mr: "निळा" },
+    GREEN: { en: "GREEN", bn: "সবুজ", hi: "हरा", mr: "हिरवा" },
+    YELLOW: { en: "YELLOW", bn: "হলুদ", hi: "पीला", mr: "पिवळा" },
+  };
+
   if (phase === "instructions") {
-    const isBn = state.language === "bn";
     return (
       <TaskInstructionCard
-        title={isBn ? "স্ট্রুপ টাস্ক — কালার ক্ল্যাশ" : "Stroop Task — Color Clash"}
-        subtitle={isBn ? "রঙ বনাম শব্দের চ্যালেঞ্জ" : "Challenge your brain's selective attention"}
+        title={t("Stroop Task — Color Clash", "স্ট্রুপ টাস্ক — কালার ক্ল্যাশ", "स्ट्रूप टास्क — कलर क्लैश", "स्ट्रूप टास्क — कलर क्लॅश")}
+        subtitle={t("Challenge your brain's selective attention", "রঙ বনাম শব্দের চ্যালেঞ্জ", "अपने मस्तिष्क के चयनात्मक ध्यान को चुनौती दें", "आपल्या मेंदूच्या निवडक एकाग्रतेला आव्हान द्या")}
         icon="🎯"
-        category={isBn ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+        category={t("Executive Function", "এক্সিকিউটিভ ফাংশন", "कार्यकारी कार्य", "कार्यकारी कार्य")}
         language={state.language}
         mission={
-          isBn
-            ? "শব্দটি কী লেখা আছে তা উপেক্ষা করুন! শব্দটি যে কালিতে বা রঙে লেখা আছে শুধুমাত্র সেই রঙের বোতামটি চাপুন।"
-            : "Name the INK COLOR, not the word! Ignore what the word says and choose the color it is printed in."
+          t(
+            "Name the INK COLOR, not the word! Ignore what the word says and choose the color it is printed in.",
+            "শব্দটি কী লেখা আছে তা উপেক্ষা করুন! শব্দটি যে কালিতে বা রঙে লেখা আছে শুধুমাত্র সেই রঙের বোতামটি চাপুন।",
+            "शब्द क्या लिखा है उसे अनदेखा करें! शब्द जिस स्याही/रंग में छपा है, केवल उस रंग का बटन चुनें।",
+            "शब्द काय लिहिला आहे त्याकडे दुर्लक्ष करा! शब्द ज्या शाईच्या रंगात लिहिला आहे फक्त तोच रंग निवडा."
+          )
         }
         visualExample={
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             <div style={{ padding: 14, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#991B1B", marginBottom: 4 }}>
-                {isBn ? "উদাহরণ উদ্দীপক" : "EXAMPLE STIMULUS"}
+                {t("EXAMPLE STIMULUS", "উদাহরণ উদ্দীপক", "उदाहरण उद्दीपक", "उदाहरण उद्दीपक")}
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, color: "#DC2626", letterSpacing: 2 }}>
-                BLUE
+                {t("BLUE", "নীল", "नीला", "निळा")}
               </div>
               <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>
-                {isBn ? "শব্দে লেখা 'BLUE', কিন্তু রঙ হলো " : "Word reads 'BLUE', but ink color is "}
-                <strong style={{ color: "#DC2626" }}>{isBn ? "লাল (RED)" : "RED"}</strong>!
+                {t("Word reads 'BLUE', but ink color is ", "শব্দে লেখা 'নীল', কিন্তু রঙ হলো ", "शब्द में लिखा है 'नीला', लेकिन रंग है ", "शब्द लिहिला आहे 'निळा', पण रंग आहे ")}
+                <strong style={{ color: "#DC2626" }}>{t("RED", "লাল (RED)", "लाल (RED)", "लाल (RED)")}</strong>!
               </div>
             </div>
             <div style={{ padding: 14, background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 10, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: "#065F46" }}>
-                {isBn ? "✅ সঠিক উত্তর" : "✅ CORRECT ACTION"}
+                {t("✅ CORRECT ACTION", "✅ সঠিক উত্তর", "✅ सही क्रिया", "✅ योग्य कृती")}
               </div>
               <div style={{ marginTop: 4, fontSize: 15, fontWeight: 800, color: "#DC2626" }}>
-                {isBn ? "[ R ] লাল চাপুন" : "Press [ R ] for RED"}
+                {t("Press [ R ] for RED", "[ R ] লাল চাপুন", "[ R ] लाल दबाएं", "[ R ] लाल दाबा")}
               </div>
               <div style={{ fontSize: 11, color: "#991B1B", marginTop: 2 }}>
-                {isBn ? "❌ ব্লু বা নীল চাপবেন না!" : "❌ Don't press Blue!"}
+                {t("❌ Don't press Blue!", "❌ ব্লু বা নীল চাপবেন না!", "❌ नीला मत दबाएं!", "❌ निळा दाबू नका!")}
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "প্রতিটি শব্দের জন্য যত দ্রুত ও নির্ভুলভাবে সম্ভব উত্তর দিন।" : "Respond as quickly and accurately as possible.", icon: "⚡" },
-          { text: isBn ? "ফন্ট কালার দেখতে হবে, শব্দের অর্থ উপেক্ষা করুন।" : "Focus solely on the font color, not the word text.", icon: "👁️" },
-          { text: isBn ? "মোট ২০টি ট্রায়াল সম্পন্ন করতে হবে।" : "There are 20 quick trials in total.", icon: "🎯" },
+          { text: t("Respond as quickly and accurately as possible.", "প্রতিটি শব্দের জন্য যত দ্রুত ও নির্ভুলভাবে সম্ভব উত্তর দিন।", "जितनी जल्दी और सटीक संभव हो उत्तर दें।", "शक्य तितक्या लवकर आणि अचूक उत्तर द्या."), icon: "⚡" },
+          { text: t("Focus solely on the font color, not the word text.", "ফন্ট কালার দেখতে হবে, শব্দের অর্থ উপেক্ষা করুন।", "केवल फॉन्ट के रंग पर ध्यान दें, शब्द के अर्थ पर नहीं।", "केवळ फॉन्टच्या रंगावर लक्ष केंद्रित करा, शब्दाच्या अर्थावर नाही."), icon: "👁️" },
+          { text: t("There are 20 quick trials in total.", "মোট ২০টি ট্রায়াল সম্পন্ন করতে হবে।", "कुल 20 त्वरित परीक्षण हैं।", "एकूण 20 चाचण्या आहेत."), icon: "🎯" },
         ]}
         controls={[
-          { key: "R", action: isBn ? "লাল (Red)" : "Red", color: "#DC2626" },
-          { key: "B", action: isBn ? "নীল (Blue)" : "Blue", color: "#2563EB" },
-          { key: "G", action: isBn ? "সবুজ (Green)" : "Green", color: "#059669" },
-          { key: "Y", action: isBn ? "হলুদ (Yellow)" : "Yellow", color: "#D97706" },
+          { key: "R", action: t("Red", "লাল (Red)", "लाल (Red)", "लाल (Red)"), color: "#DC2626" },
+          { key: "B", action: t("Blue", "নীল (Blue)", "नीला (Blue)", "निळा (Blue)"), color: "#2563EB" },
+          { key: "G", action: t("Green", "সবুজ (Green)", "हरा (Green)", "हिरवा (Green)"), color: "#059669" },
+          { key: "Y", action: t("Yellow", "হলুদ (Yellow)", "पीला (Yellow)", "पिवळा (Yellow)"), color: "#D97706" },
         ]}
-        tip={isBn ? "ল্যাপটপে কীবোর্ড কী বা নিচের রঙের বোতামে ক্লিক করুন।" : "You can use keyboard keys (R, B, G, Y) or click the colored buttons on your screen."}
+        tip={t(
+          "You can use keyboard keys (R, B, G, Y) or click the colored buttons on your screen.",
+          "ল্যাপটপে কীবোর্ড কী বা নিচের রঙের বোতামে ক্লিক করুন।",
+          "आप कीबोर्ड कुंजियों (R, B, G, Y) का उपयोग कर सकते हैं या स्क्रीन पर रंगीन बटन क्लिक कर सकते हैं।",
+          "तुम्ही कीबोर्ड की (R, B, G, Y) वापरू शकता किंवा स्क्रीनवरील रंगीत बटणांवर क्लिक करू शकता."
+        )}
         onStart={startTask}
       />
     );
@@ -225,9 +248,9 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     return (
       <div className="task-view-container">
         <TaskHUD
-          title={state.language === "bn" ? "স্ট্রুপ টাস্ক" : "Stroop Task"}
+          title={t("Stroop Task", "স্ট্রুপ টাস্ক", "स्ट्रूप टास्क", "स्ट्रूप टास्क")}
           icon="🎯"
-          category={state.language === "bn" ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+          category={t("Executive Function", "এক্সিকিউটিভ ফাংশন", "कार्यकारी कार्य", "कार्यकारी कार्य")}
           currentTrial={currentTrialIndex + 1}
           totalTrials={TOTAL_TRIALS}
           language={state.language}
@@ -241,12 +264,19 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
 
   if (phase === "stimulus") {
     const trial = trials[currentTrialIndex];
+    const displayWord = WORD_LABELS[trial.word]
+      ? (state.language === "bn" ? WORD_LABELS[trial.word].bn :
+         state.language === "hi" ? WORD_LABELS[trial.word].hi :
+         state.language === "mr" ? WORD_LABELS[trial.word].mr :
+         WORD_LABELS[trial.word].en)
+      : trial.word;
+
     return (
       <div className="task-view-container">
         <TaskHUD
-          title={state.language === "bn" ? "স্ট্রুপ টাস্ক" : "Stroop Task"}
+          title={t("Stroop Task", "স্ট্রুপ টাস্ক", "स्ट्रूप टास्क", "स्ट्रूप टास्क")}
           icon="🎯"
-          category={state.language === "bn" ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+          category={t("Executive Function", "এক্সিকিউটিভ ফাংশন", "कार्यकारी कार्य", "कार्यकारी कार्य")}
           currentTrial={currentTrialIndex + 1}
           totalTrials={TOTAL_TRIALS}
           language={state.language}
@@ -260,22 +290,22 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
             letterSpacing: 2,
             textShadow: "0 2px 10px rgba(0,0,0,0.05)",
           }}>
-            {trial.word}
+            {displayWord}
           </h1>
         </div>
         <div className="mobile-controls-container">
           <div className="mobile-controls" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
             <button className="mobile-btn" onClick={() => handleResponse("RED")} style={{ borderColor: "#FECACA", color: "#DC2626" }}>
-              <span className="keycap">R</span> {state.language === 'bn' ? "লাল" : "RED"}
+              <span className="keycap">R</span> {t("RED", "লাল", "लाल", "लाल")}
             </button>
             <button className="mobile-btn" onClick={() => handleResponse("BLUE")} style={{ borderColor: "#BFDBFE", color: "#2563EB" }}>
-              <span className="keycap">B</span> {state.language === 'bn' ? "নীল" : "BLUE"}
+              <span className="keycap">B</span> {t("BLUE", "নীল", "नीला", "निळा")}
             </button>
             <button className="mobile-btn" onClick={() => handleResponse("GREEN")} style={{ borderColor: "#A7F3D0", color: "#059669" }}>
-              <span className="keycap">G</span> {state.language === 'bn' ? "সবুজ" : "GREEN"}
+              <span className="keycap">G</span> {t("GREEN", "সবুজ", "हरा", "हिरवा")}
             </button>
             <button className="mobile-btn" onClick={() => handleResponse("YELLOW")} style={{ borderColor: "#FDE68A", color: "#D97706" }}>
-              <span className="keycap">Y</span> {state.language === 'bn' ? "হলুদ" : "YELLOW"}
+              <span className="keycap">Y</span> {t("YELLOW", "হলুদ", "पीला", "पिवळा")}
             </button>
           </div>
         </div>

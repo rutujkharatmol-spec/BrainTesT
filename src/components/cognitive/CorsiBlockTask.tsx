@@ -185,49 +185,65 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
+
   if (phase === "instructions") {
-    const isBn = state.language === "bn";
     return (
       <TaskInstructionCard
-        title={isBn ? "কোর্সি ব্লক — টাইল হপার" : "Corsi Block — Tile Hopper"}
-        subtitle={isBn ? "ভিজ্যুওস্প্যাশিয়াল স্মৃতির (Spatial Memory) পরীক্ষা" : "Test your visuospatial memory span"}
+        title={t("Corsi Block — Tile Hopper", "কোর্সি ব্লক — টাইল হপার", "कॉर्सी ब्लॉक — टाइल हॉपर", "कॉर्सी ब्लॉक — टाइल हॉपर")}
+        subtitle={t("Test your visuospatial memory span", "ভিজ্যুওস্প্যাশিয়াল স্মৃতির (Spatial Memory) পরীক্ষা", "अपनी दृश्य-स्थानिक स्मृति विस्तार का परीक्षण करें", "आपल्या दृश्य-स्थानिक स्मरणशक्तीच्या व्याप्तीची परीक्षा घ्या")}
         icon="🧱"
-        category={isBn ? "স্থানিক স্মৃতি" : "Spatial Memory"}
+        category={t("Spatial Memory", "স্থানিক স্মৃতি", "स्थानिक स्मृति", "स्थानिक स्मरणशक्ती")}
         language={state.language}
         mission={
-          isBn
-            ? "স্ক্রিনের বর্গাকার ব্লকগুলো একটি নির্দিষ্ট ক্রমে একে একে নীল রঙে জ্বলে উঠবে। আলো শেষ হলে, ঠিক একই ক্রমে ব্লকগুলোতে ক্লিক বা ট্যাপ করুন!"
-            : "Squares will light up in a specific sequence. Watch carefully, then click or tap the squares in the EXACT same order!"
+          t(
+            "Squares will light up in a specific sequence. Watch carefully, then click or tap the squares in the EXACT same order!",
+            "স্ক্রিনের বর্গাকার ব্লকগুলো একটি নির্দিষ্ট ক্রমে একে একে নীল রঙে জ্বলে উঠবে। আলো শেষ হলে, ঠিক একই ক্রমে ব্লকগুলোতে ক্লিক বা ট্যাপ করুন!",
+            "चौकोर ब्लॉक एक निश्चित क्रम में चमकेंगे। ध्यान से देखें, फिर ठीक उसी क्रम में ब्लॉकों पर क्लिक या टैप करें!",
+            "चौकोनी ब्लॉक्स एका विशिष्ट क्रमाने चमकतील. काळजीपूर्वक पहा, नंतर अगदी त्याच क्रमाने ब्लॉक्सवर क्लिक किंवा टॅप करा!"
+          )
         }
         visualExample={
           <div style={{ background: "#F8FAFC", padding: "16px", borderRadius: 12, border: "1px solid #E2E8F0", textAlign: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", marginBottom: 10, textTransform: "uppercase" }}>
-              {isBn ? "কীভাবে কাজ করে:" : "HOW IT WORKS:"}
+              {t("HOW IT WORKS:", "কীভাবে কাজ করে:", "यह कैसे काम करता है:", "हे कसे कार्य करते:")}
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               <div style={{ padding: "8px 12px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#1E40AF" }}>
-                1. 💡 {isBn ? "ব্লক ১ জ্বলে উঠল" : "Block 1 flashes"}
+                1. 💡 {t("Block 1 flashes", "ব্লক ১ জ্বলে উঠল", "ब्लॉक 1 चमका", "ब्लॉक 1 चमकला")}
               </div>
               <span style={{ color: "#94A3B8" }}>➔</span>
               <div style={{ padding: "8px 12px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#1E40AF" }}>
-                2. 💡 {isBn ? "ব্লক ২ জ্বলে উঠল" : "Block 2 flashes"}
+                2. 💡 {t("Block 2 flashes", "ব্লক ২ জ্বলে উঠল", "ब्लॉक 2 चमका", "ब्लॉक 2 चमकला")}
               </div>
               <span style={{ color: "#94A3B8" }}>➔</span>
               <div style={{ padding: "8px 14px", background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 8, fontSize: 13, fontWeight: 800, color: "#059669" }}>
-                3. 👉 {isBn ? "আপনার পালা: ১ তারপর ২ ক্লিক করুন!" : "Your turn: Click 1 then 2!"}
+                3. 👉 {t("Your turn: Click 1 then 2!", "আপনার পালা: ১ তারপর ২ ক্লিক করুন!", "आपकी बारी: पहले 1 फिर 2 क्लिक करें!", "तुमची पाळी: आधी 1 नंतर 2 क्लिक करा!")}
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "প্রতিবার সঠিক উত্তর দিলে ক্রমটি আরও ১টি ব্লক করে দীর্ঘ হতে থাকবে।" : "Each correct sequence makes the next pattern 1 block longer.", icon: "📈" },
-          { text: isBn ? "ভুল হলে পুনরায় একই দৈর্ঘ্যের আরেকটি ক্রম দেওয়া হবে।" : "If you make a mistake, you'll get one more chance at that level.", icon: "🔄" },
-          { text: isBn ? "পরপর দুইবার ভুল করলে পরীক্ষা সম্পন্ন হবে।" : "Two consecutive mistakes end the test.", icon: "🎯" },
+          { text: t("Each correct sequence makes the next pattern 1 block longer.", "প্রতিবার সঠিক উত্তর দিলে ক্রমটি আরও ১টি ব্লক করে দীর্ঘ হতে থাকবে।", "प्रत्येक सही उत्तर अगले पैटर्न को 1 ब्लॉक और लंबा बनाता है।", "प्रत्येक अचूक उत्तर पुढील पॅटर्न 1 ब्लॉकने अधिक लांब करते."), icon: "📈" },
+          { text: t("If you make a mistake, you'll get one more chance at that level.", "ভুল হলে পুনরায় একই দৈর্ঘ্যের আরেকটি ক্রম দেওয়া হবে।", "यदि आप गलती करते हैं, तो आपको उस स्तर पर एक और मौका मिलेगा।", "आपण चूक केल्यास, आपल्याला त्या स्तरावर आणखी एक संधी मिळेल."), icon: "🔄" },
+          { text: t("Two consecutive mistakes end the test.", "পরপর দুইবার ভুল করলে পরীক্ষা সম্পন্ন হবে।", "लगातार दो गलतियों से परीक्षण समाप्त हो जाता है।", "सलग दोन चुका झाल्यावर चाचणी समाप्त होते."), icon: "🎯" },
         ]}
         controls={[
-          { key: "MOUSE / TAP", action: isBn ? "ব্লকে ক্লিক বা স্পর্শ করুন" : "Click or tap blocks in order", color: "#7C3AED" },
+          { key: "MOUSE / TAP", action: t("Click or tap blocks in order", "ব্লকে ক্লিক বা স্পর্শ করুন", "क्रम में ब्लॉकों पर क्लिक या टैप करें", "क्रमाने ब्लॉक्सवर क्लिक किंवा टॅप करा"), color: "#7C3AED" },
         ]}
-        tip={isBn ? "স্ক্রিনের পুরো গ্রিডে চোখ রাখুন, শুধু একটি ব্লকে আটকে থাকবেন না।" : "Keep your eyes focused on the center to catch the full sequence path!"}
+        tip={t(
+          "Keep your eyes focused on the center to catch the full sequence path!",
+          "স্ক্রিনের পুরো গ্রিডে চোখ রাখুন, শুধু একটি ব্লকে আটকে থাকবেন না।",
+          "पूरे अनुक्रम को पकड़ने के लिए अपनी आँखें केंद्र पर केंद्रित रखें!",
+          "संपूर्ण क्रम अचूक टिपण्यासाठी डोळे मध्यभागी केंद्रित ठेवा!"
+        )}
         onStart={startTask}
       />
     );
@@ -250,9 +266,9 @@ Please tell the study coordinator before continuing.`);
   return (
     <div className="task-view-container">
       <TaskHUD
-        title={state.language === "bn" ? "কোর্সি ব্লক" : "Corsi Block Task"}
+        title={t("Corsi Block Task", "কোর্সি ব্লক", "कॉर्सी ब्लॉक टास्क", "कॉर्सी ब्लॉक टास्क")}
         icon="🧱"
-        category={state.language === "bn" ? "স্থানিক স্মৃতি" : "Spatial Memory"}
+        category={t("Spatial Memory", "স্থানিক স্মৃতি", "स्थानिक स्मृति", "स्थानिक स्मरणशक्ती")}
         currentTrial={spanLength}
         totalTrials={9}
         language={state.language}
@@ -279,16 +295,24 @@ Please tell the study coordinator before continuing.`);
             <>
               <span>👉</span>
               <span>
-                {state.language === "bn"
-                  ? `আপনার পালা! ক্রমানুসারে ব্লকে ক্লিক করুন (${userSequence.length}/${sequence.length})`
-                  : `Your turn! Tap the blocks in order (${userSequence.length}/${sequence.length})`}
+                {t(
+                  `Your turn! Tap the blocks in order (${userSequence.length}/${sequence.length})`,
+                  `আপনার পালা! ক্রমানুসারে ব্লকে ক্লিক করুন (${userSequence.length}/${sequence.length})`,
+                  `आपकी बारी! उसी क्रम में ब्लॉकों पर टैप करें (${userSequence.length}/${sequence.length})`,
+                  `तुमची पाळी! त्याच क्रमाने ब्लॉक्सवर टॅप करा (${userSequence.length}/${sequence.length})`
+                )}
               </span>
             </>
           ) : (
             <>
               <span style={{ animation: "stimulus-pop 1s infinite" }}>💡</span>
               <span>
-                {state.language === "bn" ? "মনোযোগ দিয়ে লক্ষ্য করুন..." : "Watch the flashing sequence closely..."}
+                {t(
+                  "Watch the flashing sequence closely...",
+                  "মনোযোগ দিয়ে লক্ষ্য করুন...",
+                  "चमकते क्रम को ध्यान से देखें...",
+                  "चमकणारा क्रम काळजीपूर्वक पहा..."
+                )}
               </span>
             </>
           )}

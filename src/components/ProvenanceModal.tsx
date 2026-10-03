@@ -34,7 +34,7 @@ export default function ProvenanceModal({ isOpen, onClose }: ProvenanceModalProp
   const copyCertificate = () => {
     const payload = JSON.stringify(
       {
-        system: "AIIMS Kalyani Physiology & Cognitive Lab (BrainTesT)",
+        system: "AIIMS Kalyani Physiology & Cognitive Lab (NeuroCogniLab)",
         authorshipCertificate: data.certificate,
         sha256Signature: data.hash,
         steganographyProof: data.steganographyDecoded,
@@ -212,7 +212,7 @@ export default function ProvenanceModal({ isOpen, onClose }: ProvenanceModalProp
               Project Codebase
             </div>
             <div style={{ fontSize: "13px", fontWeight: 500, color: "#cbd5e1", marginTop: "2px" }}>
-              BrainTesT Cognitive Battery
+              NeuroCogniLab Cognitive Battery
             </div>
           </div>
         </div>

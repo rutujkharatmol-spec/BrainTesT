@@ -209,55 +209,71 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
+
   if (phase === "instructions") {
-    const isBn = state.language === "bn";
     return (
       <TaskInstructionCard
-        title={isBn ? "এস.এ.আর.টি — স্পিড রিফ্লেক্স" : "SART — Speed Reflex & Attention"}
-        subtitle={isBn ? "সাসটেইন্ড অ্যাটেনশন ও আত্মনিয়ন্ত্রণের পরীক্ষা" : "Sustained Attention to Response Task"}
+        title={t("SART — Speed Reflex & Attention", "এস.এ.আর.টি — স্পিড রিফ্লেক্স", "एस.ए.आर.टी — गति सजगता और ध्यान", "एस.ए.आर.टी — वेग प्रतिक्षिप्त क्रिया आणि एकाग्रता")}
+        subtitle={t("Sustained Attention to Response Task", "সাসটেইন্ড অ্যাটেনশন ও আত্মনিয়ন্ত্রণের পরীক্ষা", "प्रतिक्रिया कार्य के लिए निरंतर ध्यान (SART)", "प्रतिक्रिया कार्यासाठी सतत एकाग्रता (SART)")}
         icon="⏱️"
-        category={isBn ? "মনোযোগ নিয়ন্ত্রণ" : "Sustained Attention"}
+        category={t("Sustained Attention", "মনোযোগ নিয়ন্ত্রণ", "निरंतर ध्यान", "सतत एकाग्रता")}
         language={state.language}
         mission={
-          isBn
-            ? "স্ক্রিনে দ্রুত সংখ্যা আসবে। যেকোনো সংখ্যা এলে দ্রুত স্পেসবার চাপুন — কিন্তু ৩ (THREE) সংখ্যাটি এলে কখনোই কিছু চাপবেন না!"
-            : "Press SPACEBAR as fast as you can for EVERY number (1, 2, 4, 5, 6, 7, 8, 9) — EXCEPT when you see the number 3!"
+          t(
+            "Press SPACEBAR as fast as you can for EVERY number (1, 2, 4, 5, 6, 7, 8, 9) — EXCEPT when you see the number 3!",
+            "স্ক্রিনে দ্রুত সংখ্যা আসবে। যেকোনো সংখ্যা এলে দ্রুত স্পেসবার চাপুন — কিন্তু ৩ (THREE) সংখ্যাটি এলে কখনোই কিছু চাপবেন না!",
+            "प्रत्येक संख्या (1, 2, 4, 5, 6, 7, 8, 9) के लिए जितनी जल्दी हो सके स्पेसबार दबाएं — सिवाय जब आपको 3 नंबर दिखे!",
+            "प्रत्येक क्रमांकासाठी (1, 2, 4, 5, 6, 7, 8, 9) शक्य तितक्या लवकर स्पेसबार दाबा — फक्त जेव्हा 3 क्रमांक दिसेल तेव्हा दाबू नका!"
+          )
         }
         visualExample={
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={{ padding: 14, background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#065F46", marginBottom: 4 }}>
-                {isBn ? "যেকোনো সংখ্যা (১, ২, ৪... ৯)" : "ANY NUMBER (1, 2, 4... 9)"}
+                {t("ANY NUMBER (1, 2, 4... 9)", "যেকোনো সংখ্যা (১, ২, ৪... ৯)", "कोई भी संख्या (1, 2, 4... 9)", "कोणताही क्रमांक (1, 2, 4... 9)")}
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, color: "#059669" }}>
                 1, 2, 4, 5, 7, 8...
               </div>
               <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800, color: "#065F46" }}>
-                ✅ {isBn ? "দ্রুত স্পেসবার চাপুন!" : "PRESS SPACEBAR FAST!"}
+                ✅ {t("PRESS SPACEBAR FAST!", "দ্রুত স্পেসবার চাপুন!", "जल्दी स्पेसबार दबाएं!", "त्वरित स्पेसबार दाबा!")}
               </div>
             </div>
             <div style={{ padding: 14, background: "#FEF2F2", border: "2px solid #EF4444", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#991B1B", marginBottom: 4 }}>
-                {isBn ? "বিপদজনক ফাঁদ (TRAP)" : "THE TRAP"}
+                {t("THE TRAP", "বিপদজনক ফাঁদ (TRAP)", "जाल (TRAP)", "सापळा (TRAP)")}
               </div>
               <div style={{ fontSize: 36, fontWeight: 900, color: "#DC2626" }}>
                 3
               </div>
               <div style={{ marginTop: 4, fontSize: 13, fontWeight: 800, color: "#DC2626" }}>
-                🛑 {isBn ? "কিছুই চাপবেন না!" : "STOP! DO NOT PRESS!"}
+                🛑 {t("STOP! DO NOT PRESS!", "কিছুই চাপবেন না!", "रुकें! कुछ न दबाएं!", "थांबा! काहीही दाबू नका!")}
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "সংখ্যাগুলো স্ক্রিনে খুব দ্রুত ফ্ল্যাশ হবে।" : "Numbers flash very quickly — stay alert and focused!", icon: "⚡" },
-          { text: isBn ? "৩ দেখতে পেলেই হাত থামিয়ে রাখুন।" : "Train your brain to hold back when the number 3 appears.", icon: "🛑", highlight: true },
-          { text: isBn ? "মোট ৫০টি দ্রুত ট্রায়াল আছে।" : "50 quick trials total.", icon: "🎯" },
+          { text: t("Numbers flash very quickly — stay alert and focused!", "সংখ্যাগুলো স্ক্রিনে খুব দ্রুত ফ্ল্যাশ হবে।", "संख्याएं स्क्रीन पर बहुत तेजी से आएंगी — सतर्क और केंद्रित रहें!", "क्रमांक स्क्रीनवर खूप वेगाने दिसतील — सतर्क आणि एकाग्र राहा!"), icon: "⚡" },
+          { text: t("Train your brain to hold back when the number 3 appears.", "৩ দেখতে পেলেই হাত থামিয়ে রাখুন।", "3 संख्या दिखने पर खुद को रोकने के लिए तैयार रहें।", "3 क्रमांक दिसताच स्वतःला रोखून ठेवा."), icon: "🛑", highlight: true },
+          { text: t("50 quick trials total.", "মোট ৫০টি দ্রুত ট্রায়াল আছে।", "कुल 50 त्वरित परीक्षण हैं।", "एकूण 50 जलद चाचण्या आहेत."), icon: "🎯" },
         ]}
         controls={[
-          { key: "SPACEBAR", action: isBn ? "যেকোনো সংখ্যার জন্য চাপুন (৩ বাদে)" : "PRESS for numbers (except 3)", color: "#059669" },
+          { key: "SPACEBAR", action: t("PRESS for numbers (except 3)", "যেকোনো সংখ্যার জন্য চাপুন (৩ বাদে)", "संख्याओं के लिए दबाएं (3 को छोड़कर)", "क्रमांकांसाठी दाबा (3 वगळता)"), color: "#059669" },
         ]}
-        tip={isBn ? "আঙুল স্পেসবারের উপরে আলতো করে ধরে রাখুন।" : "Keep your finger resting gently on the SPACEBAR so you're ready to react!"}
+        tip={t(
+          "Keep your finger resting gently on the SPACEBAR so you're ready to react!",
+          "আঙুল স্পেসবারের উপরে আলতো করে ধরে রাখুন।",
+          "अपनी उंगली स्पेसबार पर हल्के से रखें ताकि आप तुरंत प्रतिक्रिया दे सकें!",
+          "आपले बोट स्पेसबारवर अलगद ठेवा जेणेकरून आपण त्वरित प्रतिक्रिया देऊ शकाल!"
+        )}
         onStart={startTask}
       />
     );
@@ -268,9 +284,9 @@ Please tell the study coordinator before continuing.`);
     return (
       <div className="task-view-container">
         <TaskHUD
-          title={state.language === "bn" ? "এস.এ.আর.টি" : "SART Attention"}
+          title={t("SART Attention", "এস.এ.আর.টি", "एस.ए.आर.टी ध्यान", "एस.ए.आर.टी एकाग्रता")}
           icon="⏱️"
-          category={state.language === "bn" ? "মনোযোগ" : "Attention"}
+          category={t("Attention", "মনোযোগ", "ध्यान", "एकाग्रता")}
           currentTrial={currentTrialIndex + 1}
           totalTrials={TOTAL_TRIALS}
           language={state.language}
@@ -300,7 +316,7 @@ Please tell the study coordinator before continuing.`);
             borderRadius: 12,
             border: "1px solid #A7F3D0"
           }}>
-            ✓ {state.language === 'bn' ? "প্রেস সম্পন্ন" : "Pressed!"}
+            ✓ {t("Pressed!", "প্রেস সম্পন্ন", "दबाया गया!", "दाबले गेले!")}
           </div>
         </div>
 
@@ -319,7 +335,7 @@ Please tell the study coordinator before continuing.`);
                 fontSize: 16,
               }}
             >
-              <span className="keycap">SPACE</span> {state.language === 'bn' ? "চাপুন (PRESS - GO)" : "PRESS (GO)"}
+              <span className="keycap">SPACE</span> {t("PRESS (GO)", "চাপুন (PRESS - GO)", "दबाएं (GO)", "दाबा (GO)")}
             </button>
           </div>
         </div>

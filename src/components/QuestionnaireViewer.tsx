@@ -106,37 +106,58 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
     }
   };
 
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
+
+  const getLocalized = (obj: any, field: string) => {
+    if (state.language === "bn" && obj[`${field}_bn`]) return obj[`${field}_bn`];
+    if (state.language === "hi" && obj[`${field}_hi`]) return obj[`${field}_hi`];
+    if (state.language === "mr" && obj[`${field}_mr`]) return obj[`${field}_mr`];
+    return obj[field];
+  };
+
   if (phase === "completed") {
     return (
       <div className="card" style={{ maxWidth: 600, margin: "auto", textAlign: "center" }}>
-        <h2>{state.language === 'bn' ? "প্রশ্নাবলী সম্পন্ন হয়েছে!" : "Questionnaire Completed!"}</h2>
+        <h2>{t("Questionnaire Completed!", "প্রশ্নাবলী সম্পন্ন হয়েছে!", "प्रश्नावली पूरी हुई!", "प्रश्नावली पूर्ण झाली!")}</h2>
 
             {calculatedScores && (
               <div style={{ textAlign: "left", background: "#F9FAFB", padding: "20px", borderRadius: "12px", border: "1px solid var(--card-border)", marginBottom: 24 }}>
-                <h3 style={{ marginTop: 0, marginBottom: 16, borderBottom: "1px solid #eaeaea", paddingBottom: 12 }}>Results Overview</h3>
+                <h3 style={{ marginTop: 0, marginBottom: 16, borderBottom: "1px solid #eaeaea", paddingBottom: 12 }}>
+                  {t("Results Overview", "ফলাফল সংক্ষেপ", "परिणाम सारांश", "निकाल सारांश")}
+                </h3>
                 <SeverityFeedback questionnaireId={questionnaire.id} calculatedScores={calculatedScores} />
               </div>
             )}
 
             {submitting ? (
               <p style={{ color: "var(--accent-color)", fontWeight: "bold" }}>
-                {state.language === 'bn' ? "ডেটা আপলোড করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।" : "Uploading data... please wait."}
+                {t("Uploading data... please wait.", "ডেটা আপলোড করা হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।", "डेटा अपलोड हो रहा है... कृपया प्रतीक्षा करें।", "डेटा अपलोड होत आहे... कृपया प्रतीक्षा करा.")}
               </p>
             ) : (
               <div>
                 {queuedOffline ? (
                   <p style={{ color: "#B45309", fontWeight: "bold", marginBottom: 24 }}>
-                    {state.language === 'bn'
-                      ? "এই ডিভাইসে সংরক্ষিত হয়েছে। ইন্টারনেট সংযোগ ফিরে এলে আপলোড হবে।"
-                      : "Saved on this device. It will upload automatically when you are back online."}
+                    {t(
+                      "Saved on this device. It will upload automatically when you are back online.",
+                      "এই ডিভাইসে সংরক্ষিত হয়েছে। ইন্টারনেট সংযোগ ফিরে এলে আপলোড হবে।",
+                      "इस डिवाइस पर सहेजा गया। ऑनलाइन होने पर अपने आप अपलोड होगा।",
+                      "या डिव्हाइसवर सेव्ह केले. ऑनलाइन झाल्यावर आपोआप अपलोड होईल."
+                    )}
                   </p>
                 ) : (
                   <p style={{ color: "var(--success-color)", fontWeight: "bold", marginBottom: 24 }}>
-                    {state.language === 'bn' ? "সফলভাবে সংরক্ষিত হয়েছে!" : "Successfully saved!"}
+                    {t("Successfully saved!", "সফলভাবে সংরক্ষিত হয়েছে!", "सफलतापूर्वक सहेजा गया!", "यशस्वीरित्या जतन झाले!")}
                   </p>
                 )}
                 <button className="btn" onClick={onComplete} style={{ width: "100%" }}>
-                  {state.language === 'bn' ? "ফিরে যান" : "Return to Hub"}
+                  {t("Return to Hub", "ফিরে যান", "हब पर वापस जाएं", "हबवर परत जा")}
                 </button>
               </div>
             )}
@@ -144,8 +165,8 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
     );
   }
 
-  const title = state.language === 'bn' && questionnaire.title_bn ? questionnaire.title_bn : questionnaire.title;
-  const description = state.language === 'bn' && questionnaire.description_bn ? questionnaire.description_bn : questionnaire.description;
+  const title = getLocalized(questionnaire, "title");
+  const description = getLocalized(questionnaire, "description");
 
   return (
     <div className="card" style={{ maxWidth: 800, margin: "auto" }}>
@@ -156,12 +177,12 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         {displayItems.map((item, index) => (
           <div key={item.id} style={{ marginBottom: 24, padding: 20, background: "#F9FAFB", borderRadius: 8, border: "1px solid var(--card-border)" }}>
             <p style={{ marginBottom: 16, color: "var(--text-primary)", fontWeight: 500 }}>
-              <strong>{index + 1}.</strong> {state.language === 'bn' && item.text_bn ? item.text_bn : item.text}
+              <strong>{index + 1}.</strong> {getLocalized(item, "text")}
             </p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {questionnaire.scale.map(s => {
                 const isSelected = answers[item.id] === s.value;
-                const label = state.language === 'bn' && s.label_bn ? s.label_bn : s.label;
+                const label = getLocalized(s, "label");
                 return (
                   <button
                     key={s.value}
@@ -192,7 +213,9 @@ export default function QuestionnaireViewer({ questionnaire, onComplete }: { que
         onClick={handleSubmit}
         style={{ marginTop: 24, width: "100%", opacity: isComplete ? 1 : 0.5 }}
       >
-        {submitting ? (state.language === 'bn' ? "জমা দেওয়া হচ্ছে..." : "Submitting...") : (state.language === 'bn' ? "উত্তর জমা দিন" : "Submit Answers")}
+        {submitting 
+          ? t("Submitting...", "জমা দেওয়া হচ্ছে...", "सबमिट हो रहा है...", "सबमिट होत आहे...")
+          : t("Submit Answers", "উত্তর জমা দিন", "उत्तर सबमिट करें", "उत्तरे सबमिट करा")}
       </button>
     </div>
   );

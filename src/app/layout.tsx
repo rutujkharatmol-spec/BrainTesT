@@ -15,8 +15,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "AIIMS Kalyani Physiology Cognitive lab",
-  description: "A series of cognitive assessments and questionnaires.",
+  title: "NeuroCogniLab | AIIMS Kalyani Physiology Cognitive Lab",
+  description: "NeuroCogniLab — High-Precision Neurocognitive Testing & Psychometric Assessment Battery.",
   manifest: "/manifest.json",
   icons: {
     apple: "/favicon_io/apple-touch-icon.png",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "AIIMS Kalyani Physiology Cognitive lab",
+    title: "NeuroCogniLab",
   },
 };
 

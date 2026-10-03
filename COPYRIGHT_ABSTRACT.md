@@ -8,8 +8,8 @@
 
 | Parameter | Specification |
 | :--- | :--- |
-| **Title of the Work** | **BrainTesT: High-Precision Neurocognitive Testing & Psychometric Assessment Battery** |
-| **Alternative / Working Title** | AIIMS Kalyani Physiology Cognitive Lab Assessment System (`brain-test-app`) |
+| **Title of the Work** | **NeuroCogniLab: High-Precision Neurocognitive Testing & Psychometric Assessment Battery** |
+| **Alternative / Working Title** | AIIMS Kalyani Physiology Cognitive Lab Assessment System (`neurocognilab`) |
 | **Nature / Category of Work** | Computer Software / Programme (Literary Work under Section 2(o) of the Copyright Act, 1957) |
 | **Author / Lead Software Architect** | **Rutuj Kharatmol** |
 | **Nationality** | Indian |
@@ -17,8 +17,8 @@
 | **Year of Creation / Completion** | 2024 – 2026 |
 | **Country of First Publication** | India |
 | **Digital Provenance Token ID** | `RK-AIIMS-COG-7734` |
-| **Canonical Provenance SHA-256** | `561f8eae8037df9b042fc3a58c6f6538fc07e34e2fb3fce9e7d33653cc339223` |
-| **Cryptographic System Origin Tag** | `RK-BRAINTEST-AIIMS-2026` |
+| **Canonical Provenance SHA-256** | `82570bd93e92ad0c0fc7defa1e67646beca3e64f019a756c6100df984e55da82` |
+| **Cryptographic System Origin Tag** | `RK-NEUROCOGNILAB-AIIMS-2026` |
 | **Operating Environment / Platforms** | Cross-platform Web, Progressive Web Application (PWA), Desktop, Tablet, Mobile |
 
 ---
@@ -27,7 +27,7 @@
 *(Designed for direct insertion into Form XIV / Statement of Particulars / Patent & Copyright Office Filings)*
 
 > **Abstract:**  
-> **BrainTesT** is an original, integrated full-stack neurocognitive evaluation and clinical psychometric software suite engineered to deliver millisecond-precision psychological experimentation, automated clinical metric extraction, and multi-redundant telemetry synchronization across clinical, laboratory, and field research environments. 
+> **NeuroCogniLab** is an original, integrated full-stack neurocognitive evaluation and clinical psychometric software suite engineered to deliver millisecond-precision psychological experimentation, automated clinical metric extraction, and multi-redundant telemetry synchronization across clinical, laboratory, and field research environments. 
 >
 > Developed specifically for neurocognitive and behavioral physiology research at AIIMS Kalyani, the software implements nine (9) standardized computerized cognitive tasks (including the Stroop Task, N-Back Working Memory, Corsi Block-Tapping, Digit Span, Sustained Attention to Response Task [SART], Dot Probe, Eriksen Flanker, Lexical Decision Task [LDT], and Negative Priming) alongside twelve (12) validated psychometric and mental health assessment instruments (including CFS, GAENE, MATE, SBS, SKEP, TSIS, NCS-6, CFQ, DASS-21, PHQ-9, GAD-7, and WHO-5) featuring full dual-language (English and Bengali) localization.
 >
@@ -87,7 +87,7 @@ A comprehensive battery of twelve (12) psychometric instruments with standardize
 
 ### Module E: Proprietary Provenance & Cryptographic Watermarking Subsystem
 - **Zero-Width Steganographic Signature:** Implements invisible Unicode zero-width sequence (`\u200B`, `\u200C`, `\u200D`) encoding the author's identity directly into binary assets.
-- **Salted XOR Codec:** Obfuscates proprietary manifest JSON using a cryptographic salt key (`RK_BRAINTEST_AIIMS_2026`).
+- **Salted XOR Codec:** Obfuscates proprietary manifest JSON using a cryptographic salt key (`RK_NEUROCOGNILAB_AIIMS_2026`).
 - **Synchronous Pure-TypeScript SHA-256 Engine:** In-memory, dependency-free SHA-256 hash algorithm executing consistently across browser, serverless, and Node.js environments.
 - **Forensic Verification Endpoint & CLI:** Exposes an authenticated runtime verification route (`/api/provenance`) returning custom tamper-detection HTTP headers (`X-System-Origin`, `X-Author-Checksum`) and a standalone forensic CLI (`scripts/verify-provenance.js`) for copyright enforcement.
 
@@ -108,7 +108,7 @@ A comprehensive battery of twelve (12) psychometric instruments with standardize
 
 ## 6. STATEMENT OF NOVELTY & ORIGINALITY
 
-The author, **Rutuj Kharatmol**, asserts original authorship in the architecture, implementation, algorithmic logic, user-interface composition, and source code of the **BrainTesT** software application. Specifically, the following elements constitute original intellectual creations:
+The author, **Rutuj Kharatmol**, asserts original authorship in the architecture, implementation, algorithmic logic, user-interface composition, and source code of the **NeuroCogniLab** software application. Specifically, the following elements constitute original intellectual creations:
 1. The unique design, sequencing, and algorithmic orchestration combining nine distinct neurocognitive paradigms with twelve clinical psychometric scales in a unified web-native architecture.
 2. The proprietary offline transaction queuing engine with dynamic session ID remapping designed specifically for psychological experiments in low-connectivity areas.
 3. The custom single-roundtrip multi-table SQL aggregation pipeline minimizing latency over high-latency serverless database connections.

@@ -10,7 +10,7 @@ export async function GET() {
     {
       status: result.valid ? "AUTHENTICATED" : "COMPROMISED",
       verified: result.valid,
-      system: "AIIMS Kalyani Physiology & Cognitive Lab (BrainTesT)",
+      system: "AIIMS Kalyani Physiology & Cognitive Lab (NeuroCogniLab)",
       creator: result.certificate.author,
       role: result.certificate.role,
       institution: result.certificate.institution,
@@ -23,7 +23,7 @@ export async function GET() {
     {
       status: result.valid ? 200 : 403,
       headers: {
-        "X-System-Origin": "RK-BRAINTEST-AIIMS-2026",
+        "X-System-Origin": "RK-NEUROCOGNILAB-AIIMS-2026",
         "X-Author-Checksum": result.hash,
         "X-Provenance-Status": result.valid ? "Verified" : "Tampered",
       },

@@ -177,58 +177,73 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
-  const isBn = state.language === "bn";
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
 
   if (phase === "instructions") {
     return (
       <TaskInstructionCard
-        title={isBn ? "এরিকসেন ফ্ল্যাঙ্কার টাস্ক — অ্যারো ফোকাস" : "Eriksen Flanker Task — Arrow Focus"}
-        subtitle={isBn ? "মাঝের তীরটি কোন দিকে নির্দেশ করছে?" : "Which way is the center arrow pointing?"}
+        title={t("Eriksen Flanker Task — Arrow Focus", "এরিকসেন ফ্ল্যাঙ্কার টাস্ক — অ্যারো ফোকাস", "एरिकसन फ्लैंकर टास्क — बाण एकाग्रता", "एरिकसन फ्लँकर टास्क — बाण एकाग्रता")}
+        subtitle={t("Which way is the center arrow pointing?", "মাঝের তীরটি কোন দিকে নির্দেশ করছে?", "बीच का तीर किस दिशा में इंगित कर रहा है?", "मधला बाण कोणत्या दिशेला निर्देश करत आहे?")}
         icon="🏹"
-        category={isBn ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+        category={t("Executive Function", "এক্সিকিউটিভ ফাংশন", "कार्यकारी कार्य", "कार्यकारी कार्य")}
         language={state.language}
         mission={
-          isBn
-            ? "চারপাশের তীরগুলিকে উপেক্ষা করুন! শুধুমাত্র মাঝখানের তীরটির (CENTER arrow) দিকে ফোকাস করুন এবং সেটির দিক নির্দেশ করুন।"
-            : "Ignore the flanker arrows on the sides! Focus your eyes only on the CENTER arrow and indicate its direction."
+          t(
+            "Ignore the flanker arrows on the sides! Focus your eyes only on the CENTER arrow and indicate its direction.",
+            "চারপাশের তীরগুলিকে উপেক্ষা করুন! শুধুমাত্র মাঝখানের তীরটির (CENTER arrow) দিকে ফোকাস করুন এবং সেটির দিক নির্দেশ করুন।",
+            "आसपास के तीरों को अनदेखा करें! अपनी आँखें केवल केंद्र के तीर पर केंद्रित करें और उसकी दिशा बताएं।",
+            "बाजूच्या बाणांकडे दुर्लक्ष करा! आपले लक्ष फक्त मधल्या बाणावर केंद्रित करा आणि त्याची दिशा दर्शवा."
+          )
         }
         visualExample={
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             <div style={{ padding: 14, background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#1E40AF", marginBottom: 6 }}>
-                {isBn ? "উদাহরণ ১: বামের তীর" : "EXAMPLE 1: CENTER POINTS LEFT"}
+                {t("EXAMPLE 1: CENTER POINTS LEFT", "উদাহরণ ১: বামের তীর", "उदाहरण 1: केंद्र बायीं ओर", "उदाहरण 1: मध्य डावीकडे")}
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "monospace", letterSpacing: 6, color: "#64748B" }}>
                 &gt;&gt;<span style={{ color: "#2563EB", background: "#DBEAFE", padding: "2px 6px", borderRadius: 6 }}>&lt;</span>&gt;&gt;
               </div>
               <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#1D4ED8" }}>
-                {isBn ? "মাঝের তীরটি বামে ➔ [ ← ] LEFT চাপুন" : "Center is Left ➔ Press [ ← ] LEFT"}
+                {t("Center is Left ➔ Press [ ← ] LEFT", "মাঝের তীরটি বামে ➔ [ ← ] LEFT চাপুন", "केंद्र बायीं ओर है ➔ [ ← ] LEFT दबाएं", "मध्य डावीकडे आहे ➔ [ ← ] LEFT दाबा")}
               </div>
             </div>
             <div style={{ padding: 14, background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 10, textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", marginBottom: 6 }}>
-                {isBn ? "উদাহরণ ২: ডানের তীর" : "EXAMPLE 2: CENTER POINTS RIGHT"}
+                {t("EXAMPLE 2: CENTER POINTS RIGHT", "উদাহরণ ২: ডানের তীর", "उदाहरण 2: केंद्र दायीं ओर", "उदाहरण 2: मध्य उजवीकडे")}
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "monospace", letterSpacing: 6, color: "#64748B" }}>
                 &lt;&lt;<span style={{ color: "#7C3AED", background: "#EDE9FE", padding: "2px 6px", borderRadius: 6 }}>&gt;</span>&lt;&lt;
               </div>
               <div style={{ marginTop: 8, fontSize: 13, fontWeight: 800, color: "#6D28D9" }}>
-                {isBn ? "মাঝের তীরটি ডানে ➔ [ → ] RIGHT চাপুন" : "Center is Right ➔ Press [ → ] RIGHT"}
+                {t("Center is Right ➔ Press [ → ] RIGHT", "মাঝের তীরটি ডানে ➔ [ → ] RIGHT চাপুন", "केंद्र दायीं ओर है ➔ [ → ] RIGHT दबाएं", "मध्य उजवीकडे आहे ➔ [ → ] RIGHT दाबा")}
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "মাঝের তীরটি বামে নির্দেশ করলে [←] অথবা LEFT বাটন চাপুন।" : "If center arrow points LEFT, press [←] or tap LEFT.", icon: "⬅️" },
-          { text: isBn ? "মাঝের তীরটি ডানে নির্দেশ করলে [→] অথবা RIGHT বাটন চাপুন।" : "If center arrow points RIGHT, press [→] or tap RIGHT.", icon: "➡️" },
-          { text: isBn ? "চারপাশের বিপরীতমুখী তীরগুলিতে বিভ্রান্ত হবেন না!" : "Do NOT let the distractor arrows on the sides fool you!", icon: "🎯" },
-          { text: isBn ? "যত দ্রুত ও নির্ভুলভাবে সম্ভব উত্তর দিন।" : "Answer as fast and accurately as possible.", icon: "⚡" },
+          { text: t("If center arrow points LEFT, press [←] or tap LEFT.", "মাঝের তীরটি বামে নির্দেশ করলে [←] অথবা LEFT বাটন চাপুন।", "यदि केंद्र का तीर बायीं ओर है, तो [←] दबाएं या LEFT पर टैप करें।", "जर मधला बाण डावीकडे असेल, तर [←] दाबा किंवा LEFT वर टॅप करा."), icon: "⬅️" },
+          { text: t("If center arrow points RIGHT, press [→] or tap RIGHT.", "মাঝের তীরটি ডানে নির্দেশ করলে [→] অথবা RIGHT বাটন চাপুন।", "यदि केंद्र का तीर दायीं ओर है, तो [→] दबाएं या RIGHT पर टैप करें।", "जर मधला बाण उजवीकडे असेल, तर [→] दाबा किंवा RIGHT वर टॅप करा."), icon: "➡️" },
+          { text: t("Do NOT let the distractor arrows on the sides fool you!", "চারপাশের বিপরীতমুখী তীরগুলিতে বিভ্রান্ত হবেন না!", "किनारों के तीरों से भ्रमित न हों!", "बाजूच्या बाणांमुळे विचलित होऊ नका!"), icon: "🎯" },
+          { text: t("Answer as fast and accurately as possible.", "যত দ্রুত ও নির্ভুলভাবে সম্ভব উত্তর দিন।", "जितनी जल्दी और सटीक संभव हो उत्तर दें।", "शक्य तितक्या लवकर आणि अचूक उत्तर द्या."), icon: "⚡" },
         ]}
         controls={[
-          { key: "←", action: isBn ? "বাম তীর (Left)" : "Left", color: "#2563EB" },
-          { key: "→", action: isBn ? "ডান তীর (Right)" : "Right", color: "#7C3AED" },
+          { key: "←", action: t("Left", "বাম তীর (Left)", "बायाँ (Left)", "डावा (Left)"), color: "#2563EB" },
+          { key: "→", action: t("Right", "ডান তীর (Right)", "दायाँ (Right)", "उजवा (Right)"), color: "#7C3AED" },
         ]}
-        tip={isBn ? "কীবোর্ডের তীর কী (Arrow keys) বা নিচের বোতামগুলিতে ক্লিক করতে পারেন।" : "You can press keyboard arrow keys (← / →) or click the buttons below."}
+        tip={t(
+          "You can press keyboard arrow keys (← / →) or click the buttons below.",
+          "কীবোর্ডের তীর কী (Arrow keys) বা নিচের বোতামগুলিতে ক্লিক করতে পারেন।",
+          "आप कीबोर्ड तीर कुंजियों (← / →) का उपयोग कर सकते हैं या नीचे दिए गए बटनों पर क्लिक कर सकते हैं।",
+          "तुम्ही कीबोर्ड बाण की (← / →) वापरू शकता किंवा खालील बटणांवर क्लिक करू शकता."
+        )}
         onStart={startTask}
       />
     );
@@ -251,9 +266,9 @@ Please tell the study coordinator before continuing.`);
   return (
     <div className="task-view-container">
       <TaskHUD
-        title={isBn ? "এরিকসেন ফ্ল্যাঙ্কার" : "Eriksen Flanker"}
+        title={t("Eriksen Flanker", "এরিকসেন ফ্ল্যাঙ্কার", "एरिकसन फ्लैंकर", "एरिकसन फ्लँकर")}
         icon="🏹"
-        category={isBn ? "এক্সিকিউটিভ ফাংশন" : "Executive Function"}
+        category={t("Executive Function", "এক্সিকিউটিভ ফাংশন", "कार्यकारी कार्य", "कार्यकारी कार्य")}
         currentTrial={currentTrialIndex + 1}
         totalTrials={TOTAL_TRIALS}
         language={state.language}
@@ -277,7 +292,7 @@ Please tell the study coordinator before continuing.`);
               {trial.stimulusString}
             </h1>
             <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>
-              {isBn ? "মাঝখানের তীরটি লক্ষ্য করুন" : "Focus on the CENTER arrow"}
+              {t("Focus on the CENTER arrow", "মাঝখানের তীরটি লক্ষ্য করুন", "बीच के तीर पर ध्यान दें", "मधल्या बाणावर लक्ष केंद्रित करा")}
             </div>
           </div>
         )}
@@ -291,14 +306,14 @@ Please tell the study coordinator before continuing.`);
               onClick={() => handleResponse("left")}
               style={{ borderColor: "#BFDBFE", color: "#1D4ED8", padding: "14px 20px" }}
             >
-              <span className="keycap">←</span> {isBn ? "বাম (LEFT)" : "LEFT"}
+              <span className="keycap">←</span> {t("LEFT", "বাম (LEFT)", "बायाँ (LEFT)", "डावा (LEFT)")}
             </button>
             <button 
               className="mobile-btn" 
               onClick={() => handleResponse("right")}
               style={{ borderColor: "#DDD6FE", color: "#6D28D9", padding: "14px 20px" }}
             >
-              <span className="keycap">→</span> {isBn ? "ডান (RIGHT)" : "RIGHT"}
+              <span className="keycap">→</span> {t("RIGHT", "ডান (RIGHT)", "दायाँ (RIGHT)", "उजवा (RIGHT)")}
             </button>
           </div>
         </div>

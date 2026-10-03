@@ -7,7 +7,7 @@ type TaskHUDProps = {
   icon?: string;
   currentTrial: number;
   totalTrials: number;
-  language?: "en" | "bn";
+  language?: "en" | "bn" | "hi" | "mr";
   category?: string;
   customProgressLabel?: string;
 };
@@ -24,6 +24,13 @@ export default function TaskHUD({
   const percent = totalTrials > 0 
     ? Math.min(100, Math.max(0, Math.round(((currentTrial) / totalTrials) * 100))) 
     : 0;
+
+  const progressLabel = {
+    en: "Progress:",
+    bn: "অগ্রগতি:",
+    hi: "प्रगति:",
+    mr: "प्रगती:",
+  }[language] || "Progress:";
 
   return (
     <div className="task-hud-container">
@@ -55,7 +62,7 @@ export default function TaskHUD({
           ) : (
             <>
               <span style={{ color: "#64748B", fontSize: 12 }}>
-                {language === "bn" ? "অগ্রগতি:" : "Progress:"}
+                {progressLabel}
               </span>
               <span style={{ color: "#0F172A", fontWeight: 800 }}>
                 {currentTrial} / {totalTrials}

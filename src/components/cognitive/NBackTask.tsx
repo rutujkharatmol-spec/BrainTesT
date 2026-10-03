@@ -230,67 +230,83 @@ Please tell the study coordinator before continuing.`);
     }
   };
 
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    switch (state.language) {
+      case "bn": return bn;
+      case "hi": return hi;
+      case "mr": return mr;
+      default: return en;
+    }
+  };
+
   if (phase === "instructions") {
-    const isBn = state.language === "bn";
     return (
       <TaskInstructionCard
-        title={isBn ? "এন-ব্যাক টাস্ক — স্মৃতি প্রতিধ্বনি" : "2-Back Task — Memory Echo"}
-        subtitle={isBn ? "কার্যকরী স্মৃতির (Working Memory) পরীক্ষা" : "Test your working memory and recall"}
+        title={t("2-Back Task — Memory Echo", "এন-ব্যাক টাস্ক — স্মৃতি প্রতিধ্বনি", "2-बैक टास्क — स्मृति प्रतिध्वनि", "2-बॅक टास्क — स्मरणशक्ती प्रतिध्वनी")}
+        subtitle={t("Test your working memory and recall", "কার্যকরী স্মৃতির (Working Memory) পরীক্ষা", "अपनी कार्यशील स्मृति और स्मरण शक्ति का परीक्षण करें", "आपल्या कार्यशील स्मरणशक्तीची परीक्षा घ्या")}
         icon="🧠"
-        category={isBn ? "ওয়ার্কিং মেমোরি" : "Working Memory"}
+        category={t("Working Memory", "ওয়ার্কিং মেমোরি", "कार्यशील स्मृति", "कार्यशील स्मरणशक्ती")}
         language={state.language}
         mission={
-          isBn
-            ? "স্ক্রিনে একে একে অক্ষর আসবে। বর্তমান অক্ষরটি যদি ঠিক ২ ধাপ আগের অক্ষরের মতো একই হয়, তখনই স্পেসবার (SPACEBAR) চাপুন অথবা MATCH এ ট্যাপ করুন!"
-            : "Watch the letters appear one by one. If the current letter matches the one from EXACTLY 2 steps ago, press SPACEBAR or tap MATCH!"
+          t(
+            "Watch the letters appear one by one. If the current letter matches the one from EXACTLY 2 steps ago, press SPACEBAR or tap MATCH!",
+            "স্ক্রিনে একে একে অক্ষর আসবে। বর্তমান অক্ষরটি যদি ঠিক ২ ধাপ আগের অক্ষরের মতো একই হয়, তখনই স্পেসবার (SPACEBAR) চাপুন অথবা MATCH এ ট্যাপ করুন!",
+            "स्क्रीन पर एक-एक करके अक्षर आएंगे। यदि वर्तमान अक्षर ठीक 2 कदम पहले के अक्षर से मेल खाता है, तो स्पेसबार दबाएं या MATCH पर टैप करें!",
+            "स्क्रीनवर एकापाठोपाठ एक अक्षरे येतील. जर सध्याचे अक्षर बरोबर 2 पायऱ्या आधीच्या अक्षरासारखेच असेल, तर स्पेसबार दाबा किंवा MATCH वर टॅप करा!"
+          )
         }
         visualExample={
           <div style={{ background: "#F8FAFC", padding: "16px", borderRadius: 12, border: "1px solid #E2E8F0" }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: "#64748B", marginBottom: 8, textTransform: "uppercase" }}>
-              {isBn ? "টাইমলাইন ডায়াগ্রাম:" : "TIMELINE WALKTHROUGH:"}
+              {t("TIMELINE WALKTHROUGH:", "টাইমলাইন ডায়াগ্রাম:", "टाइमलाइन गाइड:", "टाइमलाइन मार्गदर्शक:")}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", paddingBottom: 6 }}>
               <div style={{ textAlign: "center", padding: "8px 10px", background: "#FFFFFF", border: "1px solid #CBD5E1", borderRadius: 8, minWidth: 60 }}>
                 <div style={{ fontSize: 10, color: "#94A3B8" }}>Step 1</div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: "#0F172A" }}>A</div>
-                <div style={{ fontSize: 10, color: "#64748B" }}>Wait</div>
+                <div style={{ fontSize: 10, color: "#64748B" }}>{t("Wait", "অপেক্ষা", "रुकें", "थांबा")}</div>
               </div>
               <span style={{ color: "#94A3B8" }}>➔</span>
               <div style={{ textAlign: "center", padding: "8px 10px", background: "#FFFFFF", border: "1px solid #CBD5E1", borderRadius: 8, minWidth: 60 }}>
                 <div style={{ fontSize: 10, color: "#94A3B8" }}>Step 2</div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: "#0F172A" }}>B</div>
-                <div style={{ fontSize: 10, color: "#64748B" }}>Wait</div>
+                <div style={{ fontSize: 10, color: "#64748B" }}>{t("Wait", "অপেক্ষা", "रुकें", "थांबा")}</div>
               </div>
               <span style={{ color: "#94A3B8" }}>➔</span>
               <div style={{ textAlign: "center", padding: "8px 10px", background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 8, minWidth: 80 }}>
                 <div style={{ fontSize: 10, color: "#059669", fontWeight: 700 }}>Step 3</div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: "#059669" }}>A</div>
-                <div style={{ fontSize: 10, fontWeight: 800, color: "#047857" }}>MATCH! 🔥</div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#047857" }}>{t("MATCH! 🔥", "ম্যাচ! 🔥", "मैच! 🔥", "मॅच! 🔥")}</div>
               </div>
               <span style={{ color: "#94A3B8" }}>➔</span>
               <div style={{ textAlign: "center", padding: "8px 10px", background: "#FFFFFF", border: "1px solid #CBD5E1", borderRadius: 8, minWidth: 60 }}>
                 <div style={{ fontSize: 10, color: "#94A3B8" }}>Step 4</div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: "#0F172A" }}>C</div>
-                <div style={{ fontSize: 10, color: "#64748B" }}>Wait</div>
+                <div style={{ fontSize: 10, color: "#64748B" }}>{t("Wait", "অপেক্ষা", "रुकें", "थांबा")}</div>
               </div>
               <span style={{ color: "#94A3B8" }}>➔</span>
               <div style={{ textAlign: "center", padding: "8px 10px", background: "#ECFDF5", border: "2px solid #10B981", borderRadius: 8, minWidth: 80 }}>
                 <div style={{ fontSize: 10, color: "#059669", fontWeight: 700 }}>Step 5</div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: "#059669" }}>A</div>
-                <div style={{ fontSize: 10, fontWeight: 800, color: "#047857" }}>MATCH! 🔥</div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#047857" }}>{t("MATCH! 🔥", "ম্যাচ! 🔥", "मैच! 🔥", "मॅच! 🔥")}</div>
               </div>
             </div>
           </div>
         }
         rules={[
-          { text: isBn ? "প্রতিটি অক্ষর স্ক্রিনে ১.৫ সেকেন্ডের জন্য থাকে।" : "Each letter stays on screen briefly — keep your memory updated!", icon: "⏱️" },
-          { text: isBn ? "যদি ২ ধাপ আগের অক্ষরের সাথে না মিলে, তবে কোনো বাটন চাপবেন না।" : "If the letter is NOT a 2-step match, do not press anything.", icon: "🛑" },
-          { text: isBn ? "মোট ৩০টি অক্ষর দেখানো হবে।" : "There are 30 letters shown in sequence.", icon: "🎯" },
+          { text: t("Each letter stays on screen briefly — keep your memory updated!", "প্রতিটি অক্ষর স্ক্রিনে ১.৫ সেকেন্ডের জন্য থাকে।", "प्रत्येक अक्षर स्क्रीन पर थोड़ी देर के लिए रहता है — अपनी याददाश्त बनाए रखें!", "प्रत्येक अक्षर स्क्रीनवर थोड्या वेळासाठी राहते — आपली स्मरणशक्ती ताजी ठेवा!"), icon: "⏱️" },
+          { text: t("If the letter is NOT a 2-step match, do not press anything.", "যদি ২ ধাপ আগের অক্ষরের সাথে না মিলে, তবে কোনো বাটন চাপবেন না।", "यदि अक्षर 2 कदम पहले से मेल नहीं खाता है, तो कुछ भी न दबाएं।", "जर अक्षर 2 पायऱ्या आधीच्या अक्षराशी जुळत नसेल, तर काहीही दाबू नका."), icon: "🛑" },
+          { text: t("There are 30 letters shown in sequence.", "মোট ৩০টি অক্ষর দেখানো হবে।", "क्रम में 30 अक्षर दिखाए जाते हैं।", "क्रमाने 30 अक्षरे दाखवली जातील."), icon: "🎯" },
         ]}
         controls={[
-          { key: "SPACEBAR", action: isBn ? "ম্যাচ (MATCH)" : "MATCH (2 Steps Back)", color: "#10B981" },
+          { key: "SPACEBAR", action: t("MATCH (2 Steps Back)", "ম্যাচ (MATCH)", "मैच (2 कदम पहले)", "मॅच (2 पायऱ्या आधी)"), color: "#10B981" },
         ]}
-        tip={isBn ? "মনে মনে আগের দুটি অক্ষর উচ্চারণ করুন: যেমন 'A... B...'" : "Mental trick: Whisper the last 2 letters to yourself as each one appears!"}
+        tip={t(
+          "Mental trick: Whisper the last 2 letters to yourself as each one appears!",
+          "মনে মনে আগের দুটি অক্ষর উচ্চারণ করুন: যেমন 'A... B...'",
+          "मानसिक युक्ति: प्रत्येक अक्षर आने पर पिछले 2 अक्षरों को अपने मन में दोहराएं!",
+          "मानसिक युक्ती: प्रत्येक अक्षर आल्यावर मागील 2 अक्षरे मनातल्या मनात उच्चारा!"
+        )}
         onStart={startTask}
       />
     );
@@ -301,9 +317,9 @@ Please tell the study coordinator before continuing.`);
     return (
       <div className="task-view-container">
         <TaskHUD
-          title={state.language === "bn" ? "এন-ব্যাক টাস্ক" : "2-Back Task"}
+          title={t("2-Back Task", "এন-ব্যাক টাস্ক", "2-बैक टास्क", "2-बॅक टास्क")}
           icon="🧠"
-          category={state.language === "bn" ? "ওয়ার্কিং মেমোরি" : "Working Memory"}
+          category={t("Working Memory", "ওয়ার্কিং মেমোরি", "कार्यशील स्मृति", "कार्यशील स्मरणशक्ती")}
           currentTrial={currentTrialIndex + 1}
           totalTrials={TOTAL_TRIALS}
           language={state.language}
@@ -334,7 +350,7 @@ Please tell the study coordinator before continuing.`);
             borderRadius: 12,
             border: "1px solid #A7F3D0"
           }}>
-            ✓ {state.language === 'bn' ? "প্রতিক্রিয়া নিবন্ধিত হয়েছে" : "Match Pressed!"}
+            ✓ {t("Match Pressed!", "প্রতিক্রিয়া নিবন্ধিত হয়েছে", "मैच दर्ज हुआ!", "मॅच नोंदवले गेले!")}
           </div>
         </div>
         
@@ -353,7 +369,7 @@ Please tell the study coordinator before continuing.`);
                 fontSize: 16,
               }}
             >
-              <span className="keycap">SPACE</span> {state.language === 'bn' ? "ম্যাচ (MATCH)" : "MATCH"}
+              <span className="keycap">SPACE</span> {t("MATCH", "ম্যাচ (MATCH)", "मैच (MATCH)", "मॅच (MATCH)")}
             </button>
           </div>
         </div>

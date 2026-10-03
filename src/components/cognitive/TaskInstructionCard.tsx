@@ -13,7 +13,7 @@ export type TaskInstructionCardProps = {
   subtitle?: string;
   icon?: string;
   category?: string;
-  language: "en" | "bn";
+  language: "en" | "bn" | "hi" | "mr";
   mission: string;
   visualExample?: React.ReactNode;
   rules: { text: string; highlight?: boolean; icon?: string }[];
@@ -38,6 +38,15 @@ export default function TaskInstructionCard({
   startBtnText,
 }: TaskInstructionCardProps) {
   const isBn = language === "bn";
+  const isHi = language === "hi";
+  const isMr = language === "mr";
+
+  const t = (en: string, bn: string, hi: string, mr: string) => {
+    if (isBn) return bn;
+    if (isHi) return hi;
+    if (isMr) return mr;
+    return en;
+  };
 
   return (
     <div
@@ -115,7 +124,7 @@ export default function TaskInstructionCard({
         <span style={{ fontSize: 22, marginTop: 1 }}>🎯</span>
         <div>
           <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "#1E40AF", letterSpacing: 0.5 }}>
-            {isBn ? "আপনার লক্ষ্য (MISSION)" : "YOUR MISSION"}
+            {t("YOUR MISSION", "আপনার লক্ষ্য (MISSION)", "आपका लक्ष्य (MISSION)", "तुमचे ध्येय (MISSION)")}
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginTop: 2, lineHeight: 1.4 }}>
             {mission}
@@ -127,7 +136,7 @@ export default function TaskInstructionCard({
       {visualExample && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 800, color: "#475569", textTransform: "uppercase", marginBottom: 8, letterSpacing: 0.5 }}>
-            {isBn ? "👀 ভিজ্যুয়াল উদাহরণ (HOW IT WORKS)" : "👀 HOW IT WORKS"}
+            {t("👀 HOW IT WORKS", "👀 ভিজ্যুয়াল উদাহরণ (HOW IT WORKS)", "👀 यह कैसे काम करता है (HOW IT WORKS)", "👀 हे कसे कार्य करते (HOW IT WORKS)")}
           </div>
           {visualExample}
         </div>
@@ -136,7 +145,7 @@ export default function TaskInstructionCard({
       {/* Rules / Steps List */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#475569", textTransform: "uppercase", marginBottom: 8, letterSpacing: 0.5 }}>
-          {isBn ? "📋 নির্দেশাবলী (RULES)" : "📋 RULES TO FOLLOW"}
+          {t("📋 RULES TO FOLLOW", "📋 নির্দেশাবলী (RULES)", "📋 नियम और निर्देश (RULES)", "📋 नियम आणि सूचना (RULES)")}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {rules.map((rule, idx) => (
@@ -174,10 +183,15 @@ export default function TaskInstructionCard({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 800, color: "#334155", textTransform: "uppercase", letterSpacing: 0.5 }}>
-            🎮 {isBn ? "নিয়ন্ত্রণ (CONTROLS)" : "CONTROLS"}
+            🎮 {t("CONTROLS", "নিয়ন্ত্রণ (CONTROLS)", "नियंत्रण (CONTROLS)", "नियंत्रणे (CONTROLS)")}
           </span>
           <span style={{ fontSize: 11, color: "#64748B", fontWeight: 600 }}>
-            {isBn ? "কীবোর্ড কী অথবা স্ক্রিন বোতামে ক্লিক করুন" : "Use keyboard keys OR click/tap buttons"}
+            {t(
+              "Use keyboard keys OR click/tap buttons",
+              "কীবোর্ড কী অথবা স্ক্রিন বোতামে ক্লিক করুন",
+              "कीबोर्ड कुंजियों का उपयोग करें या स्क्रीन बटन दबाएं",
+              "कीबोर्ड बटणे वापरा किंवा स्क्रीनवरील बटणावर क्लिक करा"
+            )}
           </span>
         </div>
 
@@ -259,7 +273,7 @@ export default function TaskInstructionCard({
         }}
       >
         <span>🚀</span>
-        <span>{startBtnText || (isBn ? "চ্যালেঞ্জ শুরু করুন" : "Start Challenge")}</span>
+        <span>{startBtnText || t("Start Challenge", "চ্যালেঞ্জ শুরু করুন", "चुनौती शुरू करें", "आव्हान सुरू करा")}</span>
       </button>
     </div>
   );

@@ -5,7 +5,7 @@ import MainAppFlow from "@/components/MainAppFlow";
 import SplashScreen from "@/components/SplashScreen";
 import { useAppContext } from "@/components/AppContext";
 
-const SPLASH_SEEN_KEY = "brainTestSplashSeen";
+const SPLASH_SEEN_KEY = "neuroCogniLabSplashSeen";
 
 export default function Home() {
   const { state } = useAppContext();
@@ -20,7 +20,7 @@ export default function Home() {
 
     let seen = false;
     try {
-      seen = sessionStorage.getItem(SPLASH_SEEN_KEY) === "1";
+      seen = sessionStorage.getItem(SPLASH_SEEN_KEY) === "1" || sessionStorage.getItem("brainTestSplashSeen") === "1";
     } catch {
       // Private mode / storage disabled
     }
