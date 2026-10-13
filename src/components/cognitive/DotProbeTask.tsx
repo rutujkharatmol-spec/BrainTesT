@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull, sampleWithoutReplacement } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -146,8 +147,7 @@ export default function DotProbeTask({ onComplete }: { onComplete?: () => void }
 
       // 2. Words
       timeoutRef.current = setTimeout(() => {
-        setPhase("dot");
-        startTimeRef.current = performance.now();
+        presentStimulus(() => setPhase("dot"), startTimeRef);
 
         // 3. Response deadline. Previously this waited indefinitely, so a
         // distracted participant produced a 45-second "reaction time" that

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -22,6 +23,9 @@ type TrialResult = Trial & {
 
 const TOTAL_TRIALS = 40;
 const FIXATION_DURATION = 500;
+// Unanswered trials are recorded as misses after this long, so a lapse of
+// attention cannot put a multi-second "RT" into the condition means.
+const RESPONSE_DEADLINE = 2000;
 
 export default function FlankerTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
@@ -38,6 +42,8 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const interTrialRef = useRef<NodeJS.Timeout | null>(null);
   const hasRespondedRef = useRef(false);
 
   // Generate sequence — counterbalanced on both factors: exactly half
@@ -75,23 +81,32 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
     hasRespondedRef.current = false;
 
     timeoutRef.current = setTimeout(() => {
-      setPhase("stimulus");
-      startTimeRef.current = performance.now();
-      // Waits indefinitely for user input here
+      presentStimulus(() => setPhase("stimulus"), startTimeRef);
+
+      responseTimeoutRef.current = setTimeout(() => {
+        if (hasRespondedRef.current) return;
+        hasRespondedRef.current = true;
+        const trial = trials[index];
+        if (trial) {
+          setResults(prev => [...prev, { ...trial, rt: null, correct: false }]);
+        }
+        runNextTrial(index + 1);
+      }, RESPONSE_DEADLINE);
     }, FIXATION_DURATION);
   };
 
   const handleResponse = useCallback((responseDir: "left" | "right") => {
     if (phase !== "stimulus" || hasRespondedRef.current) return;
-    
+
     hasRespondedRef.current = true;
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
     const rt = performance.now() - startTimeRef.current;
     const trial = trials[currentTrialIndex];
     const correct = responseDir === trial.direction;
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
 
-    setTimeout(() => {
+    interTrialRef.current = setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
   }, [phase, currentTrialIndex, trials]);
@@ -110,6 +125,8 @@ export default function FlankerTask({ onComplete }: { onComplete?: () => void })
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+      if (interTrialRef.current) clearTimeout(interTrialRef.current);
     };
   }, []);
 

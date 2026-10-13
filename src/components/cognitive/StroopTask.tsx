@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -16,13 +17,17 @@ type Trial = {
 };
 
 type TrialResult = Trial & {
-  rt: number;
+  rt: number | null; // null if the response deadline passed
   correct: boolean;
 };
 
 const COLORS = ["RED", "BLUE", "GREEN", "YELLOW"];
 const KEYS: Record<string, string> = { r: "RED", b: "BLUE", g: "GREEN", y: "YELLOW" };
 const TOTAL_TRIALS = 20;
+// Unanswered trials are recorded as misses after this long. Without a
+// deadline a participant who looked away produced a multi-second "RT" that
+// entered a condition mean built from only ~10 trials.
+const RESPONSE_DEADLINE = 3000;
 
 export default function StroopTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
@@ -38,6 +43,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   const [queuedOffline, setQueuedOffline] = useState(false);
 
   const startTimeRef = useRef<number>(0);
+  const hasRespondedRef = useRef(false);
 
   // Generate Trials — counterbalanced: exactly half congruent, order shuffled.
   useEffect(() => {
@@ -62,23 +68,17 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
   useEffect(() => {
     if (phase === "fixation") {
       const timer = setTimeout(() => {
-        setPhase("stimulus");
-        // Record high precision start time immediately when stimulus is shown
-        startTimeRef.current = performance.now();
+        hasRespondedRef.current = false;
+        presentStimulus(() => setPhase("stimulus"), startTimeRef);
       }, 500); // 500ms fixation
       return () => clearTimeout(timer);
     }
   }, [phase]);
 
-  const handleResponse = useCallback((colorName: string) => {
-    if (phase !== "stimulus") return;
+  const finishTrial = useCallback((rt: number | null, correct: boolean) => {
+    hasRespondedRef.current = true;
+    const newResult: TrialResult = { ...trials[currentTrialIndex], rt, correct };
 
-    const rt = performance.now() - startTimeRef.current;
-    const currentTrial = trials[currentTrialIndex];
-    const correct = colorName === currentTrial.color;
-
-    const newResult: TrialResult = { ...currentTrial, rt, correct };
-    
     setResults(prev => [...prev, newResult]);
 
     if (currentTrialIndex + 1 < TOTAL_TRIALS) {
@@ -87,7 +87,23 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     } else {
       setPhase("completed");
     }
-  }, [phase, currentTrialIndex, trials]);
+  }, [currentTrialIndex, trials]);
+
+  // Response deadline; cleared as soon as the phase leaves "stimulus".
+  useEffect(() => {
+    if (phase !== "stimulus") return;
+    const timer = setTimeout(() => {
+      if (!hasRespondedRef.current) finishTrial(null, false);
+    }, RESPONSE_DEADLINE);
+    return () => clearTimeout(timer);
+  }, [phase, finishTrial]);
+
+  const handleResponse = useCallback((colorName: string) => {
+    if (phase !== "stimulus" || hasRespondedRef.current) return;
+
+    const rt = performance.now() - startTimeRef.current;
+    finishTrial(rt, colorName === trials[currentTrialIndex].color);
+  }, [phase, currentTrialIndex, trials, finishTrial]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
@@ -116,10 +132,10 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
     setSubmitting(true);
     
     // Calculate parameters (only correct answers, RT > 150ms)
-    const validTrials = results.filter(r => r.correct && r.rt > 150);
-    
-    const congruentRTs = validTrials.filter(r => r.congruent).map(r => r.rt);
-    const incongruentRTs = validTrials.filter(r => !r.congruent).map(r => r.rt);
+    const validTrials = results.filter(r => r.correct && r.rt !== null && r.rt > 150);
+
+    const congruentRTs = validTrials.filter(r => r.congruent).map(r => r.rt as number);
+    const incongruentRTs = validTrials.filter(r => !r.congruent).map(r => r.rt as number);
 
     const meanRTCongruent = roundedMeanOrNull(congruentRTs);
     const meanRTIncongruent = roundedMeanOrNull(incongruentRTs);
@@ -174,7 +190,7 @@ export default function StroopTask({ onComplete }: { onComplete?: () => void }) 
 
   const WORD_LABELS: Record<string, { en: string; bn: string; hi: string; mr: string }> = {
     RED: { en: "RED", bn: "লাল", hi: "लाल", mr: "लाल" },
-    BLUE: { en: "BLUE", bn: "नीল", hi: "नीला", mr: "निळा" },
+    BLUE: { en: "BLUE", bn: "নীল", hi: "नीला", mr: "निळा" },
     GREEN: { en: "GREEN", bn: "সবুজ", hi: "हरा", mr: "हिरवा" },
     YELLOW: { en: "YELLOW", bn: "হলুদ", hi: "पीला", mr: "पिवळा" },
   };

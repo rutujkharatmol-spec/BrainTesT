@@ -176,8 +176,22 @@ export type SyncResult = {
  * that, every queued submission is rejected with "Invalid session" and — since
  * a failure used to mean "requeue" — the queue could never drain and the
  * participant's entire offline session was silently lost.
+ *
+ * Concurrent calls (a flapping connection fires "online" repeatedly) share the
+ * in-flight run instead of replaying the same snapshot twice.
  */
-export async function processOfflineQueue(): Promise<SyncResult> {
+let inFlight: Promise<SyncResult> | null = null;
+
+export function processOfflineQueue(): Promise<SyncResult> {
+  if (!inFlight) {
+    inFlight = drainQueue().finally(() => {
+      inFlight = null;
+    });
+  }
+  return inFlight;
+}
+
+async function drainQueue(): Promise<SyncResult> {
   const queue = getQueue();
   if (queue.length === 0) return { sent: 0, failed: 0, dropped: 0 };
 
@@ -190,7 +204,7 @@ export async function processOfflineQueue(): Promise<SyncResult> {
   ];
 
   const remaining: QueuedRequest[] = [];
-  const dead: QueuedRequest[] = getDeadLetters();
+  const dead: QueuedRequest[] = [];
   let sent = 0;
   let dropped = 0;
 
@@ -245,8 +259,14 @@ export async function processOfflineQueue(): Promise<SyncResult> {
     }
   }
 
-  saveQueue(remaining);
-  saveDeadLetters(dead);
+  // Re-read storage rather than overwriting it with the snapshot taken above:
+  // a task that finished while this loop was awaiting the network may have
+  // queued a new submission, and overwriting erased it even though the
+  // participant had been told it was "saved on this device".
+  const processed = new Set(queue.map((r) => r.id));
+  const queuedMeanwhile = getQueue().filter((r) => !processed.has(r.id));
+  saveQueue([...remaining, ...queuedMeanwhile]);
+  saveDeadLetters([...getDeadLetters(), ...dead]);
 
   console.log(`[OfflineSync] Done. Sent: ${sent}, retrying: ${remaining.length}, dropped: ${dropped}`);
   return { sent, failed: remaining.length, dropped };

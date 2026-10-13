@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
-import { roundedMeanOrNull } from "@/utils/trials";
+import { balancedFlags, roundedMeanOrNull } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -22,7 +23,10 @@ type TrialResult = Trial & {
 
 const TOTAL_TRIALS = 50;
 const NO_GO_DIGIT = 3;
-const NO_GO_PROBABILITY = 0.15; // heavily weighted toward Go
+// Exact share of No-Go trials (8 of 50). This used to be a per-trial coin
+// flip, so participants saw anywhere from ~3 to ~13 No-Go trials and their
+// raw commission-error counts could not be compared.
+const NO_GO_PROPORTION = 0.15;
 const STIMULUS_DURATION = 250;
 const MASK_DURATION = 900;
 
@@ -49,8 +53,9 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
   // Generate sequence
   useEffect(() => {
     const sequence: Trial[] = [];
+    const noGoFlags = balancedFlags(TOTAL_TRIALS, NO_GO_PROPORTION);
     for (let i = 0; i < TOTAL_TRIALS; i++) {
-      const isNoGo = Math.random() < NO_GO_PROBABILITY;
+      const isNoGo = noGoFlags[i];
       let digit;
       if (isNoGo) {
         digit = NO_GO_DIGIT;
@@ -102,11 +107,12 @@ export default function SARTTask({ onComplete }: { onComplete?: () => void }) {
       return;
     }
 
-    setCurrentTrialIndex(index);
-    setShowStimulus(true);
-    setHasPressed(false);
     currentResponseRef.current = { pressed: false, rt: null };
-    startTimeRef.current = performance.now();
+    presentStimulus(() => {
+      setCurrentTrialIndex(index);
+      setShowStimulus(true);
+      setHasPressed(false);
+    }, startTimeRef);
 
     // Stimulus visible
     trialTimeoutRef.current = setTimeout(() => {

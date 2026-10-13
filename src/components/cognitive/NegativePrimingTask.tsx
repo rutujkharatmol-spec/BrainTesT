@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, differenceOrNull } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -60,9 +61,15 @@ const WORDS_MR: WordData[] = [
   { text: "टेबल", category: "NON_LIVING" }
 ];
 
+// "filler" is the first trial, which has no preceding prime to relate to.
+type Condition = "filler" | "control" | "ignored_repetition";
+
 type Trial = {
   target: WordData;     // Word in RED
   distractor: WordData; // Word in BLUE
+  condition: Condition;
+  // Kept alongside `condition` so raw trial data stays comparable with
+  // records saved before `condition` existed.
   isIgnoredRepetition: boolean;
 };
 
@@ -73,6 +80,17 @@ type TrialResult = Trial & {
 
 const TOTAL_TRIALS = 40;
 const FIXATION_DURATION = 500;
+// Exact share of primed trials (12 of the 39 that follow a prime).
+const IGNORED_REPETITION_PROPORTION = 0.3;
+// Unanswered trials are recorded as misses after this long, so a lapse of
+// attention cannot put a multi-second "RT" into the condition means.
+const RESPONSE_DEADLINE = 3000;
+
+/** A random word from `pool` that is none of `exclude`. */
+function pickWord(pool: WordData[], exclude: WordData[]): WordData {
+  const options = pool.filter(w => !exclude.some(e => e.text === w.text));
+  return options[Math.floor(Math.random() * options.length)];
+}
 
 export default function NegativePrimingTask({ onComplete }: { onComplete?: () => void }) {
   const { state, markTestCompleted } = useAppContext();
@@ -89,39 +107,44 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const interTrialRef = useRef<NodeJS.Timeout | null>(null);
   const hasRespondedRef = useRef(false);
 
-  // Generate sequence
+  // Generate sequence. The number of ignored-repetition trials is fixed rather
+  // than a per-trial coin flip, and control trials share no word with the
+  // preceding trial. Previously a control trial could repeat the previous
+  // target (attended repetition, which speeds responding) or distractor, so
+  // the control baseline was faster than a true baseline and the
+  // negative-priming effect was overstated.
   useEffect(() => {
     const sequence: Trial[] = [];
     const WORDS = state.language === 'bn' ? WORDS_BN :
                   state.language === 'hi' ? WORDS_HI :
                   state.language === 'mr' ? WORDS_MR :
                   WORDS_EN;
-    let previousDistractor: WordData | null = null;
-    
+    const ignoredRepetitionFlags = balancedFlags(TOTAL_TRIALS - 1, IGNORED_REPETITION_PROPORTION);
+
     for (let i = 0; i < TOTAL_TRIALS; i++) {
-      // 30% chance for Ignored Repetition (if we have a previous distractor)
-      const isIgnoredRepetition = previousDistractor !== null && Math.random() < 0.3;
-      
-      let target: WordData;
-      if (isIgnoredRepetition && previousDistractor) {
-        target = previousDistractor;
-      } else {
-        // Pick a target that is NOT the previous distractor
-        do {
-          target = WORDS[Math.floor(Math.random() * WORDS.length)];
-        } while (previousDistractor && target.text === previousDistractor.text);
-      }
+      const prime = i > 0 ? sequence[i - 1] : null;
+      const primeWords = prime ? [prime.target, prime.distractor] : [];
+      const condition: Condition = !prime
+        ? "filler"
+        : ignoredRepetitionFlags[i - 1] ? "ignored_repetition" : "control";
 
-      // Pick a distractor that is NOT the current target
-      let distractor: WordData;
-      do {
-        distractor = WORDS[Math.floor(Math.random() * WORDS.length)];
-      } while (distractor.text === target.text);
+      // On an ignored-repetition trial the target is the word that was just
+      // ignored; otherwise it must be new relative to the prime.
+      const target = prime && condition === "ignored_repetition"
+        ? prime.distractor
+        : pickWord(WORDS, primeWords);
+      const distractor = pickWord(WORDS, [target, ...primeWords]);
 
-      sequence.push({ target, distractor, isIgnoredRepetition });
-      previousDistractor = distractor; // save for next trial
+      sequence.push({
+        target,
+        distractor,
+        condition,
+        isIgnoredRepetition: condition === "ignored_repetition",
+      });
     }
     setTrials(sequence);
   }, [state.language]);
@@ -141,15 +164,25 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
     hasRespondedRef.current = false;
 
     timeoutRef.current = setTimeout(() => {
-      setPhase("stimulus");
-      startTimeRef.current = performance.now();
+      presentStimulus(() => setPhase("stimulus"), startTimeRef);
+
+      responseTimeoutRef.current = setTimeout(() => {
+        if (hasRespondedRef.current) return;
+        hasRespondedRef.current = true;
+        const trial = trials[index];
+        if (trial) {
+          setResults(prev => [...prev, { ...trial, rt: null, correct: false }]);
+        }
+        runNextTrial(index + 1);
+      }, RESPONSE_DEADLINE);
     }, FIXATION_DURATION);
   };
 
   const handleResponse = useCallback((responseKey: "KeyF" | "KeyJ") => {
     if (phase !== "stimulus" || hasRespondedRef.current) return;
-    
+
     hasRespondedRef.current = true;
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
     const rt = performance.now() - startTimeRef.current;
     
     const trial = trials[currentTrialIndex];
@@ -158,7 +191,7 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
 
-    setTimeout(() => {
+    interTrialRef.current = setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
   }, [phase, currentTrialIndex, trials]);
@@ -178,6 +211,8 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+      if (interTrialRef.current) clearTimeout(interTrialRef.current);
     };
   }, []);
 
@@ -194,9 +229,14 @@ export default function NegativePrimingTask({ onComplete }: { onComplete?: () =>
     }
     setSubmitting(true);
     
-    const validTrials = results.filter(r => r.correct && r.rt !== null && r.rt > 100);
-    const controlRTs = validTrials.filter(r => !r.isIgnoredRepetition).map(r => r.rt as number);
-    const ignoredRepRTs = validTrials.filter(r => r.isIgnoredRepetition).map(r => r.rt as number);
+    // A trial only measures priming if the participant actually attended the
+    // target and ignored the distractor on the trial before it, so trials that
+    // follow an error or a timeout are excluded along with the unprimed filler.
+    const validTrials = results.filter((r, i) =>
+      i > 0 && results[i - 1].correct && r.correct && r.rt !== null && r.rt > 100
+    );
+    const controlRTs = validTrials.filter(r => r.condition === "control").map(r => r.rt as number);
+    const ignoredRepRTs = validTrials.filter(r => r.condition === "ignored_repetition").map(r => r.rt as number);
 
     
     const meanRTControl = roundedMeanOrNull(controlRTs);

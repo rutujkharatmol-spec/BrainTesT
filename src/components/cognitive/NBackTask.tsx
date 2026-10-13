@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
-import { roundedMeanOrNull } from "@/utils/trials";
+import { balancedFlags, roundedMeanOrNull } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -24,7 +25,10 @@ type TrialResult = Trial & {
 const LETTERS = ["A", "B", "C", "D", "E", "H", "K", "L", "M", "O", "P", "T", "X", "Y", "Z"];
 const TOTAL_TRIALS = 30;
 const N_BACK = 2;
-const TARGET_PROBABILITY = 0.3; // 30% targets
+// Exact share of targets among the trials that have an N-back predecessor
+// (8 of 28), rather than a per-trial coin flip that varied the target count
+// from run to run.
+const TARGET_PROPORTION = 0.3;
 const STIMULUS_DURATION = 500;
 const ISI_DURATION = 1500; // Inter-stimulus interval
 
@@ -51,11 +55,12 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
   // Generate sequence
   useEffect(() => {
     const sequence: Trial[] = [];
+    const targetFlags = balancedFlags(TOTAL_TRIALS - N_BACK, TARGET_PROPORTION);
     for (let i = 0; i < TOTAL_TRIALS; i++) {
       let letter = "";
       let isTarget = false;
-      
-      if (i >= N_BACK && Math.random() < TARGET_PROBABILITY) {
+
+      if (i >= N_BACK && targetFlags[i - N_BACK]) {
         // Create a target
         letter = sequence[i - N_BACK].letter;
         isTarget = true;
@@ -115,11 +120,12 @@ export default function NBackTask({ onComplete }: { onComplete?: () => void }) {
       return;
     }
 
-    setCurrentTrialIndex(index);
-    setShowStimulus(true);
-    setHasPressed(false);
     currentResponseRef.current = { pressed: false, rt: null };
-    startTimeRef.current = performance.now();
+    presentStimulus(() => {
+      setCurrentTrialIndex(index);
+      setShowStimulus(true);
+      setHasPressed(false);
+    }, startTimeRef);
 
     // Stimulus visible duration
     trialTimeoutRef.current = setTimeout(() => {

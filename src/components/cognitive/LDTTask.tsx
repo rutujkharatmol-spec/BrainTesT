@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppContext";
 import { fetchWithOfflineSync } from "@/utils/offlineSync";
 import { balancedFlags, roundedMeanOrNull, sampleWithoutReplacement } from "@/utils/trials";
+import { presentStimulus } from "@/utils/stimulusClock";
 import TaskCompleteScreen from "./TaskCompleteScreen";
 import TaskInstructionCard from "./TaskInstructionCard";
 import TaskHUD from "./TaskHUD";
@@ -21,6 +22,9 @@ type TrialResult = Trial & {
 
 const TOTAL_TRIALS = 40;
 const FIXATION_DURATION = 500;
+// Unanswered trials are recorded as misses after this long, so a lapse of
+// attention cannot put a multi-second "RT" into the word/non-word means.
+const RESPONSE_DEADLINE = 3000;
 
 // Each list holds at least TOTAL_TRIALS/2 items so a full run can be drawn
 // without repeating any item.
@@ -63,7 +67,7 @@ const NON_WORDS = {
     "खलुप", "रेमित", "चुबाल", "धिनक", "सपुरा",
   ],
   mr: [
-    "झिकात", "लिमुट", "चामुर", "फेनक", "पिसুল", "हिराम", "भुसक", "रिसत", "नापस", "टोमार",
+    "झिकात", "लिमुट", "चामुर", "फेनक", "पिसुल", "हिराम", "भुसक", "रिसत", "नापस", "टोमार",
     "केलुप", "मिदरा", "शुबाक", "ढोपिन", "तरुस", "गमिल", "बेसुक", "निझल", "पात्रुम", "सोमिद",
     "खलुप", "रेमित", "चुबाल", "धिनक", "सपुरा",
   ],
@@ -84,6 +88,8 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
 
   const startTimeRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const interTrialRef = useRef<NodeJS.Timeout | null>(null);
   const hasRespondedRef = useRef(false);
 
   // Generate sequence — exactly half words / half non-words, and items drawn
@@ -95,11 +101,18 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
     const nonWordDict = NON_WORDS[lang] || NON_WORDS.en;
 
     const isWordFlags = balancedFlags(TOTAL_TRIALS, 0.5);
-    const words = sampleWithoutReplacement(wordDict, TOTAL_TRIALS);
-    const nonWords = sampleWithoutReplacement(nonWordDict, TOTAL_TRIALS);
+    // Draw exactly as many items as each type needs and consume them in
+    // order. Drawing TOTAL_TRIALS of each and indexing by trial position
+    // pulled from the reshuffled second pass of the 25-item pool, so items
+    // repeated within a run.
+    const wordCount = isWordFlags.filter(Boolean).length;
+    const words = sampleWithoutReplacement(wordDict, wordCount);
+    const nonWords = sampleWithoutReplacement(nonWordDict, TOTAL_TRIALS - wordCount);
+    let nextWord = 0;
+    let nextNonWord = 0;
 
-    const sequence: Trial[] = isWordFlags.map((isWord: boolean, i: number) => ({
-      string: isWord ? words[i] : nonWords[i],
+    const sequence: Trial[] = isWordFlags.map((isWord: boolean) => ({
+      string: isWord ? words[nextWord++] : nonWords[nextNonWord++],
       isWord,
     }));
     setTrials(sequence);
@@ -120,15 +133,25 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
     hasRespondedRef.current = false;
 
     timeoutRef.current = setTimeout(() => {
-      setPhase("stimulus");
-      startTimeRef.current = performance.now();
+      presentStimulus(() => setPhase("stimulus"), startTimeRef);
+
+      responseTimeoutRef.current = setTimeout(() => {
+        if (hasRespondedRef.current) return;
+        hasRespondedRef.current = true;
+        const trial = trials[index];
+        if (trial) {
+          setResults(prev => [...prev, { ...trial, rt: null, correct: false }]);
+        }
+        runNextTrial(index + 1);
+      }, RESPONSE_DEADLINE);
     }, FIXATION_DURATION);
   };
 
   const handleResponse = useCallback((responseKey: "KeyF" | "KeyJ") => {
     if (phase !== "stimulus" || hasRespondedRef.current) return;
-    
+
     hasRespondedRef.current = true;
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
     const rt = performance.now() - startTimeRef.current;
     
     const trial = trials[currentTrialIndex];
@@ -137,7 +160,7 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
 
     setResults(prev => [...prev, { ...trial, rt, correct }]);
 
-    setTimeout(() => {
+    interTrialRef.current = setTimeout(() => {
       runNextTrial(currentTrialIndex + 1);
     }, 500);
   }, [phase, currentTrialIndex, trials]);
@@ -157,6 +180,8 @@ export default function LDTTask({ onComplete }: { onComplete?: () => void }) {
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+      if (interTrialRef.current) clearTimeout(interTrialRef.current);
     };
   }, []);
 
